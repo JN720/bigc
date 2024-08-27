@@ -8,19 +8,16 @@ enum TokenType
     TEXT,
     ACCESSOR,
     DELIMITER,
-    EXPRSTART,
-    EXPREND,
-    ARGSTART,
-    ARGEND,
-    CTRLSTART,
-    CTRLEND,
-    ARRSTART,
-    ARREND,
+    ARGEXPRSTART,
+    ARGEXPREND,
     INDSTART,
     INDEND,
+    CTRLSTART,
+    CTRLEND,
     PIPE,
     PIPERES,
-    SPREAD
+    SPREAD,
+    END
 };
 
 class Token
