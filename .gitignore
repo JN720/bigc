@@ -44,4 +44,6 @@ CMakeUserPresets.json
 *.out
 *.app
 
-build/**
+bigc/build/**
+
+.vscode/**

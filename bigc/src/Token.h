@@ -2,9 +2,25 @@
 
 enum TokenType
 {
+    NONE,
     NUMBER,
     OPERATOR,
-    VARIABLE
+    TEXT,
+    ACCESSOR,
+    DELIMITER,
+    EXPRSTART,
+    EXPREND,
+    ARGSTART,
+    ARGEND,
+    CTRLSTART,
+    CTRLEND,
+    ARRSTART,
+    ARREND,
+    INDSTART,
+    INDEND,
+    PIPE,
+    PIPERES,
+    SPREAD
 };
 
 class Token
