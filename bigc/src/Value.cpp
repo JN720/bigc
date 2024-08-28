@@ -1,7 +1,11 @@
+#pragma once
 #include "Value.h"
-#include "Token.h"
+
+Value::Value(Token &token) {
+    value = (void*) &token.value;
+}
 
 void *Value::getValue()
 {
-    return nullptr;
+    return this->value;
 }
