@@ -1,23 +1,28 @@
 #pragma once
-#include<vector>
+#include <vector>
 #include "Value.h"
 
-enum NodeType {
+enum NodeType
+{
     LEAFVALUE,
+    IDENTIFIER,
     CALL,
     OPERATION,
     ASSIGNMENT,
     INDEX
 };
 
-class Node {
+class Node
+{
 public:
-    Node(Value &value);
-    Node(std::vector<Node> children);
-    void *getValue();
+    Node();
+    Node(Value value);
+    Node(std::vector<Node *> &children);
+    virtual Value getValue(const State &state);
+    void addChild(Node *child);
+
 protected:
-    std::vector<Node> children;
+    std::vector<Node *> children;
     Value value;
     NodeType type;
-
 };

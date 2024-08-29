@@ -1,11 +1,16 @@
 #pragma once
-#include<string>
+#include <string>
 #include "Token.h"
+#include "State.h"
 
-class Value {
+class Value
+{
 public:
+    Value();
     Value(Token &token);
-    void *getValue();
+    Value(std::string type);
+    void *getValue(const State &state);
+
 protected:
     std::string type;
     void *value;

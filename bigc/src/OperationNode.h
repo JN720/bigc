@@ -1,9 +1,28 @@
+#pragma once
 #include "Node.h"
 
-class OperationNode : public Node {
+enum Operation
+{
+    ADD,
+    SUB,
+    MUL,
+    DIV,
+    MOD,
+    EQ,
+    NEQ,
+    LT,
+    LTE,
+    GT,
+    GTE,
+    NOT
+};
+
+class OperationNode : public Node
+{
 public:
-    void *getValue();
-    OperationNode(char operation);
+    Value getValue(const State &state) override;
+    OperationNode(Token &token);
+
 protected:
-    char op;
+    Operation op;
 };

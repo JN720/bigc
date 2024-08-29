@@ -1,13 +1,18 @@
 #include <iostream>
-#include "Expression.h"
 #include <stack>
 #include <vector>
 #include "Token.h"
+#include "OperationNode.h"
+#include "IdentifierNode.h"
+#include "IndexNode.h"
+#include "AccessNode.h"
+#include "BranchNode.h"
 
 const std::string OPERATORS = "+-*!/=><";
 const std::string DIGITS = "0123456789";
 const std::string WORDS = "abcdefghijklmnopqrstuvwxyz_";
 const std::string SINGULARS = ".,()[]{}|&~;";
+const std::string KEYWORDS[] = {"if"};
 
 template <class T>
 struct Result
@@ -27,15 +32,37 @@ struct Result
     }
 };
 
-Result<TokenType> allowSingularTokens(char c, TokenType allowed[12], std::string error) {
-    for (int i = 0; i < 12; i++) {
+Result<TokenType> allowSingularTokens(char c, TokenType allowed[12], std::string error)
+{
+    for (int i = 0; i < 12; i++)
+    {
         char token = SINGULARS[i];
-        if (allowed[i] != NONE && c == token) {
+        if (allowed[i] != NONE && c == token)
+        {
             return allowed[i];
         }
     }
     return Result<TokenType>(error);
 }
+
+/* POST-CHARACTER MATRIX: x means disallowed
+            a 0 + . , ( ) [ ] { } | & ~ ;
+NONE              x x   x   x x x x x   x
+TEXT          x                     x x
+NUMBER      x x   x   x   x       x x x
+ACCESSOR      x x x x x x x x x x x x x x
+DELIMITER         x x   x   x x x x     x
+ARGEXSTART        x x       x x x x     x
+ARGEXEND    x x                     x x
+INDSTART          x x   x   x x x x     x
+INDEND      x x                     x
+CTRLSTART         x x   x   x x x x     x
+CTRLEND     x x                     x x
+PIPE              x x   x   x x x x     x
+PIPERES     x x                       x
+SPREAD        x x x x   x   x x x x     x
+
+*/
 
 Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool prevWhitespace)
 {
@@ -54,8 +81,7 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
         PIPE,
         PIPERES,
         SPREAD,
-        END
-    };
+        END};
 
     switch (prev)
     {
@@ -66,6 +92,8 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
             return Result<TokenType>(NUMBER);
         if (WORDS.find(c) != std::string::npos)
             return Result<TokenType>(TEXT);
+        allowed[ACCESSOR - 4] = NONE;
+        allowed[DELIMITER - 4] = NONE;
         allowed[ARGEXPREND - 4] = NONE;
         allowed[INDEND - 4] = NONE;
         allowed[CTRLSTART - 4] = NONE;
@@ -124,8 +152,8 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
             return Result<TokenType>(TEXT);
         allowed[ACCESSOR - 4] = NONE;
         allowed[DELIMITER - 4] = NONE;
-        allowed[ARGEXPREND - 4] = NONE;
         allowed[INDEND - 4] = NONE;
+        allowed[CTRLSTART - 4] = NONE;
         allowed[CTRLEND - 4] = NONE;
         allowed[PIPE - 4] = NONE;
         allowed[END - 4] = NONE;
@@ -140,18 +168,20 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
         allowed[ACCESSOR - 4] = NONE;
         allowed[DELIMITER - 4] = NONE;
         allowed[INDEND - 4] = NONE;
+        allowed[CTRLSTART - 4] = NONE;
         allowed[CTRLEND - 4] = NONE;
         allowed[PIPE - 4] = NONE;
         allowed[END - 4] = NONE;
         return allowSingularTokens(c, allowed, "expected value");
     case ARGEXPREND:
-        if (DIGITS.find(c) != std::string::npos)
+        /*if (DIGITS.find(c) != std::string::npos)
             return Result<TokenType>(NUMBER);
         if (WORDS.find(c) != std::string::npos)
-            return Result<TokenType>(TEXT);
+            return Result<TokenType>(TEXT);*/
         if (OPERATORS.find(c) != std::string::npos)
             return Result<TokenType>(OPERATOR);
         allowed[PIPERES - 4] = NONE;
+        allowed[SPREAD - 4] = NONE;
         return allowSingularTokens(c, allowed, "unexpected post-expression token");
     case INDSTART:
         if (OPERATORS.find(c) != std::string::npos)
@@ -188,6 +218,7 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
         if (OPERATORS.find(c) != std::string::npos)
             return Result<TokenType>(OPERATOR);
         allowed[PIPERES - 4] = NONE;
+        allowed[SPREAD - 4] = NONE;
         return allowSingularTokens(c, allowed, "unexpected post-expression token");
     case PIPE:
         if (OPERATORS.find(c) != std::string::npos)
@@ -200,6 +231,7 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
         allowed[DELIMITER - 4] = NONE;
         allowed[ARGEXPREND - 4] = NONE;
         allowed[INDEND - 4] = NONE;
+        allowed[CTRLSTART - 4] = NONE;
         allowed[CTRLEND - 4] = NONE;
         allowed[PIPE - 4] = NONE;
         allowed[END - 4] = NONE;
@@ -214,20 +246,19 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
             return Result<TokenType>(TEXT);
         allowed[ARGEXPREND - 4] = NONE;
         allowed[INDEND - 4] = NONE;
-        allowed[CTRLSTART - 4] = NONE;
         allowed[CTRLEND - 4] = NONE;
         allowed[PIPE - 4] = NONE;
         allowed[SPREAD - 4] = NONE;
         allowed[END - 4] = NONE;
         return allowSingularTokens(c, allowed, "expected expression to spread");
     default:
-    return Result<TokenType>("invalid token");
+        return Result<TokenType>("invalid token");
     }
 
     return Result<TokenType>("invalid token");
 }
 
-Result<std::vector<Token> > tokenize(std::string str)
+Result<std::vector<Token>> tokenize(std::string str)
 {
     std::vector<Token> tokens;
     std::string accumulated = "";
@@ -241,7 +272,7 @@ Result<std::vector<Token> > tokenize(std::string str)
         {
             std::string msg = ("Column " + std::to_string(i + 1) + "\n" + result.error);
             msg = "Near \"" + str.substr(std::max(0, i - 3), 5) + "\"\n" + msg;
-            return Result<std::vector<Token> >(msg);
+            return Result<std::vector<Token>>(msg);
         }
         if (result.value == NONE)
         {
@@ -263,68 +294,132 @@ Result<std::vector<Token> > tokenize(std::string str)
     {
         std::cout << tokens[i].value << '\n';
     }
-    return Result<std::vector<Token> >(tokens);
+    return Result<std::vector<Token>>(tokens);
 }
 
-/*for (int i = index; i < expr.length(); i++)
+enum Context
 {
-    char c = expr[i];
-    if (DIGITS.find(c) != std::string::npos)
+    BASE,
+    EXPR,
+    DELIMITED,
+    ARR,
+    INDEXPR,
+    IFEXPR,
+    CTRLSEQ
+};
+
+void createAST(State &state, std::vector<Token> &tokens, int &index, Node *parent, Context context)
+{
+    // assume we are accumulating an expression
+    Node *cur = nullptr;
+
+    for (int i = index; i < tokens.size(); i++)
     {
-        if (!accumulated.empty() && accumulatedType != NUMBER)
+        // handle operators: any operator
+        // handle calls: function followed by (
+        // handle expressions: (
+        // handle indexing and arrays: [ or value followed by [
+        switch (tokens[i].type)
         {
-            tokens.push_back(Token(accumulated, accumulatedType));
-            accumulated = "";
+        case TEXT:
+            // check for keyword
+            if (state.isKeyword(tokens[i].value))
+            {
+                if (tokens[i].value == "if")
+                {
+                    createAST(state, tokens, ++i, parent, IFEXPR);
+                }
+            }
+            else // variable or function
+            {
+                IdentifierNode *identifier = new IdentifierNode(tokens[i]);
+                // if we are calling a function
+                // as opposed to var or fn as value
+                if (state.isFunction(tokens[i].value) && tokens.size() > i + 1 && tokens[i + 1].type == ARGEXPRSTART)
+                {
+                    identifier->makeCall();
+                    cur = (Node *)identifier;
+                    createAST(state, tokens, ++i, cur, DELIMITED);
+                }
+                // if we are indexing
+                if (tokens.size() > i + 1 && tokens[i + 1].type == INDSTART)
+                {
+                    IndexNode *index = new IndexNode();
+                    cur = index;
+                    cur->addChild(identifier);
+                    createAST(state, tokens, ++i, cur, INDEXPR);
+                }
+            }
+        case NUMBER:
+            // a regular number
+            cur = new Node(Value(tokens[i]));
+        case OPERATOR:
+            OperationNode *op = new OperationNode(tokens[i]);
+            // if binary op as opposed to unary
+            if (cur)
+                parent->addChild(op);
+            cur = (Node *)op;
+            createAST(state, tokens, ++i, cur, EXPR);
+        case ACCESSOR:
+            if (!cur)
+                throw "unexpected accessor";
+            if (tokens.size() > i + 1 && tokens[i + 1].type == TEXT && !state.isKeyword(tokens[i + 1].value))
+            {
+                AccessNode *accessor = new AccessNode(tokens[i + 1].value);
+                accessor->addChild(cur);
+                cur = accessor;
+            }
+        case DELIMITER:
+            if (context == DELIMITED || context == ARR)
+            {
+                parent->addChild(cur);
+                cur = nullptr;
+            }
+            else
+                throw "unexpected comma";
+        case ARGEXPRSTART:
+            createAST(state, tokens, ++i, parent, EXPR);
+        case ARGEXPREND:
+            if (context == DELIMITED || context == EXPR)
+            {
+                if (cur)
+                    parent->addChild(cur);
+                return;
+            }
+            throw "unexpected end of expression";
+
+        case INDSTART:
+            // has to be an array
+            cur = new Node(Value("arr"));
+            createAST(state, tokens, ++i, cur, ARR);
+        case INDEND:
+            if (context == ARR || context == INDEXPR)
+            {
+                if (!cur)
+                    throw "unexpected ]";
+                parent->addChild(cur);
+                return;
+            }
+            throw "unexpected end of array";
+
+        case CTRLSTART:
+            if (context == IFEXPR)
+            {
+                if (!cur)
+                    throw "expected condition expression";
+                BranchNode *branch = new BranchNode();
+                // conditional expression
+                branch->addChild(cur);
+                cur = branch;
+                createAST(state, tokens, ++i, cur, CTRLSEQ);
+            }
+            throw "unexpected {";
+        case CTRLEND:
+
+        case PIPE:
         }
-        accumulated += c;
-        accumulatedType = NUMBER;
-    }
-    else if (OPERATORS.find(c) != std::string::npos)
-    {
-        if (!accumulated.empty() && accumulatedType != OPERATOR)
-        {
-            tokens.push_back(Token(accumulated, accumulatedType));
-            accumulated = "";
-        }
-        accumulated += c;
-        accumulatedType = OPERATOR;
-    }
-    else if (VARS.find(c) != std::string::npos)
-    {
-        if (!accumulated.empty() && accumulatedType != VARIABLE)
-        {
-            tokens.push_back(Token(accumulated, accumulatedType));
-        }
-        accumulated += c;
-        accumulatedType = VARIABLE;
-    }
-    else if (c == '(')
-    {
-        tokens.push_back(interpretExpr(expr, ++i));
-    }
-    else if (c == ')')
-    {
-        i++;
-        break;
-    }
-    else if (c == '.')
-    {
-        if (!accumulated.empty() && accumulatedType != VARIABLE)
-        {
-            tokens.push_back(Token(accumulated, accumulatedType));
-        }
-        tokens.push_back(Token(".", VARIABLE));
-    }
-    else if (c == '.')
-    {
-        if (!accumulated.empty() && accumulatedType != VARIABLE)
-        {
-            tokens.push_back(Token(accumulated, accumulatedType));
-        }
-        tokens.push_back(Token(".", VARIABLE));
     }
 }
-    */
 
 int main(int argc, char *argv[])
 {
@@ -334,7 +429,7 @@ int main(int argc, char *argv[])
         line += argv[i];
         line += " ";
     }
-    Result<std::vector<Token> > result = tokenize(line);
+    Result<std::vector<Token>> result = tokenize(line);
     if (!result.error.empty())
         std::cerr << result.error << '\n';
     return 0;

@@ -1,19 +1,26 @@
-#pragma once
 #include "Node.h"
 #include "Value.h"
 
-Node::Node(Value &value) {
+Node::Node(Value value)
+{
     this->value = value;
 }
 
-Node::Node(std::vector<Node> children) {
+Node::Node()
+{
+}
+
+Node::Node(std::vector<Node *> &children)
+{
     this->children = children;
 }
 
-void Node::getValue() {
-
+Value Node::getValue(const State &state)
+{
+    return value;
 }
 
-void Node::addChild(const Node) {
-
+void Node::addChild(Node *child)
+{
+    children.push_back(child);
 }
