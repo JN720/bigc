@@ -1,12 +1,15 @@
 #include <iostream>
 #include <stack>
 #include <vector>
+#include "PipeNode.h"
+#include "SequenceNode.h"
 #include "Token.h"
 #include "OperationNode.h"
 #include "IdentifierNode.h"
 #include "IndexNode.h"
 #include "AccessNode.h"
 #include "BranchNode.h"
+#include "SpreadNode.h"
 
 const std::string OPERATORS = "+-*!/=><";
 const std::string DIGITS = "0123456789";
@@ -258,7 +261,7 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
     return Result<TokenType>("invalid token");
 }
 
-Result<std::vector<Token>> tokenize(std::string str)
+Result<std::vector<Token> > tokenize(std::string str)
 {
     std::vector<Token> tokens;
     std::string accumulated = "";
@@ -272,7 +275,7 @@ Result<std::vector<Token>> tokenize(std::string str)
         {
             std::string msg = ("Column " + std::to_string(i + 1) + "\n" + result.error);
             msg = "Near \"" + str.substr(std::max(0, i - 3), 5) + "\"\n" + msg;
-            return Result<std::vector<Token>>(msg);
+            return Result<std::vector<Token> >(msg);
         }
         if (result.value == NONE)
         {
@@ -290,11 +293,7 @@ Result<std::vector<Token>> tokenize(std::string str)
     }
     if (!accumulated.empty())
         tokens.push_back(Token(accumulated, accType));
-    for (int i = 0; i < tokens.size(); i++)
-    {
-        std::cout << tokens[i].value << '\n';
-    }
-    return Result<std::vector<Token>>(tokens);
+    return Result<std::vector<Token> >(tokens);
 }
 
 enum Context
@@ -305,16 +304,21 @@ enum Context
     ARR,
     INDEXPR,
     IFEXPR,
-    CTRLSEQ
+    CTRLSEQ,
 };
 
-void createAST(State &state, std::vector<Token> &tokens, int &index, Node *parent, Context context)
+const std::string HELP[] = {"none", "number", "operator", "text", "accessor", "delimiter", "argexpstart", "argexprend",
+    "indstart", "indend", "ctrlstart", "ctrlend", "pipe", "piperes", "spread", "end"
+};
+
+void createAST(State &state, std::vector<Token> &tokens, int &index, Node *parent, Context context, bool piped)
 {
     // assume we are accumulating an expression
     Node *cur = nullptr;
 
     for (int i = index; i < tokens.size(); i++)
     {
+        std::cout << "Token of type " << HELP[(int)tokens[i].type] << '\n';
         // handle operators: any operator
         // handle calls: function followed by (
         // handle expressions: (
@@ -327,7 +331,7 @@ void createAST(State &state, std::vector<Token> &tokens, int &index, Node *paren
             {
                 if (tokens[i].value == "if")
                 {
-                    createAST(state, tokens, ++i, parent, IFEXPR);
+                    createAST(state, tokens, ++i, parent, IFEXPR, piped);
                 }
             }
             else // variable or function
@@ -339,7 +343,7 @@ void createAST(State &state, std::vector<Token> &tokens, int &index, Node *paren
                 {
                     identifier->makeCall();
                     cur = (Node *)identifier;
-                    createAST(state, tokens, ++i, cur, DELIMITED);
+                    createAST(state, tokens, ++i, cur, DELIMITED, piped);
                 }
                 // if we are indexing
                 if (tokens.size() > i + 1 && tokens[i + 1].type == INDSTART)
@@ -347,22 +351,27 @@ void createAST(State &state, std::vector<Token> &tokens, int &index, Node *paren
                     IndexNode *index = new IndexNode();
                     cur = index;
                     cur->addChild(identifier);
-                    createAST(state, tokens, ++i, cur, INDEXPR);
+                    createAST(state, tokens, ++i, cur, INDEXPR, piped);
                 }
             }
+            break;
         case NUMBER:
             // a regular number
             cur = new Node(Value(tokens[i]));
+            break;
         case OPERATOR:
-            OperationNode *op = new OperationNode(tokens[i]);
-            // if binary op as opposed to unary
-            if (cur)
-                parent->addChild(op);
-            cur = (Node *)op;
-            createAST(state, tokens, ++i, cur, EXPR);
+            if (true) {
+                OperationNode *op = new OperationNode(tokens[i]);
+                // if binary op as opposed to unary
+                if (cur)
+                    parent->addChild(op);
+                cur = op;
+                createAST(state, tokens, ++i, cur, EXPR, piped);
+            }
+            break;
         case ACCESSOR:
             if (!cur)
-                throw "unexpected accessor";
+                std::cout << "unexpected accessor";
             if (tokens.size() > i + 1 && tokens[i + 1].type == TEXT && !state.isKeyword(tokens[i + 1].value))
             {
                 AccessNode *accessor = new AccessNode(tokens[i + 1].value);
@@ -376,9 +385,9 @@ void createAST(State &state, std::vector<Token> &tokens, int &index, Node *paren
                 cur = nullptr;
             }
             else
-                throw "unexpected comma";
+                std::cout << "unexpected comma";
         case ARGEXPRSTART:
-            createAST(state, tokens, ++i, parent, EXPR);
+            createAST(state, tokens, ++i, parent, EXPR, piped);
         case ARGEXPREND:
             if (context == DELIMITED || context == EXPR)
             {
@@ -386,12 +395,12 @@ void createAST(State &state, std::vector<Token> &tokens, int &index, Node *paren
                     parent->addChild(cur);
                 return;
             }
-            throw "unexpected end of expression";
+            std::cout << "unexpected end of expression";
 
         case INDSTART:
             // has to be an array
             cur = new Node(Value("arr"));
-            createAST(state, tokens, ++i, cur, ARR);
+            createAST(state, tokens, ++i, cur, ARR, piped);
         case INDEND:
             if (context == ARR || context == INDEXPR)
             {
@@ -400,23 +409,76 @@ void createAST(State &state, std::vector<Token> &tokens, int &index, Node *paren
                 parent->addChild(cur);
                 return;
             }
-            throw "unexpected end of array";
+            std::cout <<  "unexpected end of array";
 
         case CTRLSTART:
             if (context == IFEXPR)
             {
                 if (!cur)
-                    throw "expected condition expression";
+                    std::cout << "expected condition expression";
                 BranchNode *branch = new BranchNode();
                 // conditional expression
                 branch->addChild(cur);
                 cur = branch;
-                createAST(state, tokens, ++i, cur, CTRLSEQ);
+                createAST(state, tokens, ++i, cur, CTRLSEQ, piped);
             }
-            throw "unexpected {";
+            std::cout << "unexpected {";
         case CTRLEND:
-
+            if (context == CTRLSEQ) {
+                if (cur)
+                    parent->addChild(cur);
+                return;
+            }
+            std::cout << "unexpected }";
         case PIPE:
+            if (true) {
+                PipeNode *pipe = new PipeNode();
+                // if binary op as opposed to unary
+                if (!cur)
+                    std::cout << "unexpected |";
+                pipe->addChild(cur);
+                cur = pipe;
+                createAST(state, tokens, ++i, cur, EXPR, true);
+            }
+            break;
+        case PIPERES:
+            if (piped) {
+                IdentifierNode *identifier = new IdentifierNode(tokens[i]);
+                // if we are calling a function
+                // as opposed to var or fn as value
+                if (state.isFunction(tokens[i].value) && tokens.size() > i + 1 && tokens[i + 1].type == ARGEXPRSTART)
+                {
+                    identifier->makeCall();
+                    cur = (Node *)identifier;
+                    createAST(state, tokens, ++i, cur, DELIMITED, piped);
+                }
+                // if we are indexing
+                if (tokens.size() > i + 1 && tokens[i + 1].type == INDSTART)
+                {
+                    IndexNode *index = new IndexNode();
+                    cur = index;
+                    cur->addChild(identifier);
+                    createAST(state, tokens, ++i, cur, INDEXPR, piped);
+                }
+            } else
+                std::cout << "unexpected &";
+        case SPREAD:
+            if (context == DELIMITED) {
+                SpreadNode *spread = new SpreadNode();
+                spread->addChild(cur);
+                cur = spread;
+                createAST(state, tokens, ++i, cur, EXPR, piped);
+            } else
+                std::cout << "unexpected ~";
+        case END:
+            if (!cur)
+                std::cout << "unexpected ;";
+            parent->addChild(cur);
+            cur = nullptr;
+            context = BASE;
+            break;
+        default:
+            std::cout << "that wasn't supposed to happen";
         }
     }
 }
@@ -429,8 +491,17 @@ int main(int argc, char *argv[])
         line += argv[i];
         line += " ";
     }
-    Result<std::vector<Token>> result = tokenize(line);
+    Result<std::vector<Token> > result = tokenize(line);
     if (!result.error.empty())
-        std::cerr << result.error << '\n';
+        std::cerr << "Error Msg: " << result.error << '\n';
+    try {
+        SequenceNode *program = new SequenceNode();
+        State state;
+        int index = 0;
+        createAST(state, result.value, index, program, BASE, false);
+    } catch(std::exception e) {
+        std::cout << "uh oh\n";
+        std::cout << e.what() << '\n';
+    }
     return 0;
 }
