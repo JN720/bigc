@@ -2,8 +2,10 @@
 
 SequenceNode::SequenceNode()
 {
+    type = N_SEQUENCE;
 }
 
-Value SequenceNode::getValue(const State &state) {
+Value SequenceNode::getValue(const State &state)
+{
     return Value();
 }

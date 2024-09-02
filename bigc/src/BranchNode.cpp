@@ -2,6 +2,7 @@
 
 BranchNode::BranchNode()
 {
+    type = N_BRANCH;
 }
 
 Value BranchNode::getValue(const State &state)

@@ -24,3 +24,13 @@ void Node::addChild(Node *child)
 {
     children.push_back(child);
 }
+
+NodeType Node::getType() const
+{
+    return type;
+}
+
+std::vector<Node *> Node::getChildren() const
+{
+    return children;
+}

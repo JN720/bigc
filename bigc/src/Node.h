@@ -4,12 +4,18 @@
 #include "State.h"
 enum NodeType
 {
-    LEAFVALUE,
-    IDENTIFIER,
-    CALL,
-    OPERATION,
-    ASSIGNMENT,
-    INDEX
+    N_LEAFVALUE,
+    N_IDENTIFIER,
+    N_CALL,
+    N_OPERATION,
+    N_ASSIGNMENT,
+    N_INDEX,
+    N_SEQUENCE,
+    N_SPREAD,
+    N_BRANCH,
+    N_ACCESS,
+    N_PIPE,
+    N_WRAPPER
 };
 
 class Node
@@ -20,6 +26,8 @@ public:
     Node(std::vector<Node *> &children);
     virtual Value getValue(const State &state);
     void addChild(Node *child);
+    NodeType getType() const;
+    std::vector<Node *> getChildren() const;
 
 protected:
     std::vector<Node *> children;

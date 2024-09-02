@@ -1,9 +1,11 @@
 #include "SpreadNode.h"
 
-SpreadNode::SpreadNode() {
-
+SpreadNode::SpreadNode()
+{
+    type = N_SPREAD;
 }
 
-Value SpreadNode::getValue(const State &state) {
+Value SpreadNode::getValue(const State &state)
+{
     return Value();
 }

@@ -43,4 +43,5 @@ OperationNode::OperationNode(Token &token)
         op = GTE;
     else if (token.value == "!")
         op = NOT;
+    type = N_OPERATION;
 }
