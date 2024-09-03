@@ -4,7 +4,7 @@
 enum TokenType
 {
     NONE,
-    NUMBER,
+    NUMBERSTR,
     OPERATOR,
     TEXT,
     ACCESSOR,

@@ -1,7 +1,10 @@
 #pragma once
 #include "Value.h"
+#include "Result.h"
 
 class Iterable
 {
-    virtual Value get(int index);
+    virtual std::string add(Value val);
+    virtual Result<> get(Value index);
+    virtual Result<> len();
 };

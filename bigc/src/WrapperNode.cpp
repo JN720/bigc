@@ -7,5 +7,12 @@ WrapperNode::WrapperNode()
 
 Value WrapperNode::getValue(const State &state)
 {
-    return Value();
+    return children[0]->getValue(state);
+}
+
+std::string WrapperNode::resolve(State &state)
+{
+    if (children.empty())
+        return "empty wrapper";
+    return children[0]->resolve(state);
 }

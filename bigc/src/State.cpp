@@ -23,3 +23,8 @@ bool State::isFunction(std::string word)
 {
     return false;
 }
+
+bool State::implements(std::string type, std::string interface)
+{
+    return types.find(type) != types.end() && types[type].find(interface) != types[type].end();
+}

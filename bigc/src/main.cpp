@@ -11,30 +11,13 @@
 #include "BranchNode.h"
 #include "SpreadNode.h"
 #include "WrapperNode.h"
+#include "Result.h"
 
 const std::string OPERATORS = "+-*!/=><";
 const std::string DIGITS = "0123456789";
 const std::string WORDS = "abcdefghijklmnopqrstuvwxyz_";
 const std::string SINGULARS = ".,()[]{}|&~;";
 const std::string KEYWORDS[] = {"if"};
-
-template <class T>
-struct Result
-{
-    T value;
-    std::string error;
-
-    Result<T>(T val)
-    {
-        value = val;
-        error = "";
-    }
-
-    Result<T>(std::string str)
-    {
-        error = str;
-    }
-};
 
 Result<TokenType> allowSingularTokens(char c, TokenType allowed[12], std::string error)
 {
@@ -53,7 +36,7 @@ Result<TokenType> allowSingularTokens(char c, TokenType allowed[12], std::string
             a 0 + . , ( ) [ ] { } | & ~ ;
 NONE              x x   x   x x x x x   x
 TEXT          x                     x x
-NUMBER      x x   x   x   x         x x
+NUMBERSTR      x x   x   x   x         x x
 ACCESSOR      x x x x x x x x x x x x x x
 DELIMITER         x x   x   x x x x     x
 ARGEXSTART        x x       x x x x     x
@@ -93,7 +76,7 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
         if (OPERATORS.find(c) != std::string::npos)
             return Result<TokenType>(OPERATOR);
         if (DIGITS.find(c) != std::string::npos)
-            return Result<TokenType>(NUMBER);
+            return Result<TokenType>(NUMBERSTR);
         if (WORDS.find(c) != std::string::npos)
             return Result<TokenType>(TEXT);
         allowed[ACCESSOR - 4] = NONE;
@@ -107,21 +90,21 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
         allowed[END - 4] = NONE;
         return allowSingularTokens(c, allowed, "unexpected start of statement");
 
-    case NUMBER:
+    case NUMBERSTR:
         if (c == '.' && hasDot)
             return Result<TokenType>("why dot");
         if (DIGITS.find(c) != std::string::npos || (!hasDot && c == '.'))
-            return Result<TokenType>(NUMBER);
+            return Result<TokenType>(NUMBERSTR);
         if (OPERATORS.find(c) != std::string::npos)
             return Result<TokenType>(OPERATOR);
         allowed[ARGEXPRSTART - 4] = NONE;
         allowed[INDSTART - 4] = NONE;
         allowed[PIPERES - 4] = NONE;
         allowed[SPREAD - 4] = NONE;
-        return allowSingularTokens(c, allowed, "invalid token after number");
+        return allowSingularTokens(c, allowed, "invalid token after number or string");
     case TEXT:
         if (prevWhitespace && DIGITS.find(c) != std::string::npos)
-            return Result<TokenType>(NUMBER);
+            return Result<TokenType>(NUMBERSTR);
         if (WORDS.find(c) != std::string::npos || DIGITS.find(c) != std::string::npos)
             return Result<TokenType>(TEXT);
         if (OPERATORS.find(c) != std::string::npos)
@@ -131,7 +114,7 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
         return allowSingularTokens(c, allowed, "invalid token after word");
     case OPERATOR:
         if (DIGITS.find(c) != std::string::npos)
-            return Result<TokenType>(NUMBER);
+            return Result<TokenType>(NUMBERSTR);
         if (WORDS.find(c) != std::string::npos)
             return Result<TokenType>(TEXT);
         if (OPERATORS.find(c) != std::string::npos)
@@ -150,7 +133,7 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
         if (OPERATORS.find(c) != std::string::npos)
             return Result<TokenType>(OPERATOR);
         if (DIGITS.find(c) != std::string::npos)
-            return Result<TokenType>(NUMBER);
+            return Result<TokenType>(NUMBERSTR);
         if (WORDS.find(c) != std::string::npos)
             return Result<TokenType>(TEXT);
         allowed[ACCESSOR - 4] = NONE;
@@ -165,7 +148,7 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
         if (OPERATORS.find(c) != std::string::npos)
             return Result<TokenType>(OPERATOR);
         if (DIGITS.find(c) != std::string::npos)
-            return Result<TokenType>(NUMBER);
+            return Result<TokenType>(NUMBERSTR);
         if (WORDS.find(c) != std::string::npos)
             return Result<TokenType>(TEXT);
         allowed[ACCESSOR - 4] = NONE;
@@ -178,7 +161,7 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
         return allowSingularTokens(c, allowed, "expected value");
     case ARGEXPREND:
         /*if (DIGITS.find(c) != std::string::npos)
-            return Result<TokenType>(NUMBER);
+            return Result<TokenType>(NUMBERSTR);
         if (WORDS.find(c) != std::string::npos)
             return Result<TokenType>(TEXT);*/
         if (OPERATORS.find(c) != std::string::npos)
@@ -190,7 +173,7 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
         if (OPERATORS.find(c) != std::string::npos)
             return Result<TokenType>(OPERATOR);
         if (DIGITS.find(c) != std::string::npos)
-            return Result<TokenType>(NUMBER);
+            return Result<TokenType>(NUMBERSTR);
         if (WORDS.find(c) != std::string::npos)
             return Result<TokenType>(TEXT);
         allowed[PIPE - 4] = NONE;
@@ -207,7 +190,7 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
         if (OPERATORS.find(c) != std::string::npos)
             return Result<TokenType>(OPERATOR);
         if (DIGITS.find(c) != std::string::npos)
-            return Result<TokenType>(NUMBER);
+            return Result<TokenType>(NUMBERSTR);
         if (WORDS.find(c) != std::string::npos)
             return Result<TokenType>(TEXT);
         allowed[ACCESSOR - 4] = NONE;
@@ -227,7 +210,7 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
         if (OPERATORS.find(c) != std::string::npos)
             return Result<TokenType>(OPERATOR);
         if (DIGITS.find(c) != std::string::npos)
-            return Result<TokenType>(NUMBER);
+            return Result<TokenType>(NUMBERSTR);
         if (WORDS.find(c) != std::string::npos)
             return Result<TokenType>(TEXT);
         allowed[ACCESSOR - 4] = NONE;
@@ -266,32 +249,61 @@ Result<std::vector<Token>> tokenize(std::string str)
     std::string accumulated = "";
     TokenType accType = NONE;
     bool prevWhitespace = false;
+    bool inString = false;
     for (int i = 0; i < str.size(); i++)
     {
         char c = str[i];
-        Result<TokenType> result = getTokenType(c, accType, accumulated, prevWhitespace);
-        if (!result.error.empty())
+        // handle string
+        if (c == '"' && !inString)
         {
-            std::string msg = ("Column " + std::to_string(i + 1) + "\n" + result.error);
+            if (!accumulated.empty())
+                tokens.push_back(Token(accumulated, accType));
+            accumulated = "";
+            inString = true;
+            continue;
+        }
+        else if (c == '"' && inString && str[i - 1] != '\\')
+        {
+            inString = false;
+            // differenatiate between strs and numbers
+            tokens.push_back(Token('s' + accumulated, NUMBERSTR));
+            accumulated = "";
+            continue;
+        }
+        else if (inString)
+        {
+            if (c != '\\')
+                accumulated += c;
+            continue;
+        }
+        Result<TokenType> result = getTokenType(c, accType, accumulated, prevWhitespace);
+        if (!result.ok())
+        {
+            std::string msg = ("Column " + std::to_string(i + 1) + "\n" + result.getError());
             msg = "Near \"" + str.substr(std::max(0, i - 3), 5) + "\"\n" + msg;
             return Result<std::vector<Token>>(msg);
         }
-        if (result.value == NONE)
+        if (result.getValue() == NONE)
         {
             prevWhitespace = true;
             continue;
         }
         prevWhitespace = false;
-        if ((result.value != accType || SINGULARS.find(c) != std::string::npos) && accType != NONE && !accumulated.empty())
+        if ((result.getValue() != accType || SINGULARS.find(c) != std::string::npos) && accType != NONE && !accumulated.empty())
         {
             tokens.push_back(Token(accumulated, accType));
             accumulated = "";
         }
-        accType = result.value;
+        accType = result.getValue();
         accumulated += c;
     }
     if (!accumulated.empty())
+    {
+        // differentiate between numbers and strs
+        if (accType == NUMBERSTR)
+            accumulated = 'n' + accumulated;
         tokens.push_back(Token(accumulated, accType));
+    }
     return Result<std::vector<Token>>(tokens);
 }
 
@@ -309,7 +321,7 @@ enum Context
 
 const std::string CONTEXT[] = {"base", "expr", "operating", "delim", "arr", "indexpr", "ifexpr", "ctrlseq"};
 
-const std::string HELP[] = {"none", "number", "operator", "text", "accessor", "delimiter", "argexpstart", "argexprend",
+const std::string HELP[] = {"none", "numberstr", "operator", "text", "accessor", "delimiter", "argexpstart", "argexprend",
                             "indstart", "indend", "ctrlstart", "ctrlend", "pipe", "piperes", "spread", "end"};
 
 const std::string NODETYPES[] = {"leafvalue", "identifier", "call", "operation", "assignment", "index", "sequence",
@@ -369,10 +381,10 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 }
             }
             break;
-        case NUMBER:
-            // a regular number
+        case NUMBERSTR:
+            // a regular number or string
             if (cur)
-                return "unexpected number";
+                return "unexpected number or string";
             else
                 cur = new Node(Value(token));
             break;
@@ -615,15 +627,16 @@ int main(int argc, char *argv[])
         std::cin >> line;
         Result<std::vector<Token>> result = tokenize(line);
 
-        if (!result.error.empty())
+        if (!result.ok())
         {
-            std::cerr << "Tokenization Error: " << result.error << '\n';
+            std::cerr << "Tokenization Error: " << result.getError() << '\n';
             continue;
         }
-        std::cout << "token count: " << result.value.size() << '\n';
+        std::cout << "token count: " << result.getValue().size() << '\n';
         SequenceNode *program = new SequenceNode();
         int index = 0;
-        std::string error = createAST(state, result.value, index, program, BASE, false);
+        auto tokens = result.getValue();
+        std::string error = createAST(state, tokens, index, program, BASE, false);
         if (!error.empty())
         {
             std::cout << "Interpretation Error: " << error << '\n';

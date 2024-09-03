@@ -25,6 +25,7 @@ public:
     Node(Value value);
     Node(std::vector<Node *> &children);
     virtual Value getValue(const State &state);
+    virtual std::string resolve(State &state);
     void addChild(Node *child);
     NodeType getType() const;
     std::vector<Node *> getChildren() const;
