@@ -1,18 +1,49 @@
 #include "OperationNode.h"
 
-Value OperationNode::getValue(const State &state)
+std::string OperationNode::resolve(State &state)
 {
+    if (children.empty())
+        return "no operands";
+    for (auto child : children)
+    {
+        std::string error = child->resolve(state);
+        if (!error.empty())
+            return error;
+    }
+    Result<Value> result("failed to perform operation");
     switch (op)
     {
     case ADD:
-
+        if (children.size() == 2)
+            result = children[0]->getValue(state).add(children[1]->getValue(state));
+        else
+            result = children[0]->getValue(state);
+        break;
     case SUB:
-
+        if (children.size() == 2)
+            result = children[0]->getValue(state).add(children[1]->getValue(state));
+        else
+            result = children[0]->getValue(state).negate();
+        break;
     case MUL:
-
+        if (children.size() == 2)
+            result = children[0]->getValue(state).multiply(children[1]->getValue(state));
+        else
+            result = children[0]->getValue(state);
+        break;
+    case DIV:
+        if (children.size() == 2)
+            result = children[0]->getValue(state).divide(children[1]->getValue(state));
+        else
+            result = children[0]->getValue(state).reciprocate();
+        break;
     default:
-        return Value();
+        return "no operator specified";
     }
+    if (!result.ok())
+        return result.getError();
+    value = result.getValue();
+    return "";
 }
 
 OperationNode::OperationNode(Token &token)

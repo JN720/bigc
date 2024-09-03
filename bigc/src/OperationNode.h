@@ -20,7 +20,7 @@ enum Operation
 class OperationNode : public Node
 {
 public:
-    Value getValue(const State &state) override;
+    std::string resolve(State &state) override;
     OperationNode(Token &token);
 
 protected:

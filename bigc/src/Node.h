@@ -2,6 +2,7 @@
 #include <vector>
 #include "Value.h"
 #include "State.h"
+
 enum NodeType
 {
     N_LEAFVALUE,

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stack>
 #include <vector>
+#include "Result.h"
 #include "PipeNode.h"
 #include "SequenceNode.h"
 #include "Token.h"
@@ -11,7 +12,7 @@
 #include "BranchNode.h"
 #include "SpreadNode.h"
 #include "WrapperNode.h"
-#include "Result.h"
+#include "Array.h"
 
 const std::string OPERATORS = "+-*!/=><";
 const std::string DIGITS = "0123456789";
@@ -462,7 +463,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
 
         case INDSTART:
             // has to be an array
-            cur = new Node(Value("arr"));
+            cur = new Node(Value(new Array()));
             error = createAST(state, tokens, ++index, cur, ARR, piped);
             if (!error.empty())
                 return error;

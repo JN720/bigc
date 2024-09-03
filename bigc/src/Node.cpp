@@ -27,15 +27,15 @@ std::string Node::resolve(State &state)
 {
     if (state.implements(value.getType(), "iterable"))
     {
-        Array arr;
+        Array *arr = new Array();
         for (auto child : children)
         {
             std::string error = child->resolve(state);
             if (!error.empty())
                 return error;
-            arr.add(child->getValue(state));
+            arr->add(child->getValue(state));
         }
-        value = Value("arr", (void *)&arr);
+        value = Value(arr);
         return "";
     }
     else if (children.empty())

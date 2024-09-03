@@ -2,7 +2,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include "Value.h"
-
+#include "ClassDefinition.h"
 class State
 {
 public:
@@ -18,6 +18,8 @@ private:
     std::unordered_map<std::string, Value> variables;
     // the interfaces each type implements
     std::unordered_map<std::string, std::unordered_set<std::string>> types;
-    // whate ach interface must have
+    // what each interface must have
     std::unordered_map<std::string, std::unordered_set<std::string>> interfaces;
+    // class definitions
+    std::unordered_map<std::string, ClassDefinition *> classes;
 };

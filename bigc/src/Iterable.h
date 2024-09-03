@@ -4,7 +4,8 @@
 
 class Iterable
 {
+public:
     virtual std::string add(Value val);
-    virtual Result<> get(Value index);
-    virtual Result<> len();
+    virtual Result<Value> get(Value index);
+    virtual Result<Value> len();
 };

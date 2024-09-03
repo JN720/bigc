@@ -3,18 +3,22 @@
 std::string Array::add(Value val)
 {
     values.push_back(val);
+    return "";
 }
 
-Result<> Array::get(Value index)
+Result<Value> Array::get(Value index)
 {
-    if (index.getType() != "int")
-        return Result<>("index expression for array must be int");
-    return Result<>(values[*(int *)index.getValue()]);
+    Wildcard x;
+    if (auto i = std::get_if<int *>(&x))
+        return Result<Value>(values[**i]);
+    else if (auto i = std::get_if<long *>(&x))
+        return Result<Value>(values[**i]);
+    return Result<Value>("index expression for array must be integeric");
 }
 
-Result<> Array::len()
+Result<Value> Array::len()
 {
-    return Result<>(Value("int", (void *)values.size()));
+    return Result<Value>(Value(new int(values.size())));
 }
 
 Array::Array()
