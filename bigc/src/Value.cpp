@@ -1137,6 +1137,36 @@ Result<Value> Value::isGreaterThan(Value other)
     return Result<Value>(val);
 }
 
+Result<Value> Value::isLessThanEqual(Value other)
+{
+    auto lessThanResult = isLessThan(other);
+    if (!lessThanResult.ok())
+        return lessThanResult.getError();
+    auto lessThan = lessThanResult.getValue().getValue();
+    bool **isLessThan = std::get_if<bool *>(&lessThan);
+    auto equalResult = isEqual(other);
+    if (!equalResult.ok())
+        return equalResult.getError();
+    auto equal = equalResult.getValue().getValue();
+    bool **isEqual = std::get_if<bool *>(&equal);
+    return Result<Value>(Value(new bool(**isEqual || **isLessThan)));
+}
+
+Result<Value> Value::isGreaterThanEqual(Value other)
+{
+    auto greaterThanResult = isLessThan(other);
+    if (!greaterThanResult.ok())
+        return greaterThanResult.getError();
+    auto greaterThan = greaterThanResult.getValue().getValue();
+    bool **isGreaterThan = std::get_if<bool *>(&greaterThan);
+    auto equalResult = isEqual(other);
+    if (!equalResult.ok())
+        return equalResult.getError();
+    auto equal = equalResult.getValue().getValue();
+    bool **isEqual = std::get_if<bool *>(&equal);
+    return Result<Value>(Value(new bool(**isEqual || **isGreaterThan)));
+}
+
 Result<Value> Value::negate()
 {
     return Result<Value>("failed to negate");

@@ -53,6 +53,38 @@ std::string OperationNode::resolve(State &state)
         else
             result = children[0]->getValue(state).reciprocate();
         break;
+    case MOD:
+        if (children.size() == 2)
+            result = children[0]->getValue(state).modulo(children[1]->getValue(state));
+        break;
+    case EQ:
+        if (children.size() == 2)
+            result = children[0]->getValue(state).isEqual(children[1]->getValue(state));
+        break;
+    case NEQ:
+        if (children.size() == 2)
+            result = children[0]->getValue(state).isNotEqual(children[1]->getValue(state));
+        break;
+    case LT:
+        if (children.size() == 2)
+            result = children[0]->getValue(state).isLessThan(children[1]->getValue(state));
+        break;
+    case LTE:
+        if (children.size() == 2)
+            result = children[0]->getValue(state).isLessThanEqual(children[1]->getValue(state));
+        break;
+    case GT:
+        if (children.size() == 2)
+            result = children[0]->getValue(state).isGreaterThan(children[1]->getValue(state));
+        break;
+    case GTE:
+        if (children.size() == 2)
+            result = children[0]->getValue(state).isGreaterThanEqual(children[1]->getValue(state));
+        break;
+    case NOT:
+        if (children.size() == 1)
+            result = children[0]->getValue(state).negate();
+        break;
     default:
         return "no operator specified";
     }

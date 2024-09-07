@@ -44,6 +44,8 @@ public:
     Result<Value> isNotEqual(Value other);
     Result<Value> isLessThan(Value other);
     Result<Value> isGreaterThan(Value other);
+    Result<Value> isLessThanEqual(Value other);
+    Result<Value> isGreaterThanEqual(Value other);
     Result<Value> negate();
 
 protected:
