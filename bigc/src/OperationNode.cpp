@@ -1,4 +1,5 @@
 #include "OperationNode.h"
+#include "IdentifierNode.h"
 
 std::string OperationNode::resolve(State &state)
 {
@@ -13,6 +14,21 @@ std::string OperationNode::resolve(State &state)
     Result<Value> result("failed to perform operation");
     switch (op)
     {
+    case ASS:
+        if (children.size() != 2)
+            return "not enough operands for assignment";
+        for (auto child : children)
+        {
+            std::string error = child->resolve(state);
+            if (!error.empty())
+                return error;
+        }
+        if (dynamic_cast<IdentifierNode *>(children[0]))
+        {
+            state.setVariable(((IdentifierNode *)children[0])->getVariable(), children[1]->getValue(state));
+        }
+        value = children[1]->getValue(state);
+        return "";
     case ADD:
         if (children.size() == 2)
             result = children[0]->getValue(state).add(children[1]->getValue(state));

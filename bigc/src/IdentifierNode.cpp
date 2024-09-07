@@ -21,3 +21,13 @@ Value IdentifierNode::getValue(const State &state)
 {
     return state.getVariable(variable);
 }
+
+std::string IdentifierNode::resolve(State &state)
+{
+    return std::string();
+}
+
+std::string IdentifierNode::getVariable()
+{
+    return variable;
+}

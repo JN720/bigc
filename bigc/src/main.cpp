@@ -648,6 +648,13 @@ int main(int argc, char *argv[])
         }
         std::cout << "\n";
         printTree(*program);
+        std::cout << "\n";
+        program->resolve(state);
+        Value value = program->getChildren().back()->getValue(state);
+        Wildcard valueValue = value.getValue();
+        std::cout << "type: " << value.getType() << ' ' << '\n';
+        if (int **x = std::get_if<int *>(&valueValue))
+            std::cout << **x << '\n';
     }
     return 0;
 }

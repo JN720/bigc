@@ -3,6 +3,7 @@
 
 enum Operation
 {
+    ASS,
     ADD,
     SUB,
     MUL,
