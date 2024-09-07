@@ -27,7 +27,7 @@ std::string Node::resolve(State &state)
 {
     if (state.implements(value.getType(), "iterable"))
     {
-        Array *arr = new Array();
+        Array<Value> *arr = new Array<Value>();
         for (auto child : children)
         {
             std::string error = child->resolve(state);

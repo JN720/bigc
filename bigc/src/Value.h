@@ -2,15 +2,14 @@
 #include <string>
 #include "Token.h"
 #include <variant>
-#include "Result.h"
+#include "Iterable.h"
 
-class Array;
 class Node;
 class Object;
 
 /*
 how type signatures will work:
-fundamental types: int, str, float, double, char
+fundamental types: bool, int, str, float, double, char
 arrays: arr for dynamic and arr:int for typed arrays
 functions:
     fully dynamic: fn
@@ -21,10 +20,11 @@ functions:
     with spread: fn:void:(~int)
 
 */
+class Value;
 
-using Wildcard = std::variant<int *, long *, float *, double *, char *, std::string *, Array *, Node *, Object *>;
+using Wildcard = std::variant<bool *, int *, long *, float *, double *, char *, std::string *, Iterable<Value> *, Node *, Object *>;
 
-class Value
+class Value : public Hashable
 {
 public:
     Value();
@@ -34,11 +34,17 @@ public:
     Wildcard getValue();
     std::string getType();
     Result<Value> add(Value other);
-    Result<Value> negate();
+    Result<Value> inverse();
     Result<Value> subtract(Value other);
     Result<Value> multiply(Value other);
     Result<Value> reciprocate();
     Result<Value> divide(Value other);
+    Result<Value> modulo(Value other);
+    Result<Value> isEqual(Value other);
+    Result<Value> isNotEqual(Value other);
+    Result<Value> isLessThan(Value other);
+    Result<Value> isGreaterThan(Value other);
+    Result<Value> negate();
 
 protected:
     Wildcard value;

@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "Value.h"
+#include "Array.h"
 #include "State.h"
 
 enum NodeType

@@ -1,7 +1,6 @@
 #include <iostream>
 #include <stack>
 #include <vector>
-#include "Result.h"
 #include "PipeNode.h"
 #include "SequenceNode.h"
 #include "Token.h"
@@ -292,6 +291,9 @@ Result<std::vector<Token>> tokenize(std::string str)
         prevWhitespace = false;
         if ((result.getValue() != accType || SINGULARS.find(c) != std::string::npos) && accType != NONE && !accumulated.empty())
         {
+
+            if (accType == NUMBERSTR)
+                accumulated = 'n' + accumulated;
             tokens.push_back(Token(accumulated, accType));
             accumulated = "";
         }
@@ -463,7 +465,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
 
         case INDSTART:
             // has to be an array
-            cur = new Node(Value(new Array()));
+            cur = new Node(Value(new Array<Value>()));
             error = createAST(state, tokens, ++index, cur, ARR, piped);
             if (!error.empty())
                 return error;
@@ -640,7 +642,7 @@ int main(int argc, char *argv[])
         std::string error = createAST(state, tokens, index, program, BASE, false);
         if (!error.empty())
         {
-            std::cout << "Interpretation Error: " << error << '\n';
+            std::cerr << "Interpretation Error: " << error << '\n';
             printTree(*program);
             continue;
         }
