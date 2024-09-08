@@ -1,4 +1,7 @@
 #include "State.h"
+#include <unordered_set>
+
+const std::unordered_set<std::string> BASE_KEYWORDS({"if", "else"});
 
 State::State()
 {
@@ -16,7 +19,7 @@ Value State::getVariable(std::string name) const
 
 bool State::isKeyword(std::string word)
 {
-    return false;
+    return BASE_KEYWORDS.find(word) != BASE_KEYWORDS.end();
 }
 
 bool State::isFunction(std::string word)

@@ -40,7 +40,9 @@ Wildcard Value::getValue()
 
 std::string Value::getType()
 {
-    if (std::holds_alternative<int *>(value))
+    if (std::holds_alternative<bool *>(value))
+        return "bool";
+    else if (std::holds_alternative<int *>(value))
         return "int";
     else if (std::holds_alternative<float *>(value))
         return "float";

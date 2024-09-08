@@ -1,11 +1,11 @@
-#include "SequenceNode.h"
+#include "UnbranchNode.h"
 
-SequenceNode::SequenceNode()
+UnbranchNode::UnbranchNode()
 {
-    type = N_SEQUENCE;
+    type = N_UNBRANCH;
 }
 
-std::string SequenceNode::resolve(State &state)
+std::string UnbranchNode::resolve(State &state)
 {
     for (auto child : children)
     {

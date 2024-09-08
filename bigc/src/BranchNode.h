@@ -6,5 +6,5 @@ class BranchNode : public Node
 {
 public:
     BranchNode();
-    Value getValue(const State &state) override;
+    std::string resolve(State &state) override;
 };

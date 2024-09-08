@@ -11,6 +11,7 @@
 #include "BranchNode.h"
 #include "SpreadNode.h"
 #include "WrapperNode.h"
+#include "UnbranchNode.h"
 #include "Array.h"
 
 const std::string OPERATORS = "+-*!/=><";
@@ -35,8 +36,8 @@ Result<TokenType> allowSingularTokens(char c, TokenType allowed[12], std::string
 /* POST-CHARACTER MATRIX: x means disallowed
             a 0 + . , ( ) [ ] { } | & ~ ;
 NONE              x x   x   x x x x x   x
-TEXT          x                     x x
-NUMBERSTR      x x   x   x   x         x x
+TEXT                                x x
+NUMBERSTR     x x   x   x   x         x x
 ACCESSOR      x x x x x x x x x x x x x x
 DELIMITER         x x   x   x x x x     x
 ARGEXSTART        x x       x x x x     x
@@ -72,6 +73,21 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
 
     switch (prev)
     {
+    case END:
+        if (OPERATORS.find(c) != std::string::npos)
+            return Result<TokenType>(OPERATOR);
+        if (DIGITS.find(c) != std::string::npos)
+            return Result<TokenType>(NUMBERSTR);
+        if (WORDS.find(c) != std::string::npos)
+            return Result<TokenType>(TEXT);
+        allowed[ACCESSOR - 4] = NONE;
+        allowed[DELIMITER - 4] = NONE;
+        allowed[ARGEXPREND - 4] = NONE;
+        allowed[INDEND - 4] = NONE;
+        allowed[PIPE - 4] = NONE;
+        allowed[PIPERES - 4] = NONE;
+        return allowSingularTokens(c, allowed, "unexpected end of statement");
+
     case NONE:
         if (OPERATORS.find(c) != std::string::npos)
             return Result<TokenType>(OPERATOR);
@@ -121,7 +137,6 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
             return Result<TokenType>(OPERATOR);
         allowed[ARGEXPREND - 4] = NONE;
         allowed[INDEND - 4] = NONE;
-        allowed[CTRLSTART - 4] = NONE;
         allowed[CTRLEND - 4] = NONE;
         allowed[PIPE - 4] = NONE;
         return allowSingularTokens(c, allowed, "invalid token after operator");
@@ -237,7 +252,6 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
         allowed[SPREAD - 4] = NONE;
         allowed[END - 4] = NONE;
         return allowSingularTokens(c, allowed, "expected expression to spread");
-
     default:
         return Result<TokenType>("invalid token");
     }
@@ -319,16 +333,19 @@ enum Context
     ARR,
     INDEXPR,
     IFEXPR,
-    CTRLSEQ,
+    IFSEQ,
+    ELSEEXPR,
+    SEQ,
+    LOOPSEQ
 };
 
-const std::string CONTEXT[] = {"base", "expr", "operating", "delim", "arr", "indexpr", "ifexpr", "ctrlseq"};
+const std::string CONTEXT[] = {"base", "expr", "operating", "delim", "arr", "indexpr", "ifexpr", "ifseq", "elseexpr", "seq", "loopseq"};
 
 const std::string HELP[] = {"none", "numberstr", "operator", "text", "accessor", "delimiter", "argexpstart", "argexprend",
                             "indstart", "indend", "ctrlstart", "ctrlend", "pipe", "piperes", "spread", "end"};
 
 const std::string NODETYPES[] = {"leafvalue", "identifier", "call", "operation", "assignment", "index", "sequence",
-                                 "spread", "branch", "access", "pipe", "wrapper"};
+                                 "spread", "branch", "access", "pipe", "wrapper", "unbranch"};
 
 std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node *parent, Context context, bool piped)
 {
@@ -353,7 +370,11 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
             {
                 if (token.value == "if")
                 {
-                    error = createAST(state, tokens, ++index, parent, IFEXPR, piped);
+                    if (cur)
+                        return "unexpected if";
+                    // look for condition
+                    cur = new BranchNode();
+                    error = createAST(state, tokens, ++index, cur, IFEXPR, piped);
                     if (!error.empty())
                         return error;
                 }
@@ -499,23 +520,54 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
             {
                 if (!cur)
                     return "expected condition expression";
-                BranchNode *branch = new BranchNode();
                 // conditional expression
-                branch->addChild(cur);
-                cur = branch;
-                error = createAST(state, tokens, ++index, cur, CTRLSEQ, piped);
+                parent->addChild(cur);
+                error = createAST(state, tokens, ++index, parent, IFSEQ, piped);
+                if (!error.empty())
+                    return error;
+                return "";
+            }
+            // general sequence
+            else if (!cur)
+            {
+                cur = new SequenceNode();
+                error = createAST(state, tokens, ++index, cur, SEQ, piped);
                 if (!error.empty())
                     return error;
             }
-            return "unexpected {";
+            else
+                return "unexpected {";
+            break;
         case CTRLEND:
-            if (context == CTRLSEQ)
+            if (context == IFSEQ)
+            {
+                if (cur)
+                    parent->addChild(cur);
+                // check for else and if so, add an unbramch
+                if (tokens.size() > index + 2 && tokens[index + 1].type == TEXT)
+                {
+                    if (tokens[index + 1].value == "else" && tokens[index + 2].type == CTRLSTART)
+                    {
+                        UnbranchNode *unbranch = new UnbranchNode();
+                        // add the unbranch at the end of the branch
+                        parent->addChild(unbranch);
+                        error = createAST(state, tokens, ++index, unbranch, SEQ, piped);
+                        if (!error.empty())
+                            return error;
+                    }
+                }
+                return "";
+            }
+            // end of general sequence
+            else if (context == SEQ)
             {
                 if (cur)
                     parent->addChild(cur);
                 return "";
             }
-            return "unexpected }";
+            else
+                return "unexpected }";
+            break;
         case PIPE:
             if (true)
             {
@@ -576,6 +628,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
             }
             else
                 return "unexpected ~";
+            break;
         case END:
             if (!cur && context == OPERATING)
                 return "unexpected ;";
@@ -586,6 +639,12 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 index--;
                 return "";
             }
+            else if (context == SEQ || context == IFSEQ)
+            {
+                if (cur)
+                    parent->addChild(cur);
+                cur = nullptr;
+            }
             // proper new statement
             else if (context == BASE)
             {
@@ -594,7 +653,9 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 cur = nullptr;
                 break;
             }
-            return "unexpected end of statement";
+            else
+                return "unexpected end of statement";
+            break;
         default:
             return "that wasn't supposed to happen";
         }
@@ -628,11 +689,13 @@ int main(int argc, char *argv[])
     {
         std::cout << ">> ";
         std::cin >> line;
+        if (line == "exit")
+            break;
         Result<std::vector<Token>> result = tokenize(line);
 
         if (!result.ok())
         {
-            std::cerr << "Tokenization Error: " << result.getError() << '\n';
+            std::cout << "Tokenization Error: " << result.getError() << '\n';
             continue;
         }
         std::cout << "token count: " << result.getValue().size() << '\n';
@@ -642,7 +705,7 @@ int main(int argc, char *argv[])
         std::string error = createAST(state, tokens, index, program, BASE, false);
         if (!error.empty())
         {
-            std::cerr << "Interpretation Error: " << error << '\n';
+            std::cout << "Interpretation Error: " << error << '\n';
             printTree(*program);
             continue;
         }
