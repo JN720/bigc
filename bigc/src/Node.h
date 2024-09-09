@@ -17,7 +17,8 @@ enum NodeType
     N_ACCESS,
     N_PIPE,
     N_WRAPPER,
-    N_UNBRANCH
+    N_UNBRANCH,
+    N_LOOP
 };
 
 class Node

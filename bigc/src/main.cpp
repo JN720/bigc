@@ -336,16 +336,16 @@ enum Context
     IFSEQ,
     ELSEEXPR,
     SEQ,
-    LOOPSEQ
+    LOOPEXPR
 };
 
-const std::string CONTEXT[] = {"base", "expr", "operating", "delim", "arr", "indexpr", "ifexpr", "ifseq", "elseexpr", "seq", "loopseq"};
+const std::string CONTEXT[] = {"base", "expr", "operating", "delim", "arr", "indexpr", "ifexpr", "ifseq", "elseexpr", "seq", "loopexpr"};
 
 const std::string HELP[] = {"none", "numberstr", "operator", "text", "accessor", "delimiter", "argexpstart", "argexprend",
                             "indstart", "indend", "ctrlstart", "ctrlend", "pipe", "piperes", "spread", "end"};
 
 const std::string NODETYPES[] = {"leafvalue", "identifier", "call", "operation", "assignment", "index", "sequence",
-                                 "spread", "branch", "access", "pipe", "wrapper", "unbranch"};
+                                 "spread", "branch", "access", "pipe", "wrapper", "unbranch", "loop"};
 
 std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node *parent, Context context, bool piped)
 {
@@ -375,6 +375,16 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                     // look for condition
                     cur = new BranchNode();
                     error = createAST(state, tokens, ++index, cur, IFEXPR, piped);
+                    if (!error.empty())
+                        return error;
+                }
+                else if (token.value == "while")
+                {
+                    if (cur)
+                        return "unexpected while";
+                    // look for condition
+                    cur = new BranchNode();
+                    error = createAST(state, tokens, ++index, cur, LOOPEXPR, piped);
                     if (!error.empty())
                         return error;
                 }
@@ -516,13 +526,13 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 return "unexpected end of array";
             break;
         case CTRLSTART:
-            if (context == IFEXPR)
+            if (context == IFEXPR || context == LOOPEXPR)
             {
                 if (!cur)
                     return "expected condition expression";
                 // conditional expression
                 parent->addChild(cur);
-                error = createAST(state, tokens, ++index, parent, IFSEQ, piped);
+                error = createAST(state, tokens, ++index, parent, context == IFEXPR ? IFSEQ : SEQ, piped);
                 if (!error.empty())
                     return error;
                 return "";
