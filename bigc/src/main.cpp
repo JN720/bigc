@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <stack>
 #include <vector>
 #include "PipeNode.h"
@@ -12,6 +13,7 @@
 #include "SpreadNode.h"
 #include "WrapperNode.h"
 #include "UnbranchNode.h"
+#include "LoopNode.h"
 #include "Array.h"
 
 const std::string OPERATORS = "+-*!/=><";
@@ -300,6 +302,15 @@ Result<std::vector<Token>> tokenize(std::string str)
         if (result.getValue() == NONE)
         {
             prevWhitespace = true;
+            if (!accumulated.empty())
+            {
+                if (accType == NUMBERSTR)
+                {
+                    accumulated = 'n' + accumulated;
+                }
+                tokens.push_back(Token(accumulated, accType));
+                accumulated = "";
+            }
             continue;
         }
         prevWhitespace = false;
@@ -383,7 +394,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                     if (cur)
                         return "unexpected while";
                     // look for condition
-                    cur = new BranchNode();
+                    cur = new LoopNode();
                     error = createAST(state, tokens, ++index, cur, LOOPEXPR, piped);
                     if (!error.empty())
                         return error;
@@ -535,6 +546,13 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 error = createAST(state, tokens, ++index, parent, context == IFEXPR ? IFSEQ : SEQ, piped);
                 if (!error.empty())
                     return error;
+                return "";
+            }
+            else if (context == OPERATING)
+            {
+                if (cur)
+                    parent->addChild(cur);
+                --index;
                 return "";
             }
             // general sequence
@@ -689,11 +707,72 @@ void printTree(const Node &node, int depth = 0)
     }
 }
 
+void printValue(Value value)
+{
+    std::cout << "type: " << value.getType() << ' ' << '\n';
+    Wildcard val = value.getValue();
+    if (bool **x = std::get_if<bool *>(&val))
+        std::cout << (**x ? "true" : "false") << '\n';
+    else if (int **x = std::get_if<int *>(&val))
+        std::cout << **x << '\n';
+    else if (long **x = std::get_if<long *>(&val))
+        std::cout << **x << '\n';
+    else if (float **x = std::get_if<float *>(&val))
+        std::cout << **x << '\n';
+    else if (double **x = std::get_if<double *>(&val))
+        std::cout << **x << '\n';
+    else if (char **x = std::get_if<char *>(&val))
+        std::cout << **x << '\n';
+    else if (std::string **x = std::get_if<std::string *>(&val))
+        std::cout << **x << '\n';
+    else if (Iterable<Value> **x = std::get_if<Iterable<Value> *>(&val))
+        std::cout << "arr" << '\n';
+    else
+        std::cout << "no print implemented" << '\n';
+}
+
 int main(int argc, char *argv[])
 {
+    State state;
+
+    if (argc == 2)
+    {
+        std::ifstream file(argv[1]);
+        std::string programText;
+        std::string text;
+        while (file >> text)
+        {
+            programText += ' ' + text + ' ';
+        }
+        Result<std::vector<Token>> result = tokenize(programText);
+
+        if (!result.ok())
+        {
+            std::cout << "Tokenization Error: " << result.getError() << '\n';
+            return 0;
+        }
+        std::cout << "token count: " << result.getValue().size() << '\n';
+        SequenceNode *program = new SequenceNode();
+        int index = 0;
+        auto tokens = result.getValue();
+        std::string error = createAST(state, tokens, index, program, BASE, false);
+        if (!error.empty())
+        {
+            std::cout << "Interpretation Error: " << error << '\n';
+            printTree(*program);
+            return 0;
+        }
+        std::cout << "\n";
+        printTree(*program);
+        std::cout << "\n";
+        program->resolve(state);
+        Value value = program->getChildren().back()->getValue(state);
+        Wildcard valueValue = value.getValue();
+        printValue(value);
+        return 0;
+    }
     std::string line = "";
 
-    State state;
     std::cout << "Welcome to the Big C Lemur Engine!\n\n";
     while (true)
     {
