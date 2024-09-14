@@ -7,12 +7,13 @@ SequenceNode::SequenceNode()
 
 std::string SequenceNode::resolve(State &state)
 {
-    for (auto child : children)
+    for (int i = 0; i < children.size(); i++)
     {
-        std::string error = child->resolve(state);
+        std::string error = children[i]->resolve(state);
         if (!error.empty())
-            return error;
+            return "in statement " + std::to_string(i + 1) + " of sequence:\n" + error;
     }
-    value = children.back()->getValue(state);
+    if (children.size())
+        value = children.back()->getValue(state);
     return "";
 }

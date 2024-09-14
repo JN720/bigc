@@ -12,9 +12,11 @@ void State::setVariable(std::string name, Value value)
     variables[name] = value;
 }
 
-Value State::getVariable(std::string name) const
+Result<Value> State::getVariable(std::string name) const
 {
-    return variables.at(name);
+    if (variables.find(name) == variables.end())
+        return Result<Value>("undefined variable");
+    return Result<Value>(variables.at(name));
 }
 
 bool State::isKeyword(std::string word)

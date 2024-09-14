@@ -17,14 +17,13 @@ void IdentifierNode::makeCall()
     type = N_CALL;
 }
 
-Value IdentifierNode::getValue(const State &state)
-{
-    return state.getVariable(variable);
-}
-
 std::string IdentifierNode::resolve(State &state)
 {
-    return std::string();
+    auto result = state.getVariable(variable);
+    if (!result.ok())
+        return "variable not found: '" + variable + '\'';
+    value = result.getValue();
+    return "";
 }
 
 std::string IdentifierNode::getVariable()

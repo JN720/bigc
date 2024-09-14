@@ -266,6 +266,7 @@ Result<std::vector<Token>> tokenize(std::string str)
     TokenType accType = NONE;
     bool prevWhitespace = false;
     bool inString = false;
+    std::cout << str.size();
     for (int i = 0; i < str.size(); i++)
     {
         char c = str[i];
@@ -356,7 +357,7 @@ const std::string HELP[] = {"none", "numberstr", "operator", "text", "accessor",
                             "indstart", "indend", "ctrlstart", "ctrlend", "pipe", "piperes", "spread", "end"};
 
 const std::string NODETYPES[] = {"leafvalue", "identifier", "call", "operation", "assignment", "index", "sequence",
-                                 "spread", "branch", "access", "pipe", "wrapper", "unbranch", "loop"};
+                                 "spread", "branch", "access", "pipe", "wrapper", "unbranch", "loop", "return"};
 
 std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node *parent, Context context, bool piped)
 {
@@ -712,7 +713,7 @@ void printValue(Value value)
     std::cout << "type: " << value.getType() << ' ' << '\n';
     Wildcard val = value.getValue();
     if (bool **x = std::get_if<bool *>(&val))
-        std::cout << (**x ? "true" : "false") << '\n';
+        std::cout << ((**x) ? "true" : "false") << '\n';
     else if (int **x = std::get_if<int *>(&val))
         std::cout << **x << '\n';
     else if (long **x = std::get_if<long *>(&val))
@@ -737,7 +738,16 @@ int main(int argc, char *argv[])
 
     if (argc == 2)
     {
-        std::ifstream file(argv[1]);
+        std::ifstream file;
+        try
+        {
+            file = std::ifstream(argv[1]);
+        }
+        catch (...)
+        {
+            std::cout << "failed to find file";
+            return 0;
+        }
         std::string programText;
         std::string text;
         while (file >> text)
@@ -765,7 +775,13 @@ int main(int argc, char *argv[])
         std::cout << "\n";
         printTree(*program);
         std::cout << "\n";
-        program->resolve(state);
+        error = program->resolve(state);
+        if (!error.empty())
+        {
+            std::cout << "Runtime Error:\n"
+                      << error << '\n';
+            return 0;
+        }
         Value value = program->getChildren().back()->getValue(state);
         Wildcard valueValue = value.getValue();
         printValue(value);

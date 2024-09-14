@@ -50,7 +50,7 @@ std::string LoopNode::resolve(State &state)
         {
             std::string error = children[i]->resolve(state);
             if (!error.empty())
-                return error;
+                return "during statement " + std::to_string(i) + " of loop sequence:\n" + error;
         }
         value = children.back()->getValue(state);
     }

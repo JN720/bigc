@@ -8,7 +8,7 @@ class State
 public:
     State();
     void setVariable(std::string name, Value value);
-    Value getVariable(std::string name) const;
+    Result<Value> getVariable(std::string name) const;
     bool isKeyword(std::string word);
     bool isFunction(std::string word);
     bool implements(std::string type, std::string interface);

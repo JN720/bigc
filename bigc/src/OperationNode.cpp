@@ -5,24 +5,27 @@ std::string OperationNode::resolve(State &state)
 {
     if (children.empty())
         return "no operands";
-    for (auto child : children)
+    // do not do this for assignment
+    if (op != ASS)
     {
-        std::string error = child->resolve(state);
-        if (!error.empty())
-            return error;
-    }
-    Result<Value> result("failed to perform operation");
-    switch (op)
-    {
-    case ASS:
-        if (children.size() != 2)
-            return "not enough operands for assignment";
         for (auto child : children)
         {
             std::string error = child->resolve(state);
             if (!error.empty())
-                return error;
+                return "during operation:\n" + error;
         }
+    }
+    Result<Value> result("failed to perform operation");
+    std::string error;
+    switch (op)
+    {
+    case ASS:
+        if (children.size() != 2)
+            return "invalid number of operands for assignment: '" + std::to_string(children.size()) + '\'';
+        // resolve right hand side of assignment operator
+        error = children[1]->resolve(state);
+        if (!error.empty())
+            return "during assignment:\n" + error;
         if (dynamic_cast<IdentifierNode *>(children[0]))
         {
             state.setVariable(((IdentifierNode *)children[0])->getVariable(), children[1]->getValue(state));
@@ -37,7 +40,7 @@ std::string OperationNode::resolve(State &state)
         break;
     case SUB:
         if (children.size() == 2)
-            result = children[0]->getValue(state).add(children[1]->getValue(state));
+            result = children[0]->getValue(state).subtract(children[1]->getValue(state));
         else
             result = children[0]->getValue(state).negate();
         break;
@@ -89,7 +92,7 @@ std::string OperationNode::resolve(State &state)
         return "no operator specified";
     }
     if (!result.ok())
-        return result.getError();
+        return "during operation:\n" + result.getError();
     value = result.getValue();
     return "";
 }
@@ -98,7 +101,9 @@ OperationNode::OperationNode(Token &token)
 {
     if (token.type != OPERATOR)
         throw "rip";
-    if (token.value == "+")
+    if (token.value == "=")
+        op = ASS;
+    else if (token.value == "+")
         op = ADD;
     else if (token.value == "-")
         op = SUB;
