@@ -1,5 +1,4 @@
 #include "BranchNode.h"
-#include "UnbranchNode.h"
 
 BranchNode::BranchNode()
 {
@@ -8,11 +7,11 @@ BranchNode::BranchNode()
 
 std::string BranchNode::resolve(State &state)
 {
-    if (children.size() < 1)
-        return "branch requires a condition";
+    if (children.size() < 2)
+        return "branch requires a condition and sequence";
     std::string error = children[0]->resolve(state);
     if (!error.empty())
-        return error;
+        return "in branch condition:\n" + error;
     Value conditionVal = children[0]->getValue(state);
     Wildcard condition = conditionVal.getValue();
     bool isTrue = false;
@@ -22,7 +21,7 @@ std::string BranchNode::resolve(State &state)
         {
             auto result = (*x)->len();
             if (!result.ok())
-                return result.getError();
+                return "in branch condition:\n" + result.getError();
             condition = result.getValue().getValue();
         }
 
@@ -43,37 +42,26 @@ std::string BranchNode::resolve(State &state)
     }
     if (isTrue)
     {
-        // if we have an else
-        if (dynamic_cast<UnbranchNode *>(children.back()))
-        {
-            for (int i = 1; i < children.size() - 1; i++)
-            {
-                std::string error = children[i]->resolve(state);
-                if (!error.empty())
-                    return error;
-            }
-            value = children[children.size() - 2]->getValue(state);
-            return "";
-        }
-        else
-        {
-            for (int i = 1; i < children.size(); i++)
-            {
-                std::string error = children[i]->resolve(state);
-                if (!error.empty())
-                    return error;
-            }
-            value = children.back()->getValue(state);
-            return "";
-        }
+        // ignore the else portion
+        std::string error = children[1]->resolve(state);
+        if (!error.empty())
+            return "in branch sequence:\n" + error;
+        value = children[1]->getValue(state);
+        return "";
     }
     else
     {
         // only the else condition
-        if (dynamic_cast<UnbranchNode *>(children.back()))
+        if (children.size() == 3)
         {
-            children.back()->resolve(state);
-            value = children.back()->getValue(state);
+            children[2]->resolve(state);
+            value = children[2]->getValue(state);
+            return "";
+        }
+        // if there is no else statement it is false
+        else
+        {
+            value = Value(new bool(false));
             return "";
         }
     }

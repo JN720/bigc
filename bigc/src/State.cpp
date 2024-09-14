@@ -1,7 +1,7 @@
 #include "State.h"
 #include <unordered_set>
 
-const std::unordered_set<std::string> BASE_KEYWORDS({"if", "else", "while"});
+const std::unordered_set<std::string> BASE_KEYWORDS({"if", "else", "while", "funion"});
 
 State::State()
 {

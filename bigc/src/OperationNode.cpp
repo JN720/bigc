@@ -26,10 +26,12 @@ std::string OperationNode::resolve(State &state)
         error = children[1]->resolve(state);
         if (!error.empty())
             return "during assignment:\n" + error;
-        if (dynamic_cast<IdentifierNode *>(children[0]))
+        if (children[0]->getType() == N_IDENTIFIER && dynamic_cast<IdentifierNode *>(children[0]))
         {
             state.setVariable(((IdentifierNode *)children[0])->getVariable(), children[1]->getValue(state));
         }
+        else
+            return "cannot assign to non-identifier";
         value = children[1]->getValue(state);
         return "";
     case ADD:

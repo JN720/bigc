@@ -12,8 +12,8 @@
 #include "BranchNode.h"
 #include "SpreadNode.h"
 #include "WrapperNode.h"
-#include "UnbranchNode.h"
 #include "LoopNode.h"
+#include "FunctionNode.h"
 #include "Array.h"
 
 const std::string OPERATORS = "+-*!/=><";
@@ -179,8 +179,9 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
     case ARGEXPREND:
         /*if (DIGITS.find(c) != std::string::npos)
             return Result<TokenType>(NUMBERSTR);
+        */
         if (WORDS.find(c) != std::string::npos)
-            return Result<TokenType>(TEXT);*/
+            return Result<TokenType>(TEXT);
         if (OPERATORS.find(c) != std::string::npos)
             return Result<TokenType>(OPERATOR);
         allowed[PIPERES - 4] = NONE;
@@ -220,6 +221,8 @@ Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool pre
     case CTRLEND:
         if (OPERATORS.find(c) != std::string::npos)
             return Result<TokenType>(OPERATOR);
+        if (WORDS.find(c) != std::string::npos)
+            return Result<TokenType>(TEXT);
         allowed[PIPERES - 4] = NONE;
         allowed[SPREAD - 4] = NONE;
         return allowSingularTokens(c, allowed, "unexpected post-expression token");
@@ -266,7 +269,6 @@ Result<std::vector<Token>> tokenize(std::string str)
     TokenType accType = NONE;
     bool prevWhitespace = false;
     bool inString = false;
-    std::cout << str.size();
     for (int i = 0; i < str.size(); i++)
     {
         char c = str[i];
@@ -348,10 +350,11 @@ enum Context
     IFSEQ,
     ELSEEXPR,
     SEQ,
-    LOOPEXPR
+    LOOPEXPR,
+    FUNDEFARGS
 };
 
-const std::string CONTEXT[] = {"base", "expr", "operating", "delim", "arr", "indexpr", "ifexpr", "ifseq", "elseexpr", "seq", "loopexpr"};
+const std::string CONTEXT[] = {"base", "expr", "operating", "delim", "arr", "indexpr", "ifexpr", "ifseq", "elseexpr", "seq", "loopexpr", "fundefargs"};
 
 const std::string HELP[] = {"none", "numberstr", "operator", "text", "accessor", "delimiter", "argexpstart", "argexprend",
                             "indstart", "indend", "ctrlstart", "ctrlend", "pipe", "piperes", "spread", "end"};
@@ -397,6 +400,15 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                     // look for condition
                     cur = new LoopNode();
                     error = createAST(state, tokens, ++index, cur, LOOPEXPR, piped);
+                    if (!error.empty())
+                        return error;
+                }
+                else if (token.value == "funion")
+                {
+                    if (cur)
+                        return "unexpected function definition";
+                    cur = new FunctionNode();
+                    error = createAST(state, tokens, ++index, cur, FUNDEFARGS, piped);
                     if (!error.empty())
                         return error;
                 }
@@ -538,15 +550,57 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 return "unexpected end of array";
             break;
         case CTRLSTART:
-            if (context == IFEXPR || context == LOOPEXPR)
+            // start of a function
+            if (context == FUNDEFARGS)
+            {
+                if (cur)
+                    parent->addChild(cur);
+                SequenceNode *funcseq = new SequenceNode();
+                parent->addChild(funcseq);
+                createAST(state, tokens, ++index, funcseq, SEQ, piped);
+                if (!error.empty())
+                    return error;
+                return "";
+            }
+            else if (context == LOOPEXPR)
+            {
+                if (cur)
+                    parent->addChild(cur);
+                SequenceNode *loop = new SequenceNode();
+                parent->addChild(loop);
+                // the sequence for the loop
+                error = createAST(state, tokens, ++index, loop, SEQ, piped);
+                if (!error.empty())
+                    return error;
+                return "";
+            }
+            else if (context == IFEXPR)
             {
                 if (!cur)
                     return "expected condition expression";
                 // conditional expression
-                parent->addChild(cur);
-                error = createAST(state, tokens, ++index, parent, context == IFEXPR ? IFSEQ : SEQ, piped);
+                SequenceNode *ifseq = new SequenceNode();
+                parent->addChild(ifseq);
+                error = createAST(state, tokens, ++index, ifseq, IFSEQ, piped);
                 if (!error.empty())
                     return error;
+                // after the sequence ends we will have hit the ctrlend
+                // there is no kickback so we are on the }
+                // check for else and if so, add an unbramch
+                if (tokens.size() > index + 2 && tokens[index + 1].type == TEXT)
+                {
+                    if (tokens[index + 1].value == "else" && tokens[index + 2].type == CTRLSTART)
+                    {
+                        std::cout << "elseasting\n";
+                        SequenceNode *elseseq = new SequenceNode();
+                        // add the else sequence after the if sequence on the branch
+                        parent->addChild(elseseq);
+                        index += 2;
+                        error = createAST(state, tokens, ++index, elseseq, IFSEQ, piped);
+                        if (!error.empty())
+                            return error;
+                    }
+                }
                 return "";
             }
             else if (context == OPERATING)
@@ -572,19 +626,6 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
             {
                 if (cur)
                     parent->addChild(cur);
-                // check for else and if so, add an unbramch
-                if (tokens.size() > index + 2 && tokens[index + 1].type == TEXT)
-                {
-                    if (tokens[index + 1].value == "else" && tokens[index + 2].type == CTRLSTART)
-                    {
-                        UnbranchNode *unbranch = new UnbranchNode();
-                        // add the unbranch at the end of the branch
-                        parent->addChild(unbranch);
-                        error = createAST(state, tokens, ++index, unbranch, SEQ, piped);
-                        if (!error.empty())
-                            return error;
-                    }
-                }
                 return "";
             }
             // end of general sequence
@@ -712,6 +753,10 @@ void printValue(Value value)
 {
     std::cout << "type: " << value.getType() << ' ' << '\n';
     Wildcard val = value.getValue();
+    if (value.getType() == "nil")
+    {
+        std::cout << "nil\n";
+    }
     if (bool **x = std::get_if<bool *>(&val))
         std::cout << ((**x) ? "true" : "false") << '\n';
     else if (int **x = std::get_if<int *>(&val))

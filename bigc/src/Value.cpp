@@ -833,17 +833,17 @@ Result<Value> Value::modulo(Value other)
     {
         if (int **y = std::get_if<int *>(&value))
         {
-            val = new int(**x % **y);
+            val = new int(**y % **x);
             return Result<Value>(val);
         }
         else if (long **y = std::get_if<long *>(&value))
         {
-            val = new long(**x % **y);
+            val = new long(**y % **x);
             return Result<Value>(val);
         }
         else if (char **y = std::get_if<char *>(&value))
         {
-            val = new int(**x % **y);
+            val = new int(**y % **x);
             return Result<Value>(val);
         }
         else
@@ -853,17 +853,17 @@ Result<Value> Value::modulo(Value other)
     {
         if (int **y = std::get_if<int *>(&value))
         {
-            val = new long(**x % **y);
+            val = new long(**y % **x);
             return Result<Value>(val);
         }
         else if (long **y = std::get_if<long *>(&value))
         {
-            val = new long(**x % **y);
+            val = new long(**y % **x);
             return Result<Value>(val);
         }
         else if (char **y = std::get_if<char *>(&value))
         {
-            val = new long(**x % **y);
+            val = new long(**y % **x);
             return Result<Value>(val);
         }
         else
@@ -873,17 +873,17 @@ Result<Value> Value::modulo(Value other)
     {
         if (int **y = std::get_if<int *>(&value))
         {
-            val = new int(**x % **y);
+            val = new int(**y % **x);
             return Result<Value>(val);
         }
         else if (long **y = std::get_if<long *>(&value))
         {
-            val = new long(**x % **y);
+            val = new long(**y % **x);
             return Result<Value>(val);
         }
         else if (char **y = std::get_if<char *>(&value))
         {
-            val = new char(**x % **y);
+            val = new char(**y % **x);
             return Result<Value>(val);
         }
         else
@@ -1009,17 +1009,17 @@ Result<Value> Value::isLessThan(Value other)
     {
         if (int **y = std::get_if<int *>(&value))
         {
-            val = new bool(**x < **y);
+            val = new bool(**y < **x);
             return Result<Value>(val);
         }
         else if (long **y = std::get_if<long *>(&value))
         {
-            val = new bool(**x < **y);
+            val = new bool(**y < **x);
             return Result<Value>(val);
         }
         else if (char **y = std::get_if<char *>(&value))
         {
-            val = new bool(**x < **y);
+            val = new bool(**y < **x);
             return Result<Value>(val);
         }
         else
@@ -1029,17 +1029,17 @@ Result<Value> Value::isLessThan(Value other)
     {
         if (int **y = std::get_if<int *>(&value))
         {
-            val = new bool(**x < **y);
+            val = new bool(**y < **x);
             return Result<Value>(val);
         }
         else if (long **y = std::get_if<long *>(&value))
         {
-            val = new bool(**x < **y);
+            val = new bool(**y < **x);
             return Result<Value>(val);
         }
         else if (char **y = std::get_if<char *>(&value))
         {
-            val = new bool(**x < **y);
+            val = new bool(**y < **x);
             return Result<Value>(val);
         }
         else
@@ -1049,17 +1049,17 @@ Result<Value> Value::isLessThan(Value other)
     {
         if (int **y = std::get_if<int *>(&value))
         {
-            val = new bool(**x < **y);
+            val = new bool(**y < **x);
             return Result<Value>(val);
         }
         else if (long **y = std::get_if<long *>(&value))
         {
-            val = new bool(**x < **y);
+            val = new bool(**y < **x);
             return Result<Value>(val);
         }
         else if (char **y = std::get_if<char *>(&value))
         {
-            val = new bool(**x < **y);
+            val = new bool(**y < **x);
             return Result<Value>(val);
         }
         else
@@ -1069,12 +1069,12 @@ Result<Value> Value::isLessThan(Value other)
     {
         if (float **y = std::get_if<float *>(&value))
         {
-            val = new bool(**x < **y);
+            val = new bool(**y < **x);
             return Result<Value>(val);
         }
         else if (double **y = std::get_if<double *>(&value))
         {
-            val = new bool(**x < **y);
+            val = new bool(**y < **x);
             return Result<Value>(val);
         }
         else
@@ -1084,12 +1084,12 @@ Result<Value> Value::isLessThan(Value other)
     {
         if (float **y = std::get_if<float *>(&value))
         {
-            val = new bool(**x < **y);
+            val = new bool(**y < **x);
             return Result<Value>(val);
         }
         else if (double **y = std::get_if<double *>(&value))
         {
-            val = new bool(**x < **y);
+            val = new bool(**y < **x);
             return Result<Value>(val);
         }
         else

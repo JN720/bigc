@@ -7,16 +7,20 @@ LoopNode::LoopNode()
 
 std::string LoopNode::resolve(State &state)
 {
-    if (children.size() < 1)
-        return "loop requires a condition";
-    std::string error = children[0]->resolve(state);
-    if (!error.empty())
-        return error;
-    Value conditionVal = children[0]->getValue(state);
-    Wildcard condition = conditionVal.getValue();
-    bool isTrue = true;
-    while (isTrue)
+    if (children.size() != 2)
+        return "loop requires a condition and a sequence";
+    // if the loop does not execute let the value be false
+    value = Value(new bool(false));
+    while (true)
     {
+        // get condition
+        std::string error = children[0]->resolve(state);
+        if (!error.empty())
+            return error;
+        Value conditionVal = children[0]->getValue(state);
+        Wildcard condition = conditionVal.getValue();
+        bool isTrue = true;
+        // check condition value
         if (conditionVal.getType() != "nil")
         {
             if (Iterable<Value> **x = std::get_if<Iterable<Value> *>(&condition))
@@ -45,15 +49,13 @@ std::string LoopNode::resolve(State &state)
         else
             isTrue = false;
         if (!isTrue)
-            break;
-        for (int i = 1; i < children.size(); i++)
-        {
-            std::string error = children[i]->resolve(state);
-            if (!error.empty())
-                return "during statement " + std::to_string(i) + " of loop sequence:\n" + error;
-        }
-        value = children.back()->getValue(state);
+            return "";
+        // if the condition is satisfied then executre sequence
+        error = children[1]->resolve(state);
+        if (!error.empty())
+            return "during loop:\n" + error;
+        value = children[1]->getValue(state);
     }
 
-    return "failed to handle branch";
+    return "failed to handle loop";
 }
