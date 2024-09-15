@@ -2,21 +2,37 @@
 #include <unordered_set>
 
 const std::unordered_set<std::string> BASE_KEYWORDS({"if", "else", "while", "funion"});
+const std::unordered_set<std::string> FUNDAMENTAL_TYPES({"int", "char", "long", "str", "float", "double", "arr", "fn"});
 
 State::State()
 {
+    states.push_front(StateFrame());
 }
 
 void State::setVariable(std::string name, Value value)
 {
-    variables[name] = value;
+    // search for existing variable
+    for (StateFrame state : states)
+    {
+        if (state.getVariable(name).ok())
+        {
+            state.setVariable(name, value);
+            return;
+        }
+    }
+    // if none exists, add it to the current scope
+    states.front().setVariable(name, value);
 }
 
 Result<Value> State::getVariable(std::string name) const
 {
-    if (variables.find(name) == variables.end())
-        return Result<Value>("undefined variable");
-    return Result<Value>(variables.at(name));
+    for (StateFrame state : states)
+    {
+        Result<Value> result = state.getVariable(name);
+        if (result.ok())
+            return result;
+    }
+    return Result<Value>("undefined variable");
 }
 
 bool State::isKeyword(std::string word)
@@ -24,12 +40,36 @@ bool State::isKeyword(std::string word)
     return BASE_KEYWORDS.find(word) != BASE_KEYWORDS.end();
 }
 
-bool State::isFunction(std::string word)
+bool State::isType(std::string word)
 {
+    if (FUNDAMENTAL_TYPES.find(word) != FUNDAMENTAL_TYPES.end())
+        return true;
+    for (StateFrame state : states)
+    {
+        if (state.isType(word))
+            return true;
+    }
     return false;
 }
 
 bool State::implements(std::string type, std::string interface)
 {
-    return types.find(type) != types.end() && types[type].find(interface) != types[type].end();
+    for (StateFrame state : states)
+    {
+        Result<bool> result = state.implements(type, interface);
+        if (result.ok())
+            return result.getValue();
+    }
+    return false;
+}
+
+StateFrame *State::pushFrame()
+{
+    states.push_front(StateFrame());
+    return &states.front();
+}
+
+void State::popFrame()
+{
+    states.pop_front();
 }

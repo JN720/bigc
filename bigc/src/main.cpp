@@ -15,10 +15,11 @@
 #include "LoopNode.h"
 #include "FunctionNode.h"
 #include "Array.h"
+#include "TypeNode.h"
 
-const std::string OPERATORS = "+-*!/=><";
+const std::string OPERATORS = "+-*!/=><@";
 const std::string DIGITS = "0123456789";
-const std::string WORDS = "abcdefghijklmnopqrstuvwxyz_";
+const std::string WORDS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_:";
 const std::string SINGULARS = ".,()[]{}|&~;";
 const std::string KEYWORDS[] = {"if"};
 
@@ -417,6 +418,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
             {
                 IdentifierNode *identifier = new IdentifierNode(token);
                 cur = identifier;
+
                 // if we are calling a function
                 // as opposed to a var or fn as value
                 if (tokens.size() > index + 1 && tokens[index + 1].type == ARGEXPRSTART)
@@ -447,7 +449,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 cur = new Node(Value(token));
             break;
         case OPERATOR:
-            if (true)
+            if (context != FUNDEFARGS)
             {
                 OperationNode *op = new OperationNode(token);
                 // if binary op as opposed to unary
@@ -457,6 +459,20 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 error = createAST(state, tokens, ++index, cur, OPERATING, piped);
                 if (!error.empty())
                     return error;
+            }
+            else
+            {
+                // the operator must be a cast
+                if (token.value != "@")
+                    return "only the cast operator is allowed in function definitions";
+                if (!cur)
+                    return "unexpected @";
+                if (tokens.size() > index + 1 && tokens[index + 1].type == TEXT)
+                {
+                    TypeNode *type = new TypeNode(tokens[index + 1].value);
+                    type->addChild(cur);
+                    cur = nullptr;
+                }
             }
             break;
         case ACCESSOR:
@@ -480,7 +496,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 index--;
                 return "";
             }
-            else if (context == DELIMITED || context == ARR)
+            else if (context == DELIMITED || context == ARR || context == FUNDEFARGS)
             {
                 parent->addChild(cur);
                 cur = nullptr;
