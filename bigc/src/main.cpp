@@ -769,10 +769,8 @@ void printValue(Value value)
 {
     std::cout << "type: " << value.getType() << ' ' << '\n';
     Wildcard val = value.getValue();
-    if (value.getType() == "nil")
-    {
+    if (value.getType() == "nil" || (std::get_if<bool *>(&val) && *(std::get_if<bool *>(&val)) == nullptr))
         std::cout << "nil\n";
-    }
     if (bool **x = std::get_if<bool *>(&val))
         std::cout << ((**x) ? "true" : "false") << '\n';
     else if (int **x = std::get_if<int *>(&val))

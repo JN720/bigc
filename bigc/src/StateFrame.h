@@ -17,7 +17,7 @@ private:
     // currently assigned variables
     std::unordered_map<std::string, Value> variables;
     // the interfaces each type implements
-    std::unordered_map<std::string, std::unordered_set<std::string>> types;
+    std::unordered_map<std::string, std::unordered_set<std::string>> implementedInterfaces;
     // what each interface must have
     std::unordered_map<std::string, std::unordered_set<std::string>> interfaces;
     // class definitions

@@ -32,12 +32,13 @@ std::string Node::resolve(State &state)
         {
             std::string error = child->resolve(state);
             if (!error.empty())
-                return error;
+                return "resolving array elements:\n" + error;
             arr->add(child->getValue(state));
         }
         value = Value(arr);
         return "";
     }
+    // value should have already been set
     else if (children.empty())
         return "";
     return "unresolvable value";

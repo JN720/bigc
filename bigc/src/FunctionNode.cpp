@@ -1,6 +1,7 @@
 #include "FunctionNode.h"
 #include "IdentifierNode.h"
 #include "TypeNode.h"
+#include "SpreadNode.h"
 
 FunctionNode::FunctionNode()
 {
@@ -19,23 +20,49 @@ Result<Value> FunctionNode::execute(State &state, std::vector<Node *> &args)
 {
     // each arg should be an identifier or type node
     // the final one can also be a spread node
+    // create the frame for the arguments we pass in
     StateFrame *frame = state.pushFrame();
-    for (int i = 0; i < args.size() - 1; i++)
+    // take each arg, do type assertions, and add to the frame
+    int curVal = 0;
+    int curArg = 0;
+    // place arguments until we hit the sequence
+    while (curArg < children.size() - 1 && curVal < args.size())
     {
-        auto arg = args[i];
-        Value val = arg->getValue(state);
-        if (dynamic_cast<IdentifierNode *>(arg))
-            frame->setVariable(((IdentifierNode *)arg)->getVariable(), val);
-        else if (dynamic_cast<TypeNode *>(arg))
+        Node *arg = args[curVal];
+        Node *child = children[curArg];
+        // there should be one more child than args because the last is the end
+        // we have already resolved it so get the value
+        Value val = args[curVal]->getValue(state);
+        if (dynamic_cast<IdentifierNode *>(child))
+        {
+            // get the name of the function arg and set its value to val
+            frame->setVariable(((IdentifierNode *)child)->getVariable(), val);
+            curVal++;
+            curArg++;
+        }
+        else if (dynamic_cast<TypeNode *>(child))
         {
             TypeNode *typed = (TypeNode *)arg;
             if (typed->getArgType() != val.getType())
                 return Result<Value>("type assertion failed");
             frame->setVariable(typed->getName(), val);
+            curVal++;
+            curArg++;
         }
+        /*
+        else if (dynamic_cast<SpreadNode *>(child))
+        {
+            SpreadNode *spread = (SpreadNode *)arg;
+            if (dynamic_cast<IdentifierNode *>(child)) {
+                spread->get
+            }
+            // go to the next value but stay on the same arg
+            curVal++;
+        }*/
         else
             return Result<Value>("invalid node in function arguments");
     }
+    // resolve the sequence node
     std::string error = children.back()->resolve(state);
     if (!error.empty())
         return Result<Value>("during function execution:\n" + error);

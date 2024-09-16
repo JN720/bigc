@@ -35,7 +35,6 @@ Result<T>::Result(T val)
 template <class T>
 Result<T>::Result(std::string str)
 {
-
     error = str;
 }
 

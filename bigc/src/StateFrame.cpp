@@ -18,12 +18,14 @@ Result<Value> StateFrame::getVariable(std::string name) const
 
 bool StateFrame::isType(std::string word)
 {
-    return types.find(word) != types.end();
+    return implementedInterfaces.find(word) != implementedInterfaces.end();
 }
 
 Result<bool> StateFrame::implements(std::string type, std::string interface)
 {
-    if (types.find(type) == types.end())
-        return Result<bool>("undefined type");
-    return Result<bool>(types[type].find(interface) != types[type].end());
+    // if we don't find the type the state checks the next state frame
+    if (implementedInterfaces.find(type) == implementedInterfaces.end())
+        return Result<bool>(std::string("undefined type"));
+    // if the particular interfaces is in one of the implemented for the type
+    return Result<bool>(implementedInterfaces[type].find(interface) != implementedInterfaces[type].end());
 }

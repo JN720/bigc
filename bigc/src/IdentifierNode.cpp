@@ -40,6 +40,7 @@ std::string IdentifierNode::resolve(State &state)
             if (!error.empty())
                 return "resolving function arguments:\n" + error;
         }
+        // execute the function with the resolved args
         result = (*function)->execute(state, children);
         if (!result.ok())
             return "calling function:\n" + result.getError();
