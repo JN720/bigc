@@ -7,8 +7,8 @@ class Iterable
 {
 public:
     virtual std::string add(T val);
-    virtual Result<T> get(Hashable index);
-    virtual Result<T> len();
+    virtual Result<T> get(Hashable *index);
+    virtual Result<int> len();
     virtual Result<Iterable<T> *> combine(Iterable<T> &other);
 };
 
@@ -19,7 +19,7 @@ std::string Iterable<T>::add(T val)
 }
 
 template <class T>
-Result<T> Iterable<T>::get(Hashable index)
+Result<T> Iterable<T>::get(Hashable *index)
 {
     auto result = Result<T>();
     result.setError("not implemented");
@@ -27,11 +27,9 @@ Result<T> Iterable<T>::get(Hashable index)
 }
 
 template <class T>
-Result<T> Iterable<T>::len()
+Result<int> Iterable<T>::len()
 {
-    auto result = Result<T>();
-    result.setError("not implemented");
-    return result;
+    return Result<int>("not implemented");
 }
 
 template <class T>

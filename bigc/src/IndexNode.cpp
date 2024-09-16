@@ -2,29 +2,28 @@
 
 IndexNode::IndexNode()
 {
-}
-
-Value IndexNode::getValue(const State &state)
-{
-    return Value();
+    type = N_INDEX;
 }
 
 std::string IndexNode::resolve(State &state)
 {
     if (children.size() != 2)
         return "invalid number of arguments for indexing";
+    // the first child is the iterable
+    // the second child is the index
     for (auto child : children)
     {
         std::string error = child->resolve(state);
         if (!error.empty())
-            return error;
+            return "resolving index:\n" + error;
     }
     Wildcard val = children[0]->getValue(state).getValue();
     if (Iterable<Value> **x = std::get_if<Iterable<Value> *>(&val))
     {
-        auto result = (*x)->get(children[1]->getValue(state));
+        Value index = children[1]->getValue(state);
+        auto result = (*x)->get(&index);
         if (!result.ok())
-            return result.getError();
+            return "indexing iterable:\n" + result.getError();
         value = result.getValue();
         return "";
     }

@@ -25,7 +25,9 @@ Value Node::getValue(const State &state)
 
 std::string Node::resolve(State &state)
 {
-    if (state.implements(value.getType(), "iterable"))
+    // a leaf value with children is an array
+    // other iterables can be constructed from this
+    if (children.size())
     {
         Array<Value> *arr = new Array<Value>();
         for (auto child : children)

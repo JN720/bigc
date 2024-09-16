@@ -8,8 +8,8 @@ class Array : public Iterable<T>
 public:
     Array<T>();
     std::string add(Value val) override;
-    Result<T> get(Hashable index) override;
-    Result<T> len() override;
+    Result<T> get(Hashable *index) override;
+    Result<int> len() override;
 
 protected:
     std::vector<T> values;
@@ -23,22 +23,25 @@ std::string Array<T>::add(Value val)
 }
 
 template <class T>
-Result<T> Array<T>::get(Hashable index)
+Result<T> Array<T>::get(Hashable *index)
 {
-    Wildcard x;
-    auto result = Result<Value>();
-    if (auto i = std::get_if<int *>(&x))
-        return Result<Value>(values[**i]);
-    else if (auto i = std::get_if<long *>(&x))
-        return Result<Value>(values[**i]);
-    result.setError("index expression for array must be integeric");
-    return result;
+    Result<int> result = index->hash();
+    if (!result.ok())
+        return "while hashing:\n" + result.getError();
+    int location = result.getValue();
+    Result<int> length = len();
+    if (!length.ok())
+        return "while getting length:\n" + length.getError();
+    int l = length.getValue();
+    if (location >= l)
+        return Result<T>("index out of bounds");
+    return Result<Value>(values[location]);
 }
 
 template <class T>
-Result<T> Array<T>::len()
+Result<int> Array<T>::len()
 {
-    return Result<Value>(Value(new int(values.size())));
+    return Result<int>(values.size());
 }
 
 template <class T>

@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <unordered_map>
 #include "Token.h"
 #include <variant>
 #include "Iterable.h"
@@ -31,6 +32,7 @@ public:
     // infer value from token
     Value(Token &token);
     Value(Wildcard value);
+    Result<int> hash() override;
     Wildcard getValue();
     std::string getType();
     Result<Value> add(Value other);

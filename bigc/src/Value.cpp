@@ -33,6 +33,32 @@ Value::Value(Wildcard value)
     this->value = value;
 }
 
+Result<int> Value::hash()
+{
+    int val;
+    std::cout << "type is " << getType() << "\n";
+    if (bool **x = std::get_if<bool *>(&value))
+        val = **x;
+    else if (int **x = std::get_if<int *>(&value))
+        val = **x;
+    else if (long **x = std::get_if<long *>(&value))
+        val = **x;
+    else if (char **x = std::get_if<char *>(&value))
+        val = **x;
+    else if (float **x = std::get_if<float *>(&value))
+        val = (int)**x;
+    else if (double **x = std::get_if<double *>(&value))
+        val = (int)**x;
+    else if (std::string **x = std::get_if<std::string *>(&value))
+    {
+        std::hash<std::string> hasher;
+        val = hasher(**x);
+    }
+    else
+        return Result<int>("cannot hash");
+    return Result<int>(val);
+}
+
 Wildcard Value::getValue()
 {
     return value;

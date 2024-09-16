@@ -429,16 +429,6 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                     if (!error.empty())
                         return error;
                 }
-                // if we are indexing
-                if (tokens.size() > index + 1 && tokens[index + 1].type == INDSTART)
-                {
-                    IndexNode *indexer = new IndexNode();
-                    cur = indexer;
-                    cur->addChild(indexer);
-                    error = createAST(state, tokens, ++index, cur, INDEXPR, piped);
-                    if (!error.empty())
-                        return error;
-                }
             }
             break;
         case NUMBERSTR:
@@ -535,11 +525,23 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
             break;
 
         case INDSTART:
-            // has to be an array
-            cur = new Node(Value(new Array<Value>()));
-            error = createAST(state, tokens, ++index, cur, ARR, piped);
-            if (!error.empty())
-                return error;
+            // if cur has a value we are indexing
+            if (cur)
+            {
+                IndexNode *indexer = new IndexNode();
+                indexer->addChild(cur);
+                cur = indexer;
+                error = createAST(state, tokens, ++index, cur, INDEXPR, piped);
+                if (!error.empty())
+                    return error;
+            }
+            else
+            {
+                cur = new Node(Value(new Array<Value>()));
+                error = createAST(state, tokens, ++index, cur, ARR, piped);
+                if (!error.empty())
+                    return error;
+            }
             break;
         case INDEND:
             // if an array or index expression ends
@@ -560,6 +562,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                     return "unexpected ]";
                 if (cur)
                     parent->addChild(cur);
+                // when returning we are on the indend
                 return "";
             }
             else

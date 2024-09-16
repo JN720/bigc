@@ -28,7 +28,7 @@ std::string LoopNode::resolve(State &state)
                 auto result = (*x)->len();
                 if (!result.ok())
                     return result.getError();
-                condition = result.getValue().getValue();
+                condition = new int(result.getValue());
             }
 
             if (bool **x = std::get_if<bool *>(&condition))
