@@ -63,10 +63,51 @@ Result<Value> Value::add(Value other)
 {
     Wildcard val;
     Wildcard otherVal = other.getValue();
-    // int
-    if (int **x = std::get_if<int *>(&otherVal))
+    // for booleans adding is an or
+    if (bool **x = std::get_if<bool *>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (bool **y = std::get_if<bool *>(&value))
+        {
+            val = new bool(**x || **y);
+            return Result<Value>(val);
+        }
+        else if (int **y = std::get_if<int *>(&value))
+        {
+            val = new int(**x + **y);
+            return Result<Value>(val);
+        }
+        else if (long **y = std::get_if<long *>(&value))
+        {
+            val = new long(**x + **y);
+            return Result<Value>(val);
+        }
+        else if (char **y = std::get_if<char *>(&value))
+        {
+            val = new int(**x + **y);
+            return Result<Value>(val);
+        }
+        else if (float **y = std::get_if<float *>(&value))
+        {
+            val = new float(**x + **y);
+            return Result<Value>(val);
+        }
+        else if (double **y = std::get_if<double *>(&value))
+        {
+            val = new double(**x + **y);
+            return Result<Value>(val);
+        }
+        else
+            return Result<Value>("cannot add int to " + getType());
+    }
+    // int
+    else if (int **x = std::get_if<int *>(&otherVal))
+    {
+        if (bool **y = std::get_if<bool *>(&value))
+        {
+            val = new int(**x + **y);
+            return Result<Value>(val);
+        }
+        else if (int **y = std::get_if<int *>(&value))
         {
             val = new int(**x + **y);
             return Result<Value>(val);
@@ -97,7 +138,12 @@ Result<Value> Value::add(Value other)
     // long
     else if (long **x = std::get_if<long *>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (bool **y = std::get_if<bool *>(&value))
+        {
+            val = new long(**x + **y);
+            return Result<Value>(val);
+        }
+        else if (int **y = std::get_if<int *>(&value))
         {
             val = new long(**x + **y);
             return Result<Value>(val);
@@ -128,7 +174,12 @@ Result<Value> Value::add(Value other)
     // char
     else if (char **x = std::get_if<char *>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (bool **y = std::get_if<bool *>(&value))
+        {
+            val = new int(**x + **y);
+            return Result<Value>(val);
+        }
+        else if (int **y = std::get_if<int *>(&value))
         {
             val = new int(**x + **y);
             return Result<Value>(val);
@@ -164,7 +215,12 @@ Result<Value> Value::add(Value other)
     // float
     else if (float **x = std::get_if<float *>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (bool **y = std::get_if<bool *>(&value))
+        {
+            val = new float(**x + **y);
+            return Result<Value>(val);
+        }
+        else if (int **y = std::get_if<int *>(&value))
         {
             val = new float(**x + **y);
             return Result<Value>(val);
@@ -195,7 +251,12 @@ Result<Value> Value::add(Value other)
     // double
     else if (double **x = std::get_if<double *>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (bool **y = std::get_if<bool *>(&value))
+        {
+            val = new double(**x + **y);
+            return Result<Value>(val);
+        }
+        else if (int **y = std::get_if<int *>(&value))
         {
             val = new double(**x + **y);
             return Result<Value>(val);
@@ -262,7 +323,13 @@ Result<Value> Value::add(Value other)
 Result<Value> Value::inverse()
 {
     Wildcard val;
-    if (int **x = std::get_if<int *>(&value))
+
+    if (bool **x = std::get_if<bool *>(&value))
+    {
+        val = new int(-**x);
+        return Result<Value>(val);
+    }
+    else if (int **x = std::get_if<int *>(&value))
     {
         val = new int(-**x);
         return Result<Value>(val);
@@ -303,10 +370,52 @@ Result<Value> Value::subtract(Value other)
 {
     Wildcard otherVal = other.getValue();
     Wildcard val;
+    // subtraction between 2 booleans is xor
+    if (bool **x = std::get_if<bool *>(&otherVal))
+    {
+        if (bool **y = std::get_if<bool *>(&value))
+        {
+            val = new bool(**x ^ **y);
+            return Result<Value>(val);
+        }
+        else if (int **y = std::get_if<int *>(&value))
+        {
+            val = new int(**y - **x);
+            return Result<Value>(val);
+        }
+        else if (long **y = std::get_if<long *>(&value))
+        {
+            val = new long(**y - **x);
+            return Result<Value>(val);
+        }
+        else if (char **y = std::get_if<char *>(&value))
+        {
+            val = new int(**y - **x);
+            return Result<Value>(val);
+        }
+        else if (float **y = std::get_if<float *>(&value))
+        {
+            val = new float(**y - **x);
+            return Result<Value>(val);
+        }
+        else if (double **y = std::get_if<double *>(&value))
+        {
+            val = new double(**y - **x);
+            return Result<Value>(val);
+        }
+
+        else
+            return Result<Value>("cannot subtract bool from " + getType());
+    }
     // int
     if (int **x = std::get_if<int *>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (bool **y = std::get_if<bool *>(&value))
+        {
+            val = new int(**y - **x);
+            return Result<Value>(val);
+        }
+        else if (int **y = std::get_if<int *>(&value))
         {
             val = new int(**y - **x);
             return Result<Value>(val);
@@ -337,7 +446,12 @@ Result<Value> Value::subtract(Value other)
     // long
     else if (long **x = std::get_if<long *>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (bool **y = std::get_if<bool *>(&value))
+        {
+            val = new long(**y - **x);
+            return Result<Value>(val);
+        }
+        else if (int **y = std::get_if<int *>(&value))
         {
             val = new long(**y - **x);
             return Result<Value>(val);
@@ -368,7 +482,12 @@ Result<Value> Value::subtract(Value other)
     // char
     else if (char **x = std::get_if<char *>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (bool **y = std::get_if<bool *>(&value))
+        {
+            val = new char(**y - **x);
+            return Result<Value>(val);
+        }
+        else if (int **y = std::get_if<int *>(&value))
         {
             val = new int(**y - **x);
             return Result<Value>(val);
@@ -399,7 +518,12 @@ Result<Value> Value::subtract(Value other)
     // float
     else if (float **x = std::get_if<float *>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (bool **y = std::get_if<bool *>(&value))
+        {
+            val = new float(**y - **x);
+            return Result<Value>(val);
+        }
+        else if (int **y = std::get_if<int *>(&value))
         {
             val = new float(**y - **x);
             return Result<Value>(val);
@@ -467,10 +591,51 @@ Result<Value> Value::multiply(Value other)
 {
     Wildcard val;
     Wildcard otherVal = other.getValue();
-    // int
-    if (int **x = std::get_if<int *>(&otherVal))
+    // multiplication between booleans is an and
+    if (bool **x = std::get_if<bool *>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (bool **y = std::get_if<bool *>(&value))
+        {
+            val = new bool(**x && **y);
+            return Result<Value>(val);
+        }
+        else if (int **y = std::get_if<int *>(&value))
+        {
+            val = new int(**x * **y);
+            return Result<Value>(val);
+        }
+        else if (long **y = std::get_if<long *>(&value))
+        {
+            val = new long(**x * **y);
+            return Result<Value>(val);
+        }
+        else if (char **y = std::get_if<char *>(&value))
+        {
+            val = new int(**x * **y);
+            return Result<Value>(val);
+        }
+        else if (float **y = std::get_if<float *>(&value))
+        {
+            val = new float(**x * **y);
+            return Result<Value>(val);
+        }
+        else if (double **y = std::get_if<double *>(&value))
+        {
+            val = new double(**x * **y);
+            return Result<Value>(val);
+        }
+        else
+            return Result<Value>("cannot multiply bool with " + getType());
+    }
+    // int
+    else if (int **x = std::get_if<int *>(&otherVal))
+    {
+        if (bool **y = std::get_if<bool *>(&value))
+        {
+            val = new int(**x * **y);
+            return Result<Value>(val);
+        }
+        else if (int **y = std::get_if<int *>(&value))
         {
             val = new int(**x * **y);
             return Result<Value>(val);
@@ -501,7 +666,12 @@ Result<Value> Value::multiply(Value other)
     // long
     else if (long **x = std::get_if<long *>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (bool **y = std::get_if<bool *>(&value))
+        {
+            val = new int(**x * **y);
+            return Result<Value>(val);
+        }
+        else if (int **y = std::get_if<int *>(&value))
         {
             val = new long(**x * **y);
             return Result<Value>(val);
@@ -532,7 +702,12 @@ Result<Value> Value::multiply(Value other)
     // char
     else if (char **x = std::get_if<char *>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (bool **y = std::get_if<bool *>(&value))
+        {
+            val = new char(**x * **y);
+            return Result<Value>(val);
+        }
+        else if (int **y = std::get_if<int *>(&value))
         {
             val = new int(**x * **y);
             return Result<Value>(val);
@@ -563,7 +738,12 @@ Result<Value> Value::multiply(Value other)
     // float
     else if (float **x = std::get_if<float *>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (bool **y = std::get_if<bool *>(&value))
+        {
+            val = new float(**x * **y);
+            return Result<Value>(val);
+        }
+        else if (int **y = std::get_if<int *>(&value))
         {
             val = new float(**x * **y);
             return Result<Value>(val);
@@ -594,7 +774,12 @@ Result<Value> Value::multiply(Value other)
     // double
     else if (double **x = std::get_if<double *>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (bool **y = std::get_if<bool *>(&value))
+        {
+            val = new double(**x * **y);
+            return Result<Value>(val);
+        }
+        else if (int **y = std::get_if<int *>(&value))
         {
             val = new double(**x * **y);
             return Result<Value>(val);
@@ -898,8 +1083,34 @@ Result<Value> Value::isEqual(Value other)
 {
     Wildcard val;
     Wildcard otherVal = other.getValue();
+    // bool
+    if (bool **x = std::get_if<bool *>(&otherVal))
+    {
+        if (bool **y = std::get_if<bool *>(&value))
+        {
+            val = new bool(**x == **y);
+            return Result<Value>(val);
+        }
+        else if (int **y = std::get_if<int *>(&value))
+        {
+            val = new bool(**x == **y);
+            return Result<Value>(val);
+        }
+        else if (long **y = std::get_if<long *>(&value))
+        {
+            val = new bool(**x == **y);
+            return Result<Value>(val);
+        }
+        else if (char **y = std::get_if<char *>(&value))
+        {
+            val = new bool(**x == **y);
+            return Result<Value>(val);
+        }
+        else
+            return Result<Value>("cannot determine equality of bool with " + getType());
+    }
     // int
-    if (int **x = std::get_if<int *>(&otherVal))
+    else if (int **x = std::get_if<int *>(&otherVal))
     {
         if (int **y = std::get_if<int *>(&value))
         {
