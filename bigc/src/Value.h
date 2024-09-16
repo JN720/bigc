@@ -23,7 +23,7 @@ functions:
 */
 class Value;
 
-using Wildcard = std::variant<bool *, int *, long *, float *, double *, char *, std::string *, Iterable<Value> *, Node *, Object *>;
+using Wildcard = std::variant<bool, int, long, float, double, char, std::string *, Iterable<Value> *, Node *, Object *>;
 
 class Value : public Hashable
 {

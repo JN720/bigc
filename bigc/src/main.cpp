@@ -772,20 +772,20 @@ void printValue(Value value)
 {
     std::cout << "type: " << value.getType() << ' ' << '\n';
     Wildcard val = value.getValue();
-    if (value.getType() == "nil" || (std::get_if<bool *>(&val) && *(std::get_if<bool *>(&val)) == nullptr))
+    if (value.getType() == "nil" || std::get_if<bool>(&val))
         std::cout << "nil\n";
-    if (bool **x = std::get_if<bool *>(&val))
-        std::cout << ((**x) ? "true" : "false") << '\n';
-    else if (int **x = std::get_if<int *>(&val))
-        std::cout << **x << '\n';
-    else if (long **x = std::get_if<long *>(&val))
-        std::cout << **x << '\n';
-    else if (float **x = std::get_if<float *>(&val))
-        std::cout << **x << '\n';
-    else if (double **x = std::get_if<double *>(&val))
-        std::cout << **x << '\n';
-    else if (char **x = std::get_if<char *>(&val))
-        std::cout << **x << '\n';
+    if (bool *x = std::get_if<bool>(&val))
+        std::cout << ((*x) ? "true" : "false") << '\n';
+    else if (int *x = std::get_if<int>(&val))
+        std::cout << *x << '\n';
+    else if (long *x = std::get_if<long>(&val))
+        std::cout << *x << '\n';
+    else if (float *x = std::get_if<float>(&val))
+        std::cout << *x << '\n';
+    else if (double *x = std::get_if<double>(&val))
+        std::cout << *x << '\n';
+    else if (char *x = std::get_if<char>(&val))
+        std::cout << *x << '\n';
     else if (std::string **x = std::get_if<std::string *>(&val))
         std::cout << **x << '\n';
     else if (Iterable<Value> **x = std::get_if<Iterable<Value> *>(&val))
@@ -883,8 +883,7 @@ int main(int argc, char *argv[])
         Value value = program->getChildren().back()->getValue(state);
         Wildcard valueValue = value.getValue();
         std::cout << "type: " << value.getType() << ' ' << '\n';
-        if (int **x = std::get_if<int *>(&valueValue))
-            std::cout << **x << '\n';
+        printValue(value);
     }
     return 0;
 }

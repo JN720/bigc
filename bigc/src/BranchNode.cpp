@@ -22,21 +22,21 @@ std::string BranchNode::resolve(State &state)
             auto result = (*x)->len();
             if (!result.ok())
                 return "in branch condition:\n" + result.getError();
-            condition = new int(result.getValue());
+            condition = result.getValue();
         }
 
-        if (bool **x = std::get_if<bool *>(&condition))
-            isTrue = **x;
-        else if (int **x = std::get_if<int *>(&condition))
-            isTrue = **x != 0;
-        else if (long **x = std::get_if<long *>(&condition))
-            isTrue = **x != 0;
-        else if (char **x = std::get_if<char *>(&condition))
-            isTrue = **x != 0;
-        else if (float **x = std::get_if<float *>(&condition))
-            isTrue = **x != 0;
-        else if (double **x = std::get_if<double *>(&condition))
-            isTrue = **x != 0;
+        if (bool *x = std::get_if<bool>(&condition))
+            isTrue = *x;
+        else if (int *x = std::get_if<int>(&condition))
+            isTrue = *x != 0;
+        else if (long *x = std::get_if<long>(&condition))
+            isTrue = *x != 0;
+        else if (char *x = std::get_if<char>(&condition))
+            isTrue = *x != 0;
+        else if (float *x = std::get_if<float>(&condition))
+            isTrue = *x != 0;
+        else if (double *x = std::get_if<double>(&condition))
+            isTrue = *x != 0;
         else if (std::string **x = std::get_if<std::string *>(&condition))
             isTrue = **x != "";
     }
@@ -61,7 +61,7 @@ std::string BranchNode::resolve(State &state)
         // if there is no else statement it is false
         else
         {
-            value = Value(new bool(false));
+            value = Value(false);
             return "";
         }
     }

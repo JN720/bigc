@@ -15,7 +15,7 @@ Value::Value(Token &token)
         case 's':
             value = new std::string(token.value.substr(1));
         case 'n':
-            value = new int(std::atoi(token.value.substr(1).c_str()));
+            value = std::atoi(token.value.substr(1).c_str());
             break;
         default:
             std::cout << "that's not a valid numberstr\n";
@@ -37,18 +37,18 @@ Result<int> Value::hash()
 {
     int val;
     std::cout << "type is " << getType() << "\n";
-    if (bool **x = std::get_if<bool *>(&value))
-        val = **x;
-    else if (int **x = std::get_if<int *>(&value))
-        val = **x;
-    else if (long **x = std::get_if<long *>(&value))
-        val = **x;
-    else if (char **x = std::get_if<char *>(&value))
-        val = **x;
-    else if (float **x = std::get_if<float *>(&value))
-        val = (int)**x;
-    else if (double **x = std::get_if<double *>(&value))
-        val = (int)**x;
+    if (bool *x = std::get_if<bool>(&value))
+        val = *x;
+    else if (int *x = std::get_if<int>(&value))
+        val = *x;
+    else if (long *x = std::get_if<long>(&value))
+        val = *x;
+    else if (char *x = std::get_if<char>(&value))
+        val = *x;
+    else if (float *x = std::get_if<float>(&value))
+        val = (int)*x;
+    else if (double *x = std::get_if<double>(&value))
+        val = (int)*x;
     else if (std::string **x = std::get_if<std::string *>(&value))
     {
         std::hash<std::string> hasher;
@@ -66,13 +66,13 @@ Wildcard Value::getValue()
 
 std::string Value::getType()
 {
-    if (std::holds_alternative<bool *>(value))
+    if (std::holds_alternative<bool>(value))
         return "bool";
-    else if (std::holds_alternative<int *>(value))
+    else if (std::holds_alternative<int>(value))
         return "int";
-    else if (std::holds_alternative<float *>(value))
+    else if (std::holds_alternative<float>(value))
         return "float";
-    else if (std::holds_alternative<char *>(value))
+    else if (std::holds_alternative<char>(value))
         return "char";
     else if (std::holds_alternative<std::string *>(value))
         return "str";
@@ -90,221 +90,221 @@ Result<Value> Value::add(Value other)
     Wildcard val;
     Wildcard otherVal = other.getValue();
     // for booleans adding is an or
-    if (bool **x = std::get_if<bool *>(&otherVal))
+    if (bool *x = std::get_if<bool>(&otherVal))
     {
-        if (bool **y = std::get_if<bool *>(&value))
+        if (bool *y = std::get_if<bool>(&value))
         {
-            val = new bool(**x || **y);
+            val = (*x || *y);
             return Result<Value>(val);
         }
-        else if (int **y = std::get_if<int *>(&value))
+        else if (int *y = std::get_if<int>(&value))
         {
-            val = new int(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new long(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new int(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new float(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot add int to " + getType());
     }
     // int
-    else if (int **x = std::get_if<int *>(&otherVal))
+    else if (int *x = std::get_if<int>(&otherVal))
     {
-        if (bool **y = std::get_if<bool *>(&value))
+        if (bool *y = std::get_if<bool>(&value))
         {
-            val = new int(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (int **y = std::get_if<int *>(&value))
+        else if (int *y = std::get_if<int>(&value))
         {
-            val = new int(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new long(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new int(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new float(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot add int to " + getType());
     }
     // long
-    else if (long **x = std::get_if<long *>(&otherVal))
+    else if (long *x = std::get_if<long>(&otherVal))
     {
-        if (bool **y = std::get_if<bool *>(&value))
+        if (bool *y = std::get_if<bool>(&value))
         {
-            val = new long(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (int **y = std::get_if<int *>(&value))
+        else if (int *y = std::get_if<int>(&value))
         {
-            val = new long(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new long(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new long(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new float(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot add long to " + getType());
     }
     // char
-    else if (char **x = std::get_if<char *>(&otherVal))
+    else if (char *x = std::get_if<char>(&otherVal))
     {
-        if (bool **y = std::get_if<bool *>(&value))
+        if (bool *y = std::get_if<bool>(&value))
         {
-            val = new int(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (int **y = std::get_if<int *>(&value))
+        else if (int *y = std::get_if<int>(&value))
         {
-            val = new int(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new long(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new char(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new float(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
         else if (std::string **y = std::get_if<std::string *>(&value))
         {
-            val = new std::string(**x + **y);
+            val = new std::string(*x + **y);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot add char to " + getType());
     }
     // float
-    else if (float **x = std::get_if<float *>(&otherVal))
+    else if (float *x = std::get_if<float>(&otherVal))
     {
-        if (bool **y = std::get_if<bool *>(&value))
+        if (bool *y = std::get_if<bool>(&value))
         {
-            val = new float(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (int **y = std::get_if<int *>(&value))
+        else if (int *y = std::get_if<int>(&value))
         {
-            val = new float(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new float(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new float(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new float(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot add float to " + getType());
     }
     // double
-    else if (double **x = std::get_if<double *>(&otherVal))
+    else if (double *x = std::get_if<double>(&otherVal))
     {
-        if (bool **y = std::get_if<bool *>(&value))
+        if (bool *y = std::get_if<bool>(&value))
         {
-            val = new double(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (int **y = std::get_if<int *>(&value))
+        else if (int *y = std::get_if<int>(&value))
         {
-            val = new double(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new double(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new double(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new double(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**x + **y);
+            val = (*x + *y);
             return Result<Value>(val);
         }
         else
@@ -313,14 +313,14 @@ Result<Value> Value::add(Value other)
     // str
     else if (std::string **x = std::get_if<std::string *>(&otherVal))
     {
-        if (char **y = std::get_if<char *>(&value))
+        if (char *y = std::get_if<char>(&value))
         {
-            val = new std::string(**x + **y);
+            val = new std::string(**x + *y);
             return Result<Value>(val);
         }
         else if (std::string **x = std::get_if<std::string *>(&value))
         {
-            val = new std::string(**x + **y);
+            val = new std::string(**x + *y);
             return Result<Value>(val);
         }
         else
@@ -350,34 +350,34 @@ Result<Value> Value::inverse()
 {
     Wildcard val;
 
-    if (bool **x = std::get_if<bool *>(&value))
+    if (bool *x = std::get_if<bool>(&value))
     {
-        val = new int(-**x);
+        val = -*x;
         return Result<Value>(val);
     }
-    else if (int **x = std::get_if<int *>(&value))
+    else if (int *x = std::get_if<int>(&value))
     {
-        val = new int(-**x);
+        val = -*x;
         return Result<Value>(val);
     }
-    else if (long **x = std::get_if<long *>(&value))
+    else if (long *x = std::get_if<long>(&value))
     {
-        val = new long(-**x);
+        val = -*x;
         return Result<Value>(val);
     }
-    else if (char **x = std::get_if<char *>(&value))
+    else if (char *x = std::get_if<char>(&value))
     {
-        val = new char(-**x);
+        val = -*x;
         return Result<Value>(val);
     }
-    else if (float **x = std::get_if<float *>(&value))
+    else if (float *x = std::get_if<float>(&value))
     {
-        val = new float(-**x);
+        val = -*x;
         return Result<Value>(val);
     }
-    else if (double **x = std::get_if<double *>(&value))
+    else if (double *x = std::get_if<double>(&value))
     {
-        val = new double(-**x);
+        val = -*x;
         return Result<Value>(val);
     }
     else if (std::string **x = std::get_if<std::string *>(&value))
@@ -397,36 +397,36 @@ Result<Value> Value::subtract(Value other)
     Wildcard otherVal = other.getValue();
     Wildcard val;
     // subtraction between 2 booleans is xor
-    if (bool **x = std::get_if<bool *>(&otherVal))
+    if (bool *x = std::get_if<bool>(&otherVal))
     {
-        if (bool **y = std::get_if<bool *>(&value))
+        if (bool *y = std::get_if<bool>(&value))
         {
-            val = new bool(**x ^ **y);
+            val = (*x ^ *y);
             return Result<Value>(val);
         }
-        else if (int **y = std::get_if<int *>(&value))
+        else if (int *y = std::get_if<int>(&value))
         {
-            val = new int(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new long(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new int(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new float(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
 
@@ -434,175 +434,175 @@ Result<Value> Value::subtract(Value other)
             return Result<Value>("cannot subtract bool from " + getType());
     }
     // int
-    if (int **x = std::get_if<int *>(&otherVal))
+    if (int *x = std::get_if<int>(&otherVal))
     {
-        if (bool **y = std::get_if<bool *>(&value))
+        if (bool *y = std::get_if<bool>(&value))
         {
-            val = new int(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (int **y = std::get_if<int *>(&value))
+        else if (int *y = std::get_if<int>(&value))
         {
-            val = new int(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new long(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new int(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new float(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot subtract int from " + getType());
     }
     // long
-    else if (long **x = std::get_if<long *>(&otherVal))
+    else if (long *x = std::get_if<long>(&otherVal))
     {
-        if (bool **y = std::get_if<bool *>(&value))
+        if (bool *y = std::get_if<bool>(&value))
         {
-            val = new long(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (int **y = std::get_if<int *>(&value))
+        else if (int *y = std::get_if<int>(&value))
         {
-            val = new long(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new long(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new long(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new float(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot add long to " + getType());
     }
     // char
-    else if (char **x = std::get_if<char *>(&otherVal))
+    else if (char *x = std::get_if<char>(&otherVal))
     {
-        if (bool **y = std::get_if<bool *>(&value))
+        if (bool *y = std::get_if<bool>(&value))
         {
-            val = new char(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (int **y = std::get_if<int *>(&value))
+        else if (int *y = std::get_if<int>(&value))
         {
-            val = new int(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new long(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new char(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new float(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot subtract char from " + getType());
     }
     // float
-    else if (float **x = std::get_if<float *>(&otherVal))
+    else if (float *x = std::get_if<float>(&otherVal))
     {
-        if (bool **y = std::get_if<bool *>(&value))
+        if (bool *y = std::get_if<bool>(&value))
         {
-            val = new float(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (int **y = std::get_if<int *>(&value))
+        else if (int *y = std::get_if<int>(&value))
         {
-            val = new float(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new float(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new float(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new float(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot subtract float from " + getType());
     }
     // double
-    else if (double **x = std::get_if<double *>(&otherVal))
+    else if (double *x = std::get_if<double>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (int *y = std::get_if<int>(&value))
         {
-            val = new double(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new double(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new double(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new double(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**y - **x);
+            val = (*y - *x);
             return Result<Value>(val);
         }
         else
@@ -618,216 +618,216 @@ Result<Value> Value::multiply(Value other)
     Wildcard val;
     Wildcard otherVal = other.getValue();
     // multiplication between booleans is an and
-    if (bool **x = std::get_if<bool *>(&otherVal))
+    if (bool *x = std::get_if<bool>(&otherVal))
     {
-        if (bool **y = std::get_if<bool *>(&value))
+        if (bool *y = std::get_if<bool>(&value))
         {
-            val = new bool(**x && **y);
+            val = (*x && *y);
             return Result<Value>(val);
         }
-        else if (int **y = std::get_if<int *>(&value))
+        else if (int *y = std::get_if<int>(&value))
         {
-            val = new int(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new long(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new int(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new float(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot multiply bool with " + getType());
     }
     // int
-    else if (int **x = std::get_if<int *>(&otherVal))
+    else if (int *x = std::get_if<int>(&otherVal))
     {
-        if (bool **y = std::get_if<bool *>(&value))
+        if (bool *y = std::get_if<bool>(&value))
         {
-            val = new int(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (int **y = std::get_if<int *>(&value))
+        else if (int *y = std::get_if<int>(&value))
         {
-            val = new int(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new long(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new int(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new float(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot multiply int with " + getType());
     }
     // long
-    else if (long **x = std::get_if<long *>(&otherVal))
+    else if (long *x = std::get_if<long>(&otherVal))
     {
-        if (bool **y = std::get_if<bool *>(&value))
+        if (bool *y = std::get_if<bool>(&value))
         {
-            val = new int(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (int **y = std::get_if<int *>(&value))
+        else if (int *y = std::get_if<int>(&value))
         {
-            val = new long(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new long(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new long(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new float(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot multiply long with " + getType());
     }
     // char
-    else if (char **x = std::get_if<char *>(&otherVal))
+    else if (char *x = std::get_if<char>(&otherVal))
     {
-        if (bool **y = std::get_if<bool *>(&value))
+        if (bool *y = std::get_if<bool>(&value))
         {
-            val = new char(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (int **y = std::get_if<int *>(&value))
+        else if (int *y = std::get_if<int>(&value))
         {
-            val = new int(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new long(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new char(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new float(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot multiply char with " + getType());
     }
     // float
-    else if (float **x = std::get_if<float *>(&otherVal))
+    else if (float *x = std::get_if<float>(&otherVal))
     {
-        if (bool **y = std::get_if<bool *>(&value))
+        if (bool *y = std::get_if<bool>(&value))
         {
-            val = new float(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (int **y = std::get_if<int *>(&value))
+        else if (int *y = std::get_if<int>(&value))
         {
-            val = new float(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new float(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new float(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new float(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot multiply float with " + getType());
     }
     // double
-    else if (double **x = std::get_if<double *>(&otherVal))
+    else if (double *x = std::get_if<double>(&otherVal))
     {
-        if (bool **y = std::get_if<bool *>(&value))
+        if (bool *y = std::get_if<bool>(&value))
         {
-            val = new double(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (int **y = std::get_if<int *>(&value))
+        else if (int *y = std::get_if<int>(&value))
         {
-            val = new double(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new double(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new double(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new double(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**x * **y);
+            val = (*x * *y);
             return Result<Value>(val);
         }
         else
@@ -842,29 +842,29 @@ Result<Value> Value::multiply(Value other)
 Result<Value> Value::reciprocate()
 {
     Wildcard val;
-    if (int **x = std::get_if<int *>(&value))
+    if (int *x = std::get_if<int>(&value))
     {
-        val = new int(1 / **x);
+        val = (1 / *x);
         return Result<Value>(val);
     }
-    else if (long **x = std::get_if<long *>(&value))
+    else if (long *x = std::get_if<long>(&value))
     {
-        val = new long(1 / **x);
+        val = (1 / *x);
         return Result<Value>(val);
     }
-    else if (char **x = std::get_if<char *>(&value))
+    else if (char *x = std::get_if<char>(&value))
     {
-        val = new char(1 / **x);
+        val = (1 / *x);
         return Result<Value>(val);
     }
-    else if (float **x = std::get_if<float *>(&value))
+    else if (float *x = std::get_if<float>(&value))
     {
-        val = new float(1 / **x);
+        val = (1 / *x);
         return Result<Value>(val);
     }
-    else if (double **x = std::get_if<double *>(&value))
+    else if (double *x = std::get_if<double>(&value))
     {
-        val = new double(1 / **x);
+        val = (1 / *x);
         return Result<Value>(val);
     }
     else
@@ -877,155 +877,155 @@ Result<Value> Value::divide(Value other)
     Wildcard val;
     Wildcard otherVal = other.getValue();
     // int
-    if (int **x = std::get_if<int *>(&otherVal))
+    if (int *x = std::get_if<int>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (int *y = std::get_if<int>(&value))
         {
-            val = new int(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new long(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new int(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new float(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot divide int with " + getType());
     }
     // long
-    else if (long **x = std::get_if<long *>(&otherVal))
+    else if (long *x = std::get_if<long>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (int *y = std::get_if<int>(&value))
         {
-            val = new long(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new long(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new long(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new float(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot divide long with " + getType());
     }
     // char
-    else if (char **x = std::get_if<char *>(&otherVal))
+    else if (char *x = std::get_if<char>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (int *y = std::get_if<int>(&value))
         {
-            val = new int(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new long(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new char(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new float(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot divide char with " + getType());
     }
     // float
-    else if (float **x = std::get_if<float *>(&otherVal))
+    else if (float *x = std::get_if<float>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (int *y = std::get_if<int>(&value))
         {
-            val = new float(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new float(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new float(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new float(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot divide float with " + getType());
     }
     // double
-    else if (double **x = std::get_if<double *>(&otherVal))
+    else if (double *x = std::get_if<double>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (int *y = std::get_if<int>(&value))
         {
-            val = new double(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new double(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new double(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (float **y = std::get_if<float *>(&value))
+        else if (float *y = std::get_if<float>(&value))
         {
-            val = new double(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new double(**y / **x);
+            val = (*y / *x);
             return Result<Value>(val);
         }
         else
@@ -1040,61 +1040,61 @@ Result<Value> Value::modulo(Value other)
 {
     Wildcard otherVal = other.getValue();
     Wildcard val;
-    if (int **x = std::get_if<int *>(&otherVal))
+    if (int *x = std::get_if<int>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (int *y = std::get_if<int>(&value))
         {
-            val = new int(**y % **x);
+            val = (*y % *x);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new long(**y % **x);
+            val = (*y % *x);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new int(**y % **x);
+            val = (*y % *x);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot modulo int with " + getType());
     }
-    else if (long **x = std::get_if<long *>(&otherVal))
+    else if (long *x = std::get_if<long>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (int *y = std::get_if<int>(&value))
         {
-            val = new long(**y % **x);
+            val = (*y % *x);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new long(**y % **x);
+            val = (*y % *x);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new long(**y % **x);
+            val = (*y % *x);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot modulo long with " + getType());
     }
-    else if (char **x = std::get_if<char *>(&otherVal))
+    else if (char *x = std::get_if<char>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (int *y = std::get_if<int>(&value))
         {
-            val = new int(**y % **x);
+            val = (*y % *x);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new long(**y % **x);
+            val = (*y % *x);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new char(**y % **x);
+            val = (*y % *x);
             return Result<Value>(val);
         }
         else
@@ -1110,115 +1110,115 @@ Result<Value> Value::isEqual(Value other)
     Wildcard val;
     Wildcard otherVal = other.getValue();
     // bool
-    if (bool **x = std::get_if<bool *>(&otherVal))
+    if (bool *x = std::get_if<bool>(&otherVal))
     {
-        if (bool **y = std::get_if<bool *>(&value))
+        if (bool *y = std::get_if<bool>(&value))
         {
-            val = new bool(**x == **y);
+            val = (*x == *y);
             return Result<Value>(val);
         }
-        else if (int **y = std::get_if<int *>(&value))
+        else if (int *y = std::get_if<int>(&value))
         {
-            val = new bool(**x == **y);
+            val = (*x == *y);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new bool(**x == **y);
+            val = (*x == *y);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new bool(**x == **y);
+            val = (*x == *y);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot determine equality of bool with " + getType());
     }
     // int
-    else if (int **x = std::get_if<int *>(&otherVal))
+    else if (int *x = std::get_if<int>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (int *y = std::get_if<int>(&value))
         {
-            val = new bool(**x == **y);
+            val = (*x == *y);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new bool(**x == **y);
+            val = (*x == *y);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new bool(**x == **y);
+            val = (*x == *y);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot determine equality of int with " + getType());
     }
-    else if (long **x = std::get_if<long *>(&otherVal))
+    else if (long *x = std::get_if<long>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (int *y = std::get_if<int>(&value))
         {
-            val = new bool(**x == **y);
+            val = (*x == *y);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new bool(**x == **y);
+            val = (*x == *y);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new bool(**x == **y);
+            val = (*x == *y);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot determine equality of long with " + getType());
     }
-    else if (char **x = std::get_if<char *>(&otherVal))
+    else if (char *x = std::get_if<char>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (int *y = std::get_if<int>(&value))
         {
-            val = new bool(**x == **y);
+            val = (*x == *y);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new bool(**x == **y);
+            val = (*x == *y);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new bool(**x == **y);
+            val = (*x == *y);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot determine equality of char with " + getType());
     }
-    else if (float **x = std::get_if<float *>(&otherVal))
+    else if (float *x = std::get_if<float>(&otherVal))
     {
-        if (float **y = std::get_if<float *>(&value))
+        if (float *y = std::get_if<float>(&value))
         {
-            val = new bool(**x == **y);
+            val = (*x == *y);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new bool(**x == **y);
+            val = (*x == *y);
             return Result<Value>(val);
         }
     }
-    else if (double **x = std::get_if<double *>(&otherVal))
+    else if (double *x = std::get_if<double>(&otherVal))
     {
-        if (float **y = std::get_if<float *>(&value))
+        if (float *y = std::get_if<float>(&value))
         {
-            val = new bool(**x == **y);
+            val = (*x == *y);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new bool(**x == **y);
+            val = (*x == *y);
             return Result<Value>(val);
         }
     }
@@ -1226,7 +1226,7 @@ Result<Value> Value::isEqual(Value other)
     {
         if (std::string **y = std::get_if<std::string *>(&value))
         {
-            val = new bool(**x == **y);
+            val = (**x == **y);
             return Result<Value>(val);
         }
         else
@@ -1242,91 +1242,91 @@ Result<Value> Value::isLessThan(Value other)
     Wildcard otherVal = other.getValue();
     Wildcard val;
     // int
-    if (int **x = std::get_if<int *>(&otherVal))
+    if (int *x = std::get_if<int>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (int *y = std::get_if<int>(&value))
         {
-            val = new bool(**y < **x);
+            val = (*y < *x);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new bool(**y < **x);
+            val = (*y < *x);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new bool(**y < **x);
+            val = (*y < *x);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot do comparison of int with " + getType());
     }
-    else if (long **x = std::get_if<long *>(&otherVal))
+    else if (long *x = std::get_if<long>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (int *y = std::get_if<int>(&value))
         {
-            val = new bool(**y < **x);
+            val = (*y < *x);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new bool(**y < **x);
+            val = (*y < *x);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new bool(**y < **x);
+            val = (*y < *x);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot do comparison of long with " + getType());
     }
-    else if (char **x = std::get_if<char *>(&otherVal))
+    else if (char *x = std::get_if<char>(&otherVal))
     {
-        if (int **y = std::get_if<int *>(&value))
+        if (int *y = std::get_if<int>(&value))
         {
-            val = new bool(**y < **x);
+            val = (*y < *x);
             return Result<Value>(val);
         }
-        else if (long **y = std::get_if<long *>(&value))
+        else if (long *y = std::get_if<long>(&value))
         {
-            val = new bool(**y < **x);
+            val = (*y < *x);
             return Result<Value>(val);
         }
-        else if (char **y = std::get_if<char *>(&value))
+        else if (char *y = std::get_if<char>(&value))
         {
-            val = new bool(**y < **x);
+            val = (*y < *x);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot do comparison of char with " + getType());
     }
-    else if (float **x = std::get_if<float *>(&otherVal))
+    else if (float *x = std::get_if<float>(&otherVal))
     {
-        if (float **y = std::get_if<float *>(&value))
+        if (float *y = std::get_if<float>(&value))
         {
-            val = new bool(**y < **x);
+            val = (*y < *x);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new bool(**y < **x);
+            val = (*y < *x);
             return Result<Value>(val);
         }
         else
             return Result<Value>("cannot do comparison of float with " + getType());
     }
-    else if (double **x = std::get_if<double *>(&otherVal))
+    else if (double *x = std::get_if<double>(&otherVal))
     {
-        if (float **y = std::get_if<float *>(&value))
+        if (float *y = std::get_if<float>(&value))
         {
-            val = new bool(**y < **x);
+            val = (*y < *x);
             return Result<Value>(val);
         }
-        else if (double **y = std::get_if<double *>(&value))
+        else if (double *y = std::get_if<double>(&value))
         {
-            val = new bool(**y < **x);
+            val = (*y < *x);
             return Result<Value>(val);
         }
         else
@@ -1344,8 +1344,8 @@ Result<Value> Value::isNotEqual(Value other)
     Wildcard equality = equalityResult.getValue().getValue();
     if (!equalityResult.ok())
         return equalityResult.getError();
-    bool **isEqual = std::get_if<bool *>(&equality);
-    val = new bool(!**isEqual);
+    bool *isEqual = std::get_if<bool>(&equality);
+    val = (!*isEqual);
     return Result<Value>(val);
 }
 
@@ -1361,18 +1361,18 @@ Result<Value> Value::isGreaterThan(Value other)
     if (equalityResult.ok())
     {
         auto equal = equalityResult.getValue().getValue();
-        isEqual = **std::get_if<bool *>(&equal);
+        isEqual = *std::get_if<bool>(&equal);
     }
     else
         isEqual = false;
     if (lessThanResult.ok())
     {
         auto lessThan = lessThanResult.getValue().getValue();
-        isLessThan = std::get_if<bool *>(&lessThan);
+        isLessThan = std::get_if<bool>(&lessThan);
     }
     else
         isLessThan = false;
-    val = new bool(isEqual || isLessThan);
+    val = (isEqual || isLessThan);
     return Result<Value>(val);
 }
 
@@ -1382,13 +1382,13 @@ Result<Value> Value::isLessThanEqual(Value other)
     if (!lessThanResult.ok())
         return lessThanResult.getError();
     auto lessThan = lessThanResult.getValue().getValue();
-    bool **isLessThan = std::get_if<bool *>(&lessThan);
+    bool *isLessThan = std::get_if<bool>(&lessThan);
     auto equalResult = isEqual(other);
     if (!equalResult.ok())
         return equalResult.getError();
     auto equal = equalResult.getValue().getValue();
-    bool **isEqual = std::get_if<bool *>(&equal);
-    return Result<Value>(Value(new bool(**isEqual || **isLessThan)));
+    bool *isEqual = std::get_if<bool>(&equal);
+    return Result<Value>(Value((*isEqual || *isLessThan)));
 }
 
 Result<Value> Value::isGreaterThanEqual(Value other)
@@ -1397,13 +1397,13 @@ Result<Value> Value::isGreaterThanEqual(Value other)
     if (!greaterThanResult.ok())
         return greaterThanResult.getError();
     auto greaterThan = greaterThanResult.getValue().getValue();
-    bool **isGreaterThan = std::get_if<bool *>(&greaterThan);
+    bool *isGreaterThan = std::get_if<bool>(&greaterThan);
     auto equalResult = isEqual(other);
     if (!equalResult.ok())
         return equalResult.getError();
     auto equal = equalResult.getValue().getValue();
-    bool **isEqual = std::get_if<bool *>(&equal);
-    return Result<Value>(Value(new bool(**isEqual || **isGreaterThan)));
+    bool *isEqual = std::get_if<bool>(&equal);
+    return Result<Value>(Value((*isEqual || *isGreaterThan)));
 }
 
 Result<Value> Value::negate()
