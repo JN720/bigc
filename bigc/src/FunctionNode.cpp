@@ -1,5 +1,4 @@
 #include "FunctionNode.h"
-#include "IdentifierNode.h"
 #include "TypeNode.h"
 #include "SpreadNode.h"
 
@@ -18,7 +17,7 @@ std::string FunctionNode::resolve(State &state)
 
 Result<Value> FunctionNode::execute(State &state, std::vector<Node *> &args)
 {
-    // each arg should be an identifier or type node
+    // each arg should be a variable node or type node
     // the final one can also be a spread node
     // create the frame for the arguments we pass in
     StateFrame *frame = state.pushFrame();
@@ -33,10 +32,10 @@ Result<Value> FunctionNode::execute(State &state, std::vector<Node *> &args)
         // there should be one more child than args because the last is the end
         // we have already resolved it so get the value
         Value val = args[curVal]->getValue(state);
-        if (dynamic_cast<IdentifierNode *>(child))
+        if (dynamic_cast<VariableNode *>(child))
         {
             // get the name of the function arg and set its value to val
-            frame->setVariable(((IdentifierNode *)child)->getVariable(), val);
+            frame->setVariable(((VariableNode *)child)->getVariable(), val);
             curVal++;
             curArg++;
         }
@@ -45,7 +44,7 @@ Result<Value> FunctionNode::execute(State &state, std::vector<Node *> &args)
             TypeNode *typed = (TypeNode *)arg;
             if (typed->getArgType() != val.getType())
                 return Result<Value>("type assertion failed");
-            frame->setVariable(typed->getName(), val);
+            frame->setVariable(typed->getVariable(), val);
             curVal++;
             curArg++;
         }

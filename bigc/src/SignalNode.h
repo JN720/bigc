@@ -5,10 +5,13 @@
 This is functionally a wrapper node but will be
 recognized by sequence nodes
 */
-class ReturnNode : public Node
+class SignalNode : public Node
 {
 public:
-    ReturnNode();
+    SignalNode(Signal s);
     Value getValue(const State &state);
     std::string resolve(State &state);
+
+private:
+    Signal signal;
 };

@@ -19,7 +19,7 @@ enum NodeType
     N_WRAPPER,
     N_UNBRANCH,
     N_LOOP,
-    N_RETURN
+    N_SIGNAL
 };
 
 class Node

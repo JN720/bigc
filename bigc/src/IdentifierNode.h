@@ -1,16 +1,12 @@
 #pragma once
-#include "Node.h"
+#include "VariableNode.h"
 
-class IdentifierNode : public Node
+class IdentifierNode : public VariableNode
 {
 public:
     // pipe result
     IdentifierNode();
     IdentifierNode(Token &token);
     virtual std::string resolve(State &state) override;
-    std::string getVariable();
     void makeCall();
-
-protected:
-    std::string variable;
 };

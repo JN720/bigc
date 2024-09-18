@@ -1,5 +1,4 @@
 #include "State.h"
-#include <unordered_set>
 
 const std::unordered_set<std::string> BASE_KEYWORDS({"if", "else", "while", "funion"});
 const std::unordered_set<std::string> FUNDAMENTAL_TYPES({"int", "char", "long", "str", "float", "double", "arr", "fn"});
@@ -26,11 +25,11 @@ void State::setVariable(std::string name, Value value)
 
 Result<Value> State::getVariable(std::string name) const
 {
-    for (StateFrame state : states)
+    for (StateFrame frame : states)
     {
-        Result<Value> result = state.getVariable(name);
+        Result<Value> result = frame.getVariable(name);
         if (result.ok())
-            return result;
+            return Result<Value>(result.getValue());
     }
     return Result<Value>("undefined variable");
 }
@@ -72,4 +71,34 @@ StateFrame *State::pushFrame()
 void State::popFrame()
 {
     states.pop_front();
+}
+
+Result<ClassDefinition *> State::getClass(std::string name)
+{
+    for (StateFrame frame : states)
+    {
+        auto result = frame.getClass(name);
+        if (result.ok())
+            return Result<ClassDefinition *>(result.getValue());
+    }
+    return Result<ClassDefinition *>("undefined class");
+}
+
+Result<Node *> State::getClassMethod(std::string name, std::string method)
+{
+    std::string className = name;
+    do
+    {
+        // check if it contains the method
+        Result<ClassDefinition *> result = getClass(name);
+        if (!result.ok())
+            return Result<Node *>("class not found");
+        Result<Node *> function = result.getValue()->getMethod(method);
+        if (function.ok())
+            return Result<Node *>(function.getValue());
+        // if not, check the parent class until there is no parent class
+        className = result.getValue()->getParentClassName();
+    } while (!className.empty());
+
+    return Result<Node *>("undefined class");
 }

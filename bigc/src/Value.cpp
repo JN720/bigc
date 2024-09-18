@@ -14,8 +14,15 @@ Value::Value(Token &token)
         {
         case 's':
             value = new std::string(token.value.substr(1));
+            break;
         case 'n':
             value = std::atoi(token.value.substr(1).c_str());
+            break;
+        case 'f':
+            value = std::atof(token.value.substr(1).c_str());
+            break;
+        case 'l':
+            value = std::atol(token.value.substr(1).c_str());
             break;
         default:
             std::cout << "that's not a valid numberstr\n";
@@ -36,7 +43,6 @@ Value::Value(Wildcard value)
 Result<int> Value::hash()
 {
     int val;
-    std::cout << "type is " << getType() << "\n";
     if (bool *x = std::get_if<bool>(&value))
         val = *x;
     else if (int *x = std::get_if<int>(&value))

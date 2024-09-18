@@ -19,7 +19,7 @@ std::string BranchNode::resolve(State &state)
     {
         if (Iterable<Value> **x = std::get_if<Iterable<Value> *>(&condition))
         {
-            auto result = (*x)->len();
+            Result<int> result = (*x)->len();
             if (!result.ok())
                 return "in branch condition:\n" + result.getError();
             condition = result.getValue();

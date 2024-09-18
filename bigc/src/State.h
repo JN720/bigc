@@ -12,6 +12,8 @@ public:
     bool implements(std::string type, std::string interface);
     StateFrame *pushFrame();
     void popFrame();
+    Result<ClassDefinition *> getClass(std::string name);
+    Result<Node *> getClassMethod(std::string name, std::string method);
 
 private:
     std::forward_list<StateFrame> states;

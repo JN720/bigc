@@ -1,68 +1,126 @@
 #pragma once
 #include <iostream>
+#include <variant>
+
+enum Signal
+{
+    OK,
+    EXIT,
+    RETURN,
+    BREAK,
+    CONTINUE,
+    THROW,
+    ERROR
+};
+
+template <class T>
+using ValErr = std::variant<T, std::string>;
 
 template <class T>
 class Result
 {
 public:
     Result<T>();
+    // when the result is ok
     Result<T>(T val);
+
+    // when there is an error
     Result<T>(std::string str);
+
+    // valueless signal (exit)
+    Result<T>(Signal s);
+
+    // valued signal (return, break, continue)
+    Result<T>(Signal s, T val);
     bool ok();
     T getValue();
     std::string getError();
     void setError(std::string error);
+    Signal getSignal();
+    // this is because of unions I think
+    // Result<T> operator=(const Result<T> &other);
 
 private:
-    T value;
-    std::string error;
+    ValErr<T> value;
+    Signal signal;
 };
 
 template <class T>
-Result<T>::Result()
+inline Result<T>::Result()
 {
-    value = T();
-    error = "";
+    value = std::string("unknown error");
+    signal = ERROR;
 }
 
 template <class T>
-Result<T>::Result(T val)
+inline Result<T>::Result(T val)
 {
     value = val;
-    error = "";
+    signal = OK;
 }
 
 template <class T>
-Result<T>::Result(std::string str)
+inline Result<T>::Result(std::string str)
 {
-    error = str;
+    value = str;
+    signal = ERROR;
 }
 
 template <class T>
-bool Result<T>::ok()
+inline Result<T>::Result(Signal s)
 {
-    return error.empty();
+    signal = s;
 }
 
 template <class T>
-T Result<T>::getValue()
+inline Result<T>::Result(Signal s, T val)
 {
-    if (!ok())
-    {
-        std::cout << "nope you can't access the value in the result!\n";
-        return value;
-    }
-    return value;
+    signal = s;
+    value = val;
 }
 
 template <class T>
-std::string Result<T>::getError()
+inline bool Result<T>::ok()
 {
-    return error;
+    return signal == OK;
 }
 
 template <class T>
-void Result<T>::setError(std::string error)
+inline T Result<T>::getValue()
 {
-    this->error = error;
+    if (T *x = std::get_if<T>(&value))
+        return *x;
+    std::cout << "nope you can't access the value in the result!\n";
+    throw "value does not exist";
 }
+
+template <class T>
+inline std::string Result<T>::getError()
+{
+    if (std::string *x = std::get_if<std::string>(&value))
+        return *x;
+    std::cout << "nope you can't access the error in the result!\n";
+    throw "no error";
+}
+
+template <class T>
+inline void Result<T>::setError(std::string error)
+{
+    value = error;
+}
+
+template <class T>
+inline Signal Result<T>::getSignal()
+{
+    return signal;
+}
+
+/*
+template <class T>
+inline Result<T> Result<T>::operator=(const Result<T> &other)
+{
+    signal = other.signal;
+    value = other.value;
+    return *this;
+}
+*/

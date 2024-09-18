@@ -1,5 +1,4 @@
 #include "TypeNode.h"
-#include "IdentifierNode.h"
 
 TypeNode::TypeNode(std::string &type)
 {
@@ -14,9 +13,9 @@ std::string TypeNode::resolve(State &state)
     return "";
 }
 
-std::string TypeNode::getName()
+std::string TypeNode::getVariable()
 {
-    return ((IdentifierNode *)children[0])->getVariable();
+    return ((VariableNode *)children[0])->getVariable();
 }
 
 std::string TypeNode::getArgType()

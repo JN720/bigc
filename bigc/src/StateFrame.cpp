@@ -29,3 +29,10 @@ Result<bool> StateFrame::implements(std::string type, std::string interface)
     // if the particular interfaces is in one of the implemented for the type
     return Result<bool>(implementedInterfaces[type].find(interface) != implementedInterfaces[type].end());
 }
+
+Result<ClassDefinition *> StateFrame::getClass(std::string name)
+{
+    if (classes.find(name) == classes.end())
+        return Result<ClassDefinition *>("undefined class");
+    return Result<ClassDefinition *>(classes[name]);
+}
