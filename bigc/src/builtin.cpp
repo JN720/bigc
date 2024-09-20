@@ -3,27 +3,32 @@
 
 namespace base
 {
+    std::string fmtValue(Wildcard val)
+    {
+        if (bool *x = std::get_if<bool>(&val))
+            return ((*x) ? "true" : "false");
+        else if (int *x = std::get_if<int>(&val))
+            return std::to_string(*x);
+        else if (long *x = std::get_if<long>(&val))
+            return std::to_string(*x);
+        else if (float *x = std::get_if<float>(&val))
+            return std::to_string(*x);
+        else if (double *x = std::get_if<double>(&val))
+            return std::to_string(*x);
+        else if (char *x = std::get_if<char>(&val))
+            return std::to_string(*x);
+        else if (std::string **x = std::get_if<std::string *>(&val))
+            return **x;
+        else if (Iterable<Value> **x = std::get_if<Iterable<Value> *>(&val))
+            return "arr";
+        else if (Node **x = std::get_if<Node *>(&val))
+            return "<function>";
+        return "nil";
+    }
 
     void printValue(Wildcard val)
     {
-        if (bool *x = std::get_if<bool>(&val))
-            std::cout << ((*x) ? "true" : "false");
-        else if (int *x = std::get_if<int>(&val))
-            std::cout << *x;
-        else if (long *x = std::get_if<long>(&val))
-            std::cout << *x;
-        else if (float *x = std::get_if<float>(&val))
-            std::cout << *x;
-        else if (double *x = std::get_if<double>(&val))
-            std::cout << *x;
-        else if (char *x = std::get_if<char>(&val))
-            std::cout << *x;
-        else if (std::string **x = std::get_if<std::string *>(&val))
-            std::cout << **x;
-        else if (Iterable<Value> **x = std::get_if<Iterable<Value> *>(&val))
-            std::cout << "arr";
-        else if (Node **x = std::get_if<Node *>(&val))
-            std::cout << "<function>";
+        std::cout << fmtValue(val) << '\n';
     }
 
     Result<Value> print(State &state, std::vector<Node *> &args)
@@ -32,6 +37,7 @@ namespace base
         for (Node *arg : args)
         {
             Wildcard val = arg->getValue(state).getValue();
+            // for an object keep executing toString until we get a non-obj
             while (Object **x = std::get_if<Object *>(&val))
             {
                 if (state.implements(arg->getValue(state).getType(), "Printable"))
@@ -48,15 +54,19 @@ namespace base
                     val = output.getValue().getValue();
                 }
             }
-            printValue(val);
+            printout += fmtValue(val);
+            if (arg != args.back())
+                printout += ' ';
         }
-        return Result<Value>();
+        std::cout << printout;
+        return Result<Value>(Value(new std::string(printout)));
     }
 
-    void println(State &state, std::vector<Node *> &args)
+    Result<Value> println(State &state, std::vector<Node *> &args)
     {
-        print(state, args);
+        Result<Value> result = print(state, args);
         std::cout << '\n';
+        return result;
     }
 
     Result<Value> len(State &state, std::vector<Node *> &args)
@@ -136,11 +146,9 @@ namespace base
         switch (index)
         {
         case 0:
-            result = base::print(state, args);
-            break;
+            return base::print(state, args);
         case 1:
-            base::println(state, args);
-            break;
+            return base::println(state, args);
         case 2:
             result = base::len(state, args);
             break;

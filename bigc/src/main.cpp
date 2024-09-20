@@ -369,9 +369,6 @@ const std::string CONTEXT[] = {"base", "expr", "operating", "delim", "arr", "ind
 const std::string HELP[] = {"none", "numberstr", "operator", "text", "accessor", "delimiter", "argexpstart", "argexprend",
                             "indstart", "indend", "ctrlstart", "ctrlend", "pipe", "piperes", "spread", "end"};
 
-const std::string NODETYPES[] = {"leafvalue", "identifier", "call", "operation", "assignment", "index", "sequence",
-                                 "spread", "branch", "access", "pipe", "wrapper", "unbranch", "loop", "signal"};
-
 std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node *parent, Context context, bool piped)
 {
     // assume we are accumulating an expression
@@ -558,9 +555,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
             {
                 // jump out of expr
                 if (cur)
-                {
                     parent->addChild(cur);
-                }
                 // backtrack to end of operating context
                 index--;
                 return "";
@@ -619,7 +614,6 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 {
                     if (tokens[index + 1].value == "else" && tokens[index + 2].type == CTRLSTART)
                     {
-                        std::cout << "elseasting\n";
                         SequenceNode *elseseq = new SequenceNode();
                         // add the else sequence after the if sequence on the branch
                         parent->addChild(elseseq);
@@ -746,7 +740,6 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
             // proper new statement
             else if (context == BASE)
             {
-                context = BASE;
                 parent->addChild(cur);
                 cur = nullptr;
                 break;
@@ -827,9 +820,6 @@ int main(int argc, char *argv[])
                       << error << '\n';
             return 0;
         }
-        Value value = program->getChildren().back()->getValue(state);
-        Wildcard valueValue = value.getValue();
-        base::debugPrint(value);
         return 0;
     }
     std::string line = "";

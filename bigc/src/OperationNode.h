@@ -4,6 +4,7 @@
 enum Operation
 {
     ASS,
+    CAST,
     ADD,
     SUB,
     MUL,

@@ -4,11 +4,13 @@
 namespace base
 {
 
+    std::string fmtValue(Wildcard val);
+
     void printValue(Wildcard val);
 
     Result<Value> print(State &state, std::vector<Node *> &args);
 
-    void println(State &state, std::vector<Node *> &args);
+    Result<Value> println(State &state, std::vector<Node *> &args);
 
     Result<Value> len(State &state, std::vector<Node *> &args);
 

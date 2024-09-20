@@ -21,7 +21,7 @@ std::string IndexNode::resolve(State &state)
     if (Iterable<Value> **x = std::get_if<Iterable<Value> *>(&val))
     {
         Value index = children[1]->getValue(state);
-        auto result = (*x)->get(&index);
+        Result<Value> result = (*x)->get(&index);
         if (!result.ok())
             return "indexing iterable:\n" + result.getError();
         value = result.getValue();
