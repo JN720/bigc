@@ -7,6 +7,6 @@ public:
     // pipe result
     IdentifierNode();
     IdentifierNode(Token &token);
-    virtual std::string resolve(State &state) override;
+    Control resolve(State &state) override;
     void makeCall();
 };

@@ -22,7 +22,7 @@ enum Operation
 class OperationNode : public Node
 {
 public:
-    std::string resolve(State &state) override;
+    Control resolve(State &state) override;
     OperationNode(Token &token);
 
 protected:

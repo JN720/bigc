@@ -5,13 +5,18 @@ BranchNode::BranchNode()
     type = N_BRANCH;
 }
 
-std::string BranchNode::resolve(State &state)
+Control BranchNode::resolve(State &state)
 {
     if (children.size() < 2)
-        return "branch requires a condition and sequence";
-    std::string error = children[0]->resolve(state);
-    if (!error.empty())
-        return "in branch condition:\n" + error;
+        return Control("branch requires a condition and sequence");
+    Control control = children[0]->resolve(state);
+    if (control.control())
+    {
+        value = children[0]->getValue(state);
+        return control;
+    }
+    if (control.error())
+        return control.stack("in branch condition:\n");
     Value conditionVal = children[0]->getValue(state);
     Wildcard condition = conditionVal.getValue();
     bool isTrue = false;
@@ -43,11 +48,16 @@ std::string BranchNode::resolve(State &state)
     if (isTrue)
     {
         // ignore the else portion
-        std::string error = children[1]->resolve(state);
-        if (!error.empty())
-            return "in branch sequence:\n" + error;
+        Control control = children[1]->resolve(state);
+        if (control.control())
+        {
+            value = children[1]->getValue(state);
+            return control;
+        }
+        if (control.error())
+            return control.stack("in branch sequence:\n");
         value = children[1]->getValue(state);
-        return "";
+        return Control(OK);
     }
     else
     {
@@ -56,15 +66,15 @@ std::string BranchNode::resolve(State &state)
         {
             children[2]->resolve(state);
             value = children[2]->getValue(state);
-            return "";
+            return Control(OK);
         }
         // if there is no else statement it is false
         else
         {
             value = Value(false);
-            return "";
+            return Control(OK);
         }
     }
 
-    return "failed to handle branch";
+    return Control("failed to handle branch");
 }

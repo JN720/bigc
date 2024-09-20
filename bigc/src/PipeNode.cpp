@@ -6,12 +6,17 @@ PipeNode::PipeNode()
     type = N_PIPE;
 }
 
-std::string PipeNode::resolve(State &state)
+Control PipeNode::resolve(State &state)
 {
     // resolve left side of pipe
-    std::string error = children[0]->resolve(state);
-    if (!error.empty())
-        return "resolving pipe value:\n" + error;
+    Control control = children[0]->resolve(state);
+    if (control.control())
+    {
+        value = children[0]->getValue(state);
+        return control;
+    }
+    if (control.error())
+        return control.stack("resolving pipe value:\n");
     // add pipe to new state frame
     StateFrame *frame = state.pushFrame();
     frame->setVariable("&", children[0]->getValue(state));
@@ -22,18 +27,27 @@ std::string PipeNode::resolve(State &state)
         IdentifierNode *identifier = (IdentifierNode *)children[1];
         identifier->addChild(new IdentifierNode());
         identifier->makeCall();
-        error = identifier->resolve(state);
-        if (!error.empty())
-            return "resolving pipe function:\n" + error;
+        control = identifier->resolve(state);
+        if (control.control())
+        {
+            value = identifier->getValue(state);
+            return control;
+        }
+        if (control.error())
+            return control.stack("resolving pipe function:\n");
         value = identifier->getValue(state);
     }
     // if we pipe into an expression
     else
     {
-        error = children[1]->resolve(state);
-        if (!error.empty())
-            return "resolving pipe expression:\n" + error;
+        control = children[1]->resolve(state);
+        if (control.control())
+        {
+            value = children[1]->getValue(state);
+        }
+        if (control.error())
+            return control.stack("resolving pipe expression:\n");
         value = children[1]->getValue(state);
     }
-    return "";
+    return Control(OK);
 }

@@ -9,8 +9,8 @@ class SignalNode : public Node
 {
 public:
     SignalNode(Signal s);
-    Value getValue(const State &state);
-    std::string resolve(State &state);
+    Value getValue(const State &state) override;
+    Control resolve(State &state) override;
 
 private:
     Signal signal;

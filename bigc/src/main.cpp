@@ -16,6 +16,7 @@
 #include "Array.h"
 #include "TypeNode.h"
 #include "FunctionNode.h"
+#include "SignalNode.h"
 #include "builtin.h"
 
 const std::string OPERATORS = "+-*!/=><@";
@@ -416,6 +417,14 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                         return "unexpected function definition";
                     cur = new FunctionNode();
                     error = createAST(state, tokens, ++index, cur, FUNDEFARGS, piped);
+                    if (!error.empty())
+                        return error;
+                }
+                else if (token.value == "return")
+                {
+                    // continue with the same context
+                    cur = new SignalNode(RETURN);
+                    error = createAST(state, tokens, ++index, cur, context, piped);
                     if (!error.empty())
                         return error;
                 }

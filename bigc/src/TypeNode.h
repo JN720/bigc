@@ -5,7 +5,7 @@ class TypeNode : public VariableNode
 {
 public:
     TypeNode(std::string &type);
-    std::string resolve(State &state) override;
+    Control resolve(State &state) override;
     std::string getVariable();
     std::string getArgType();
 

@@ -6,5 +6,5 @@ class SequenceNode : public Node
 {
 public:
     SequenceNode();
-    std::string resolve(State &state) override;
+    Control resolve(State &state) override;
 };

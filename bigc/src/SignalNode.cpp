@@ -11,9 +11,12 @@ Value SignalNode::getValue(const State &state)
     return children[0]->getValue(state);
 }
 
-std::string SignalNode::resolve(State &state)
+Control SignalNode::resolve(State &state)
 {
+    // null
     if (children.empty())
-        return "empty wrapper";
+    {
+        return Control("empty wrapper");
+    }
     return children[0]->resolve(state);
 }

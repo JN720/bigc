@@ -7,12 +7,12 @@ FunctionNode::FunctionNode()
     type = N_LEAFVALUE;
 }
 
-std::string FunctionNode::resolve(State &state)
+Control FunctionNode::resolve(State &state)
 {
     if (children.size() < 1)
-        return "function must have sequence";
+        return Control("function must have sequence");
     value = Value(this);
-    return "";
+    return Control(OK);
 }
 
 Result<Value> FunctionNode::execute(State &state, std::vector<Node *> &args)
@@ -62,9 +62,16 @@ Result<Value> FunctionNode::execute(State &state, std::vector<Node *> &args)
             return Result<Value>("invalid node in function arguments");
     }
     // resolve the sequence node
-    std::string error = children.back()->resolve(state);
-    if (!error.empty())
-        return Result<Value>("during function execution:\n" + error);
+    Control control = children.back()->resolve(state);
+    if (control.control())
+    {
+        // return from a function
+        if (control.getSignal() == RETURN)
+            return Result<Value>(children.back()->getValue(state));
+        return Result<Value>("unexpected control signal");
+    }
+    if (control.error())
+        return Result<Value>(control.stack("during function execution:\n"));
     Value result = children.back()->getValue(state);
     state.popFrame();
     return Result<Value>(result);

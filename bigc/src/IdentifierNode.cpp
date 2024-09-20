@@ -21,7 +21,7 @@ void IdentifierNode::makeCall()
     type = N_CALL;
 }
 
-std::string IdentifierNode::resolve(State &state)
+Control IdentifierNode::resolve(State &state)
 {
 
     // check if this is built-in, user-defined, or not a function
@@ -40,22 +40,24 @@ std::string IdentifierNode::resolve(State &state)
         // prepare the arguments
         for (auto child : children)
         {
-            std::string error = child->resolve(state);
-            if (!error.empty())
-                return "resolving function arguments:\n" + error;
+            Control control = child->resolve(state);
+            if (control.control())
+            {
+                value = child->getValue(state);
+                return control;
+            }
+            if (control.error())
+                return control.stack("resolving function arguments:\n");
         }
         // execute built-in function
         Result<Value> result = base::executeFundamentalFunction(builtin, state, children);
         // check for return
-        if (result.getSignal() == RETURN)
+        if (result.ok())
         {
             value = result.getValue();
-            return "";
+            return Control(OK);
         }
-        if (!result.ok())
-            return "executing built-in function:\n" + result.getError();
-        value = result.getValue();
-        return "";
+        return Control(result.getError()).stack("executing built-in function:\n");
     }
 
     Result<Value> result = state.getVariable(variable);
@@ -69,19 +71,24 @@ std::string IdentifierNode::resolve(State &state)
         // prepare the arguments
         for (auto child : children)
         {
-            std::string error = child->resolve(state);
-            if (!error.empty())
-                return "resolving function arguments:\n" + error;
+            Control control = child->resolve(state);
+            if (control.control())
+            {
+                value = child->getValue(state);
+                return control;
+            }
+            if (control.error())
+                return control.stack("resolving function arguments:\n");
         }
         Wildcard val = result.getValue().getValue();
         FunctionNode **function = (FunctionNode **)std::get_if<Node *>(&val);
         if (!function)
-            return "value is not a function";
+            return Control("value is not a function");
         result = (*function)->execute(state, children);
         if (!result.ok())
             return "calling function:\n" + result.getError();
         // execute the function with the resolved args
         value = result.getValue();
     }
-    return "";
+    return Control(OK);
 }

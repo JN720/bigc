@@ -2,6 +2,7 @@
 #include <vector>
 #include "Array.h"
 #include "State.h"
+#include "Control.h"
 
 enum NodeType
 {
@@ -32,7 +33,7 @@ public:
     Node(Value value);
     Node(std::vector<Node *> &children);
     virtual Value getValue(const State &state);
-    virtual std::string resolve(State &state);
+    virtual Control resolve(State &state);
     void addChild(Node *child);
     NodeType getType() const;
     std::vector<Node *> getChildren() const;

@@ -5,18 +5,23 @@ LoopNode::LoopNode()
     type = N_LOOP;
 }
 
-std::string LoopNode::resolve(State &state)
+Control LoopNode::resolve(State &state)
 {
     if (children.size() != 2)
-        return "loop requires a condition and a sequence";
+        return Control("loop requires a condition and a sequence");
     // if the loop does not execute let the value be false
     value = Value(false);
     while (true)
     {
         // get condition
-        std::string error = children[0]->resolve(state);
-        if (!error.empty())
-            return error;
+        Control control = children[0]->resolve(state);
+        if (control.control())
+        {
+            value = children[0]->getValue(state);
+            return control;
+        }
+        if (control.error())
+            return control.stack("evaluating loop condition:\n");
         Value conditionVal = children[0]->getValue(state);
         Wildcard condition = conditionVal.getValue();
         bool isTrue = true;
@@ -49,13 +54,25 @@ std::string LoopNode::resolve(State &state)
         else
             isTrue = false;
         if (!isTrue)
-            return "";
+            return Control(OK);
         // if the condition is satisfied then executre sequence
-        error = children[1]->resolve(state);
-        if (!error.empty())
-            return "during loop:\n" + error;
+        control = children[1]->resolve(state);
+        if (control.control())
+        {
+            // handle break and continue
+            if (control.getSignal() == BREAK)
+            {
+            }
+            if (control.getSignal() == CONTINUE)
+            {
+            }
+            value = children[1]->getValue(state);
+            return control;
+        }
+        if (control.error())
+            return control.stack("during loop:\n");
         value = children[1]->getValue(state);
     }
 
-    return "failed to handle loop";
+    return Control("failed to handle loop");
 }

@@ -1,17 +1,7 @@
 #pragma once
 #include <iostream>
 #include <variant>
-
-enum Signal
-{
-    OK,
-    EXIT,
-    RETURN,
-    BREAK,
-    CONTINUE,
-    THROW,
-    ERROR
-};
+#include "Control.h"
 
 template <class T>
 using ValErr = std::variant<T, std::string>;
@@ -32,6 +22,11 @@ public:
 
     // valued signal (return, break, continue)
     Result<T>(Signal s, T val);
+
+    // from a control
+    Result<T>(Control control);
+
+    Result<T> stack(std::string err);
     bool ok();
     T getValue();
     std::string getError();
@@ -113,6 +108,20 @@ template <class T>
 inline Signal Result<T>::getSignal()
 {
     return signal;
+}
+
+template <class T>
+inline Result<T>::Result(Control control)
+{
+    value = control.getError();
+    signal = control.getSignal();
+}
+
+template <class T>
+inline Result<T> Result<T>::stack(std::string err)
+{
+    value = err + value;
+    return *this;
 }
 
 /*

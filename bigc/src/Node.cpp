@@ -23,7 +23,7 @@ Value Node::getValue(const State &state)
     return value;
 }
 
-std::string Node::resolve(State &state)
+Control Node::resolve(State &state)
 {
     // a leaf value with children is an array
     // other iterables can be constructed from this
@@ -32,18 +32,23 @@ std::string Node::resolve(State &state)
         Array<Value> *arr = new Array<Value>();
         for (auto child : children)
         {
-            std::string error = child->resolve(state);
-            if (!error.empty())
-                return "resolving array elements:\n" + error;
+            Control control = child->resolve(state);
+            if (control.control())
+            {
+                value = child->getValue(state);
+                return control;
+            }
+            if (control.error())
+                return control.stack("resolving array elements:\n");
             arr->add(child->getValue(state));
         }
         value = Value(arr);
-        return "";
+        return Control(OK);
     }
     // value should have already been set
     else if (children.empty())
-        return "";
-    return "unresolvable value";
+        return Control(OK);
+    return Control("unresolvable value");
 }
 
 void Node::addChild(Node *child)

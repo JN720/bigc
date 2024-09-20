@@ -6,5 +6,5 @@ class BranchNode : public Node
 {
 public:
     BranchNode();
-    std::string resolve(State &state) override;
+    Control resolve(State &state) override;
 };

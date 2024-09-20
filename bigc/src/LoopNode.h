@@ -6,5 +6,5 @@ class LoopNode : public Node
 {
 public:
     LoopNode();
-    std::string resolve(State &state) override;
+    Control resolve(State &state) override;
 };

@@ -1,22 +1,27 @@
 #include "OperationNode.h"
 #include "IdentifierNode.h"
 
-std::string OperationNode::resolve(State &state)
+Control OperationNode::resolve(State &state)
 {
     if (children.empty())
-        return "no operands";
+        return Control("no operands");
     // do not do this for assignment
     if (op != ASS)
     {
         for (auto child : children)
         {
-            std::string error = child->resolve(state);
-            if (!error.empty())
-                return "during operation:\n" + error;
+            Control control = child->resolve(state);
+            if (control.control())
+            {
+                value = child->getValue(state);
+                return control;
+            }
+            if (control.error())
+                return control.stack("during operation:\n");
         }
     }
     Result<Value> result("failed to perform operation");
-    std::string error;
+    Control control;
     std::string typeName;
     Wildcard val;
     switch (op)
@@ -25,30 +30,35 @@ std::string OperationNode::resolve(State &state)
         if (children.size() != 2)
             return "invalid number of operands for assignment: '" + std::to_string(children.size()) + '\'';
         // resolve right hand side of assignment operator
-        error = children[1]->resolve(state);
-        if (!error.empty())
-            return "during assignment:\n" + error;
+        control = children[1]->resolve(state);
+        if (control.control())
+        {
+            value = children[1]->getValue(state);
+            return control;
+        }
+        if (control.error())
+            return control.stack("during assignment:\n");
         if (children[0]->getType() == N_IDENTIFIER && dynamic_cast<IdentifierNode *>(children[0]))
         {
             state.setVariable(((IdentifierNode *)children[0])->getVariable(), children[1]->getValue(state));
         }
         else
-            return "cannot assign to non-identifier";
+            return Control("cannot assign to non-identifier");
         value = children[1]->getValue(state);
-        return "";
+        return Control(OK);
     case CAST:
         if (children.size() != 2)
-            return "invalid number of operands for cast: '" + std::to_string(children.size()) + '\'';
+            return Control("invalid number of operands for cast: '" + std::to_string(children.size()) + '\'');
         // ensure we have a variable node (type or identifier)
         if (!dynamic_cast<VariableNode *>(children[1]))
-            return "second operand of cast is not a variable";
+            return Control("second operand of cast is not a variable");
         // ensure the type name is actually a type
         typeName = (((VariableNode *)children[1])->getVariable());
         if (!state.isType(typeName))
-            return "second operand of cast is not a type";
+            return Control("second operand of cast is not a type");
         // if the types are the same just return
         if (children[0]->getValue(state).getType() == typeName)
-            return "";
+            return Control(OK);
         val = children[0]->getValue(state).getValue();
         if (bool *x = std::get_if<bool>(&val))
         {
@@ -152,7 +162,7 @@ std::string OperationNode::resolve(State &state)
                 }
                 catch (const std::exception &e)
                 {
-                    return "cannot cast str to int";
+                    return Control("cannot cast str to int");
                 }
             }
             else if (typeName == "long")
@@ -163,13 +173,13 @@ std::string OperationNode::resolve(State &state)
                 }
                 catch (const std::exception &e)
                 {
-                    return "cannot cast str to long";
+                    return Control("cannot cast str to long");
                 }
             }
             else if (typeName == "char")
             {
                 if ((*x)->length() != 1)
-                    return "cannot cast str with multiple chars to char";
+                    return Control("cannot cast str with multiple chars to char");
                 value = Value((**x)[0]);
             }
             else if (typeName == "float")
@@ -180,7 +190,7 @@ std::string OperationNode::resolve(State &state)
                 }
                 catch (const std::exception &e)
                 {
-                    return "cannot cast str to float";
+                    return Control("cannot cast str to float");
                 }
             }
             else if (typeName == "double")
@@ -191,13 +201,13 @@ std::string OperationNode::resolve(State &state)
                 }
                 catch (const std::exception &e)
                 {
-                    return "cannot cast str to double";
+                    return Control("cannot cast str to double");
                 }
             }
         }
         else
             return "cannot cast " + children[0]->getValue(state).getType() + " to " + typeName;
-        return "";
+        return Control(OK);
     case ADD:
         if (children.size() == 2)
             result = children[0]->getValue(state).add(children[1]->getValue(state));
@@ -255,12 +265,12 @@ std::string OperationNode::resolve(State &state)
             result = children[0]->getValue(state).negate();
         break;
     default:
-        return "no operator specified";
+        return Control("no operator specified");
     }
     if (!result.ok())
         return "during operation:\n" + result.getError();
     value = result.getValue();
-    return "";
+    return Control(OK);
 }
 
 OperationNode::OperationNode(Token &token)

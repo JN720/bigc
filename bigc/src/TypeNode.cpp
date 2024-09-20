@@ -6,11 +6,11 @@ TypeNode::TypeNode(std::string &type)
     type = N_IDENTIFIER;
 }
 
-std::string TypeNode::resolve(State &state)
+Control TypeNode::resolve(State &state)
 {
     if (children.size() != 1)
-        return "type assertion node should have 1 child";
-    return "";
+        return Control("type assertion node should have 1 child");
+    return Control(OK);
 }
 
 std::string TypeNode::getVariable()

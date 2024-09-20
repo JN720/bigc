@@ -5,5 +5,5 @@ class PipeNode : public Node
 {
 public:
     PipeNode();
-    std::string resolve(State &state) override;
+    Control resolve(State &state) override;
 };
