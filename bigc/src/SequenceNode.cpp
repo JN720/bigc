@@ -12,6 +12,8 @@ Control SequenceNode::resolve(State &state)
         Control control = children[i]->resolve(state);
         if (control.control())
         {
+            value = children[i]->getValue(state);
+            return control;
         }
         if (control.error())
             return control.stack("in statement " + std::to_string(i + 1) + " of sequence:\n");

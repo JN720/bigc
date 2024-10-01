@@ -1,5 +1,6 @@
 #include "OperationNode.h"
-#include "IdentifierNode.h"
+#include "builtin.h"
+#include "VariableNode.h"
 
 Control OperationNode::resolve(State &state)
 {
@@ -28,7 +29,7 @@ Control OperationNode::resolve(State &state)
     {
     case ASS:
         if (children.size() != 2)
-            return "invalid number of operands for assignment: '" + std::to_string(children.size()) + '\'';
+            return Control("invalid number of operands for assignment: '" + std::to_string(children.size()) + '\'');
         // resolve right hand side of assignment operator
         control = children[1]->resolve(state);
         if (control.control())
@@ -38,9 +39,9 @@ Control OperationNode::resolve(State &state)
         }
         if (control.error())
             return control.stack("during assignment:\n");
-        if (children[0]->getType() == N_IDENTIFIER && dynamic_cast<IdentifierNode *>(children[0]))
+        if (children[0]->getType() == N_IDENTIFIER && dynamic_cast<VariableNode *>(children[0]))
         {
-            state.setVariable(((IdentifierNode *)children[0])->getVariable(), children[1]->getValue(state));
+            state.setVariable(((VariableNode *)children[0])->getVariable(), children[1]->getValue(state));
         }
         else
             return Control("cannot assign to non-identifier");

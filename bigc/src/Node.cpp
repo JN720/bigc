@@ -65,3 +65,8 @@ std::vector<Node *> Node::getChildren() const
 {
     return children;
 }
+
+bool Node::hasChildren() const
+{
+    return children.size();
+}

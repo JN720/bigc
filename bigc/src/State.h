@@ -14,7 +14,8 @@ public:
     void popFrame();
     Result<ClassDefinition *> getClass(std::string name);
     Result<Node *> getClassMethod(std::string name, std::string method);
+    void listVars();
 
 private:
-    std::forward_list<StateFrame> states;
+    std::forward_list<StateFrame *> states;
 };

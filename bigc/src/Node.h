@@ -37,6 +37,7 @@ public:
     void addChild(Node *child);
     NodeType getType() const;
     std::vector<Node *> getChildren() const;
+    bool hasChildren() const;
 
 protected:
     std::vector<Node *> children;

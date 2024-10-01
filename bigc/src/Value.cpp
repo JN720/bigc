@@ -65,12 +65,12 @@ Result<int> Value::hash()
     return Result<int>(val);
 }
 
-Wildcard Value::getValue()
+Wildcard Value::getValue() const
 {
     return value;
 }
 
-std::string Value::getType()
+std::string Value::getType() const
 {
     if (std::holds_alternative<bool>(value))
         return "bool";

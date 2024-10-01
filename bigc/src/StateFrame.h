@@ -13,6 +13,7 @@ public:
     bool isType(std::string word);
     Result<bool> implements(std::string type, std::string interface);
     Result<ClassDefinition *> getClass(std::string name);
+    void listVars();
 
 private:
     // currently assigned variables

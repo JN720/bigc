@@ -33,8 +33,8 @@ public:
     Value(Token &token);
     Value(Wildcard value);
     Result<int> hash() override;
-    Wildcard getValue();
-    std::string getType();
+    Wildcard getValue() const;
+    std::string getType() const;
     Result<Value> add(Value other);
     Result<Value> inverse();
     Result<Value> subtract(Value other);

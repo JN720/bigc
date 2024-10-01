@@ -428,6 +428,20 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                     if (!error.empty())
                         return error;
                 }
+                else if (token.value == "break")
+                {
+                    cur = new SignalNode(BREAK);
+                    error = createAST(state, tokens, ++index, cur, context, piped);
+                    if (!error.empty())
+                        return error;
+                }
+                else if (token.value == "continue")
+                {
+                    cur = new SignalNode(CONTINUE);
+                    error = createAST(state, tokens, ++index, cur, context, piped);
+                    if (!error.empty())
+                        return error;
+                }
             }
             else // variable or function
             {
@@ -596,8 +610,10 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
             }
             else if (context == LOOPEXPR)
             {
-                if (cur)
-                    parent->addChild(cur);
+                // loop condition
+                if (!cur)
+                    return "expected loop condition";
+                parent->addChild(cur);
                 SequenceNode *loop = new SequenceNode();
                 parent->addChild(loop);
                 // the sequence for the loop
@@ -608,17 +624,21 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
             }
             else if (context == IFEXPR)
             {
+                // the parent is the branch node
                 if (!cur)
                     return "expected condition expression";
                 // conditional expression
+                parent->addChild(cur);
+                // create the sequence
                 SequenceNode *ifseq = new SequenceNode();
                 parent->addChild(ifseq);
+                // populate the sequence
                 error = createAST(state, tokens, ++index, ifseq, IFSEQ, piped);
                 if (!error.empty())
                     return error;
                 // after the sequence ends we will have hit the ctrlend
                 // there is no kickback so we are on the }
-                // check for else and if so, add an unbramch
+                // check for else and if so, add a sequence for that
                 if (tokens.size() > index + 2 && tokens[index + 1].type == TEXT)
                 {
                     if (tokens[index + 1].value == "else" && tokens[index + 2].type == CTRLSTART)
@@ -632,6 +652,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                             return error;
                     }
                 }
+                // return to where we initialized the ifexpr
                 return "";
             }
             else if (context == OPERATING)
@@ -740,6 +761,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 index--;
                 return "";
             }
+            // add cur to the sequence and potentially add more
             else if (context == SEQ || context == IFSEQ)
             {
                 if (cur)
@@ -822,11 +844,11 @@ int main(int argc, char *argv[])
         std::cout << "\n";
         printTree(*program);
         std::cout << "\n";
-        error = program->resolve(state);
-        if (!error.empty())
+        Control control = program->resolve(state);
+        if (control.error())
         {
             std::cout << "Runtime Error:\n"
-                      << error << '\n';
+                      << control.getError() << '\n';
             return 0;
         }
         return 0;
@@ -861,7 +883,13 @@ int main(int argc, char *argv[])
         std::cout << "\n";
         printTree(*program);
         std::cout << "\n";
-        program->resolve(state);
+        Control control = program->resolve(state);
+        if (control.error())
+        {
+            std::cout << "Runtime Error:\n"
+                      << control.getError() << '\n';
+            return 0;
+        }
         Value value = program->getChildren().back()->getValue(state);
         Wildcard valueValue = value.getValue();
         std::cout << "type: " << value.getType() << ' ' << '\n';

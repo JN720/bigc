@@ -6,14 +6,14 @@ StateFrame::StateFrame()
 
 void StateFrame::setVariable(std::string name, Value value)
 {
-    variables[name] = value;
+    this->variables[name] = value;
 }
 
 Result<Value> StateFrame::getVariable(std::string name) const
 {
     if (variables.find(name) == variables.end())
         return Result<Value>("undefined variable");
-    return Result<Value>(variables.at(name));
+    return Result<Value>(this->variables.at(name));
 }
 
 bool StateFrame::isType(std::string word)
@@ -35,4 +35,16 @@ Result<ClassDefinition *> StateFrame::getClass(std::string name)
     if (classes.find(name) == classes.end())
         return Result<ClassDefinition *>("undefined class");
     return Result<ClassDefinition *>(classes[name]);
+}
+
+void StateFrame::listVars()
+{
+    for (auto pair : variables)
+    {
+        std::cout << pair.first << ", " << pair.second.getType();
+        auto thing = pair.second.getValue();
+        if (int *x = std::get_if<int>(&thing))
+            std::cout << ", " << *x;
+        std::cout << '\n';
+    }
 }

@@ -1,4 +1,5 @@
 #include "LoopNode.h"
+#include "builtin.h"
 
 LoopNode::LoopNode()
 {
@@ -30,9 +31,9 @@ Control LoopNode::resolve(State &state)
         {
             if (Iterable<Value> **x = std::get_if<Iterable<Value> *>(&condition))
             {
-                auto result = (*x)->len();
+                Result<int> result = (*x)->len();
                 if (!result.ok())
-                    return result.getError();
+                    return Control(result.getError());
                 condition = result.getValue();
             }
 
@@ -55,17 +56,24 @@ Control LoopNode::resolve(State &state)
             isTrue = false;
         if (!isTrue)
             return Control(OK);
-        // if the condition is satisfied then executre sequence
+        // if the condition is satisfied then execute the sequence
         control = children[1]->resolve(state);
         if (control.control())
         {
             // handle break and continue
             if (control.getSignal() == BREAK)
             {
+                if (children[1]->hasChildren())
+                    value = children[1]->getValue(state);
+                return Control(OK);
             }
             if (control.getSignal() == CONTINUE)
             {
+                if (children[1]->hasChildren())
+                    value = children[1]->getValue(state);
+                continue;
             }
+            // return propagates upward
             value = children[1]->getValue(state);
             return control;
         }
