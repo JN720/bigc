@@ -17,6 +17,7 @@
 #include "TypeNode.h"
 #include "FunctionNode.h"
 #include "SignalNode.h"
+#include "CollectNode.h"
 #include "builtin.h"
 
 const std::string OPERATORS = "+-*!/=><@";
@@ -408,6 +409,16 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                         return "unexpected while";
                     // look for condition
                     cur = new LoopNode();
+                    error = createAST(state, tokens, ++index, cur, LOOPEXPR, piped);
+                    if (!error.empty())
+                        return error;
+                }
+                else if (token.value == "collect")
+                {
+                    if (cur)
+                        return "unexpected collect";
+                    // look for condition
+                    cur = new CollectNode();
                     error = createAST(state, tokens, ++index, cur, LOOPEXPR, piped);
                     if (!error.empty())
                         return error;

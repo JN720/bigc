@@ -150,8 +150,7 @@ namespace base
         case 1:
             return base::println(state, args);
         case 2:
-            result = base::len(state, args);
-            break;
+            return base::len(state, args);
         case 4:
             result = base::input(state, args);
         }
