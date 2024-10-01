@@ -362,10 +362,11 @@ enum Context
     ELSEEXPR,
     SEQ,
     LOOPEXPR,
-    FUNDEFARGS
+    FUNDEFARGS,
+    SIGNAL
 };
 
-const std::string CONTEXT[] = {"base", "expr", "operating", "delim", "arr", "indexpr", "ifexpr", "ifseq", "elseexpr", "seq", "loopexpr", "fundefargs"};
+const std::string CONTEXT[] = {"base", "expr", "operating", "delim", "arr", "indexpr", "ifexpr", "ifseq", "elseexpr", "seq", "loopexpr", "fundefargs", "signal"};
 
 const std::string HELP[] = {"none", "numberstr", "operator", "text", "accessor", "delimiter", "argexpstart", "argexprend",
                             "indstart", "indend", "ctrlstart", "ctrlend", "pipe", "piperes", "spread", "end"};
@@ -424,21 +425,22 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 {
                     // continue with the same context
                     cur = new SignalNode(RETURN);
-                    error = createAST(state, tokens, ++index, cur, context, piped);
+                    // this functions a lot like operating but allows having no children
+                    error = createAST(state, tokens, ++index, cur, SIGNAL, piped);
                     if (!error.empty())
                         return error;
                 }
                 else if (token.value == "break")
                 {
                     cur = new SignalNode(BREAK);
-                    error = createAST(state, tokens, ++index, cur, context, piped);
+                    error = createAST(state, tokens, ++index, cur, SIGNAL, piped);
                     if (!error.empty())
                         return error;
                 }
                 else if (token.value == "continue")
                 {
                     cur = new SignalNode(CONTINUE);
-                    error = createAST(state, tokens, ++index, cur, context, piped);
+                    error = createAST(state, tokens, ++index, cur, SIGNAL, piped);
                     if (!error.empty())
                         return error;
                 }
@@ -505,7 +507,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
             }
             break;
         case DELIMITER:
-            if (context == OPERATING)
+            if (context == OPERATING || context == SIGNAL)
             {
                 if (!cur)
                     return "unexpected ,";
@@ -537,12 +539,12 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
             break;
         case ARGEXPREND:
             // std::cout << "we hit ] " << tokens[index].value << " " << CONTEXT[context] << '\n';
-            if (context == DELIMITED || context == EXPR || context == OPERATING)
+            if (context == DELIMITED || context == EXPR || context == OPERATING || context == SIGNAL)
             {
                 if (cur)
                     parent->addChild(cur);
                 // backtrack to end of operating context
-                if (context == OPERATING)
+                if (context == OPERATING || context == SIGNAL)
                     index--;
                 return "";
             }
@@ -574,7 +576,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
             break;
         case INDEND:
             // if an array or index expression ends
-            if (context == OPERATING)
+            if (context == OPERATING || context == SIGNAL)
             {
                 // jump out of expr
                 if (cur)
@@ -655,7 +657,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 // return to where we initialized the ifexpr
                 return "";
             }
-            else if (context == OPERATING)
+            else if (context == OPERATING || context == SIGNAL)
             {
                 if (cur)
                     parent->addChild(cur);
@@ -754,7 +756,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
         case END:
             if (!cur && context == OPERATING)
                 return "unexpected ;";
-            if (context == OPERATING)
+            if (context == OPERATING || context == SIGNAL)
             {
                 if (cur)
                     parent->addChild(cur);

@@ -12,7 +12,8 @@ Control SequenceNode::resolve(State &state)
         Control control = children[i]->resolve(state);
         if (control.control())
         {
-            value = children[i]->getValue(state);
+            if (children[i]->hasChildren())
+                value = children[i]->getValue(state);
             return control;
         }
         if (control.error())

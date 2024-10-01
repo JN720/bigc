@@ -8,15 +8,23 @@ SignalNode::SignalNode(Signal s)
 
 Value SignalNode::getValue(const State &state)
 {
-    return children[0]->getValue(state);
+    if (hasChildren())
+        return children[0]->getValue(state);
+    return Value();
 }
 
 Control SignalNode::resolve(State &state)
 {
-    // null
-    if (children.empty())
+    // this can be void
+    if (!hasChildren())
+        return Control(signal);
+    Control control = children[0]->resolve(state);
+    if (control.control())
     {
-        return Control("empty wrapper");
+        value = children[0]->getValue(state);
+        return control;
     }
-    return children[0]->resolve(state);
+    if (control.error())
+        return control.stack("while evaluating signal:\n");
+    return control;
 }
