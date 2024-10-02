@@ -7,7 +7,7 @@ Control OperationNode::resolve(State &state)
     if (children.empty())
         return Control("no operands");
     // do not do this for assignment
-    if (op != ASS)
+    if (op != ASS && op != CAST)
     {
         for (auto child : children)
         {
@@ -57,6 +57,15 @@ Control OperationNode::resolve(State &state)
         typeName = (((VariableNode *)children[1])->getVariable());
         if (!state.isType(typeName))
             return Control("second operand of cast is not a type");
+        // resolve the value
+        control = children[0]->resolve(state);
+        if (control.control())
+        {
+            value = children[0]->getValue(state);
+            return control;
+        }
+        if (control.error())
+            return control.stack("during operation:\n");
         // if the types are the same just return
         if (children[0]->getValue(state).getType() == typeName)
             return Control(OK);

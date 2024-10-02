@@ -107,6 +107,13 @@ namespace base
         return Result<Value>("not iterable");
     }
 
+    Result<Value> type(State &state, std::vector<Node *> &args)
+    {
+        if (args.size() != 1)
+            return Result<Value>("invalid arity");
+        return Result<Value>(Value(new std::string(args[0]->getValue(state).getType())));
+    }
+
     Result<Value> input(State &state, std::vector<Node *> &args)
     {
         return Result<Value>();
@@ -151,6 +158,8 @@ namespace base
             return base::println(state, args);
         case 2:
             return base::len(state, args);
+        case 3:
+            return base::type(state, args);
         case 4:
             result = base::input(state, args);
         }
