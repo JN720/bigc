@@ -18,6 +18,8 @@
 #include "FunctionNode.h"
 #include "SignalNode.h"
 #include "CollectNode.h"
+#include "ClassNode.h"
+#include "VisibilityNode.h"
 #include "builtin.h"
 
 const std::string OPERATORS = "+-*!/=><@";
@@ -364,10 +366,14 @@ enum Context
     SEQ,
     LOOPEXPR,
     FUNDEFARGS,
-    SIGNAL
+    SIGNAL,
+    CLASSARGS,
+    CLASSSEQ,
+    ATTDECL
 };
 
-const std::string CONTEXT[] = {"base", "expr", "operating", "delim", "arr", "indexpr", "ifexpr", "ifseq", "elseexpr", "seq", "loopexpr", "fundefargs", "signal"};
+const std::string CONTEXT[] = {"base", "expr", "operating", "delim", "arr", "indexpr", "ifexpr", "ifseq", "elseexpr", "seq",
+                               "loopexpr", "fundefargs", "signal", "classargs", "classseq", "attdecl"};
 
 const std::string HELP[] = {"none", "numberstr", "operator", "text", "accessor", "delimiter", "argexpstart", "argexprend",
                             "indstart", "indend", "ctrlstart", "ctrlend", "pipe", "piperes", "spread", "end"};
@@ -432,6 +438,16 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                     if (!error.empty())
                         return error;
                 }
+                else if (token.value == "class")
+                {
+                    // this works similarly to functions
+                    if (cur)
+                        return "unexpected class definition";
+                    cur = new ClassNode();
+                    error = createAST(state, tokens, ++index, cur, CLASSARGS, piped);
+                    if (!error.empty())
+                        return error;
+                }
                 else if (token.value == "return")
                 {
                     // continue with the same context
@@ -454,6 +470,52 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                     error = createAST(state, tokens, ++index, cur, SIGNAL, piped);
                     if (!error.empty())
                         return error;
+                }
+                else if (token.value == "public" || token.value == "private" || token.value == "protected")
+                {
+                    VisibilityNode *accessSpecifier = new VisibilityNode(token.value);
+                    if (cur)
+                        return "unexpected access specifier";
+                    // we either have a method, identifier, or static
+                    cur = accessSpecifier;
+                    // check 2 for the possibilities of it being static or a method
+                    if (tokens.size() > index + 2 && tokens[index + 1].type == TEXT)
+                    {
+                        ++index;
+                        // static attribute
+                        if (tokens[index].value == "shared")
+                        {
+                            accessSpecifier->makeStatic();
+                            error = createAST(state, tokens, index, cur, ATTDECL, piped);
+                            if (!error.empty())
+                                return error;
+                        }
+                        // non-static method
+                        else if (tokens[index].value == "method")
+                        {
+                            error = createAST(state, tokens, ++index, cur, FUNDEFARGS, piped);
+                            if (!error.empty())
+                                return error;
+                        }
+                        // static method
+                        else if (tokens[index].value == "utility")
+                        {
+                            accessSpecifier->makeStatic();
+                            error = createAST(state, tokens, ++index, cur, FUNDEFARGS, piped);
+                            if (!error.empty())
+                                return error;
+                        }
+                        // non-static attribute
+                        else
+                        {
+                            // this functions like fundefargs
+                            error = createAST(state, tokens, index, cur, ATTDECL, piped);
+                            if (!error.empty())
+                                return error;
+                        }
+                    }
+                    else
+                        return "expected 'method', 'static', or an identifier";
                 }
             }
             else // variable or function
@@ -481,18 +543,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 cur = new Node(Value(token));
             break;
         case OPERATOR:
-            if (context != FUNDEFARGS)
-            {
-                OperationNode *op = new OperationNode(token);
-                // if binary op as opposed to unary
-                if (cur)
-                    op->addChild(cur);
-                cur = op;
-                error = createAST(state, tokens, ++index, cur, OPERATING, piped);
-                if (!error.empty())
-                    return error;
-            }
-            else
+            if (context == FUNDEFARGS || context == ATTDECL)
             {
                 // the operator must be a cast
                 if (token.value != "@")
@@ -505,6 +556,17 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                     type->addChild(cur);
                     cur = nullptr;
                 }
+            }
+            else
+            {
+                OperationNode *op = new OperationNode(token);
+                // if binary op as opposed to unary
+                if (cur)
+                    op->addChild(cur);
+                cur = op;
+                error = createAST(state, tokens, ++index, cur, OPERATING, piped);
+                if (!error.empty())
+                    return error;
             }
             break;
         case ACCESSOR:
@@ -528,7 +590,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 index--;
                 return "";
             }
-            else if (context == DELIMITED || context == ARR || context == FUNDEFARGS)
+            else if (context == DELIMITED || context == ARR || context == FUNDEFARGS || context == CLASSARGS)
             {
                 parent->addChild(cur);
                 cur = nullptr;
@@ -621,6 +683,17 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                     return error;
                 return "";
             }
+            else if (context == CLASSARGS)
+            {
+                if (cur)
+                    parent->addChild(cur);
+                SequenceNode *classseq = new SequenceNode();
+                parent->addChild(classseq);
+                createAST(state, tokens, ++index, classseq, CLASSSEQ, piped);
+                if (!error.empty())
+                    return error;
+                return "";
+            }
             else if (context == LOOPEXPR)
             {
                 // loop condition
@@ -688,6 +761,12 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
             break;
         case CTRLEND:
             if (context == IFSEQ)
+            {
+                if (cur)
+                    parent->addChild(cur);
+                return "";
+            }
+            else if (context == CLASSSEQ)
             {
                 if (cur)
                     parent->addChild(cur);
@@ -775,7 +854,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 return "";
             }
             // add cur to the sequence and potentially add more
-            else if (context == SEQ || context == IFSEQ)
+            else if (context == SEQ || context == IFSEQ || context == CLASSSEQ)
             {
                 if (cur)
                     parent->addChild(cur);

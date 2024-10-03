@@ -15,6 +15,7 @@ public:
     Result<ClassDefinition *> getClass(std::string name);
     Result<Node *> getClassMethod(std::string name, std::string method);
     void listVars();
+    void createType(ClassDefinition *definition);
 
 private:
     std::forward_list<StateFrame *> states;

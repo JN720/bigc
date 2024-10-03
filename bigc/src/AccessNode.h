@@ -1,8 +1,8 @@
 #pragma once
-#include "Node.h"
+#include "VariableNode.h"
 #include "Token.h"
 
-class AccessNode : public Node
+class AccessNode : public VariableNode
 {
 public:
     AccessNode(std::string property);

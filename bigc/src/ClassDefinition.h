@@ -5,19 +5,39 @@
 #include "Result.h"
 #include "Value.h"
 
+/*
+Example Class:
+
+Dog = class Animal, INoisemaker {
+    public name@str;
+    public height;
+    private age@int;
+    protected oerform_trick@fn
+
+    publicm Dog() {
+        this.age = 10;
+    }
+
+    privatem internal_method() {
+
+    }
+}
+
+*/
+
 class Node;
 
 class ClassDefinition
 {
 public:
     ClassDefinition();
-    std::string getParentClassName();
+    ClassDefinition *getParent();
     Result<Node *> getMethod(std::string name);
 
 private:
     // implemented interfaces
     std::unordered_set<std::string> interfacesValue;
-    std::string parentClass;
+    ClassDefinition *parentClass;
     // changeable attribute definitions
     // when checking inheritance, we traverse the chain
     // these should have public:, private:, or protected: at the beginning

@@ -4,7 +4,7 @@ ClassDefinition::ClassDefinition()
 {
 }
 
-std::string ClassDefinition::getParentClassName()
+ClassDefinition *ClassDefinition::getParent()
 {
     return parentClass;
 }

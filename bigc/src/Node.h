@@ -20,11 +20,14 @@ enum NodeType
     N_WRAPPER,
     N_UNBRANCH,
     N_LOOP,
-    N_SIGNAL
+    N_SIGNAL,
+    N_CLASS,
+    N_VISIBILITY,
+    N_METHOD
 };
 
 const std::string NODETYPES[] = {"leafvalue", "identifier", "call", "operation", "assignment", "index", "sequence",
-                                 "spread", "branch", "access", "pipe", "wrapper", "unbranch", "loop", "signal"};
+                                 "spread", "branch", "access", "pipe", "wrapper", "unbranch", "loop", "signal", "class"};
 
 class Node
 {
