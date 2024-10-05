@@ -76,3 +76,7 @@ Result<Value> FunctionNode::execute(State &state, std::vector<Node *> &args)
     state.popFrame();
     return Result<Value>(result);
 }
+
+Result<Value> FunctionNode::executeInstanced(Object *obj, State &state, std::vector<Node *> &args)
+{
+}

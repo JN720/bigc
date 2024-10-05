@@ -473,6 +473,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 }
                 else if (token.value == "public" || token.value == "private" || token.value == "protected")
                 {
+                    // sets the access
                     VisibilityNode *accessSpecifier = new VisibilityNode(token.value);
                     if (cur)
                         return "unexpected access specifier";
@@ -486,6 +487,10 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                         if (tokens[index].value == "shared")
                         {
                             accessSpecifier->makeStatic();
+                            ++index;
+                            if (tokens[index].type != TEXT)
+                                return "expected identifier for shared attribute";
+                            accessSpecifier->setVariable(tokens[index].value);
                             error = createAST(state, tokens, index, cur, ATTDECL, piped);
                             if (!error.empty())
                                 return error;
@@ -493,15 +498,27 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                         // non-static method
                         else if (tokens[index].value == "method")
                         {
-                            error = createAST(state, tokens, ++index, cur, FUNDEFARGS, piped);
+                            accessSpecifier->makeMethod();
+                            ++index;
+                            if (tokens[index].type != TEXT)
+                                return "expected identifier for method";
+                            accessSpecifier->setVariable(tokens[index].value);
+                            FunctionNode *fun = new FunctionNode();
+                            error = createAST(state, tokens, ++index, fun, FUNDEFARGS, piped);
                             if (!error.empty())
                                 return error;
                         }
                         // static method
                         else if (tokens[index].value == "utility")
                         {
+                            accessSpecifier->makeMethod();
                             accessSpecifier->makeStatic();
-                            error = createAST(state, tokens, ++index, cur, FUNDEFARGS, piped);
+                            ++index;
+                            if (tokens[index].type != TEXT)
+                                return "expected identifier for utility";
+                            FunctionNode *fun = new FunctionNode();
+                            accessSpecifier->setVariable(tokens[index].value);
+                            error = createAST(state, tokens, ++index, fun, FUNDEFARGS, piped);
                             if (!error.empty())
                                 return error;
                         }
@@ -846,7 +863,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
         case END:
             if (!cur && context == OPERATING)
                 return "unexpected ;";
-            if (context == OPERATING || context == SIGNAL)
+            if (context == OPERATING || context == SIGNAL || context == ATTDECL)
             {
                 if (cur)
                     parent->addChild(cur);

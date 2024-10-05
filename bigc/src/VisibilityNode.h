@@ -1,13 +1,6 @@
 #pragma once
 #include "VariableNode.h"
 
-enum AccessSpecifier
-{
-    PUBLIC,
-    PRIVATE,
-    PROTECTED
-};
-
 // this specifies access as public, private, or protected
 class VisibilityNode : public VariableNode
 {
@@ -20,8 +13,12 @@ public:
     Control resolve(State &state);
     std::string getVariable() override;
     void makeStatic();
+    bool getIsStatic();
+    void applyToDefinition(ClassDefinition *definition);
+    void makeMethod();
 
 protected:
     AccessSpecifier access;
     bool isStatic;
+    bool isMethod;
 };

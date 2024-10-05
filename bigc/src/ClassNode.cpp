@@ -2,6 +2,8 @@
 #include "VisibilityNode.h"
 #include "IdentifierNode.h"
 #include "ClassDefinition.h"
+#include "InterfaceNode.h"
+#include "FunctionNode.h"
 
 ClassNode::ClassNode()
 {
@@ -43,10 +45,14 @@ Control ClassNode::resolve(State &state)
             // parent class
             if (dynamic_cast<ClassNode *>(*x))
             {
+                ClassNode *parentDef = (ClassNode *)(*x);
+                definition->applyParent(parentDef->getClassDefinition());
             }
             // interface
-            else if (dynamic_cast<ClassNode *>(*x))
+            else if (dynamic_cast<InterfaceNode *>(*x))
             {
+                InterfaceNode *interfaceDef = (InterfaceNode *)(*x);
+                definition->applyInterface(interfaceDef->getInterface());
             }
             else
                 return Control("expected a class or interface");
@@ -54,22 +60,32 @@ Control ClassNode::resolve(State &state)
         else
             return Control("expected an identifier for parent classes and interfaces");
     }
-    for (auto child : children)
+    // class sequence
+    Control control = children.back()->resolve(state);
+    if (control.control())
     {
-        Control control = child->resolve(state);
-        if (control.control())
-        {
-            value = child->getValue(state);
-            return control;
-        }
-        if (control.error())
-            return control.stack("during class definition:\n");
+        value = children.back()->getValue(state);
+        return control;
     }
-    for (auto child : children)
+    if (control.error())
+        return control.stack("during class definition:\n");
+    // manually evaluate the sequence's children
+    for (auto child : children.back()->getChildren())
     {
         if (dynamic_cast<VisibilityNode *>(child))
         {
             VisibilityNode *visibility = (VisibilityNode *)child;
+            Control control = visibility->resolve(state);
+            if (control.control())
+            {
+                value = visibility->getValue(state);
+                return control;
+            }
+            if (control.error())
+                return control.stack("during class definition:\n");
+            visibility->applyToDefinition(definition);
         }
+        else
+            return Control("expected a visibility node");
     }
 }

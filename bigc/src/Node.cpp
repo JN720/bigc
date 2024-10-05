@@ -1,6 +1,4 @@
 #include "Node.h"
-#include "Value.h"
-#include "Array.h"
 
 Node::Node(Value value)
 {

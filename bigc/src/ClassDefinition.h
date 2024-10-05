@@ -4,6 +4,7 @@
 #include <unordered_set>
 #include "Result.h"
 #include "Value.h"
+#include "Interface.h"
 
 /*
 Example Class:
@@ -25,6 +26,13 @@ Dog = class Animal, INoisemaker {
 
 */
 
+enum AccessSpecifier
+{
+    PUBLIC,
+    PRIVATE,
+    PROTECTED
+};
+
 class Node;
 
 class ClassDefinition
@@ -33,16 +41,30 @@ public:
     ClassDefinition();
     ClassDefinition *getParent();
     Result<Node *> getMethod(std::string name);
+    void applyParent(ClassDefinition *parent);
+    const std::unordered_map<std::string, Node *> &getMethods();
+    const std::unordered_map<std::string, Node *> &getStaticMethods();
+    const std::unordered_map<std::string, AccessSpecifier> &getAttributes();
+    const std::unordered_map<std::string, AccessSpecifier> &getStaticAttributes();
+    const std::unordered_set<Interface *> &getInterfaces();
+    void applyInterface(Interface *interface);
+    void addMethod(std::string name, Node *method, bool isStatic);
+    void addAttribute(std::string name, AccessSpecifier access, bool isStatic);
+    bool implements(Interface *interface);
+    Result<Node *> getClassMethod(std::string name);
 
 private:
     // implemented interfaces
-    std::unordered_set<std::string> interfacesValue;
+    std::unordered_set<Interface *> interfaces;
     ClassDefinition *parentClass;
     // changeable attribute definitions
     // when checking inheritance, we traverse the chain
     // these should have public:, private:, or protected: at the beginning
-    std::unordered_map<std::string, Node *> definitions;
+    std::unordered_map<std::string, AccessSpecifier> attributes;
     // non-changeable methods
     // these cannot be changed, though an attribute can be a function
     std::unordered_map<std::string, Node *> methods;
+    // static versions
+    std::unordered_map<std::string, AccessSpecifier> staticAttributes;
+    std::unordered_map<std::string, Node *> staticMethods;
 };

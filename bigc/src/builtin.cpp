@@ -1,5 +1,7 @@
 #include "builtin.h"
 #include "FunctionNode.h"
+#include "Object.h"
+#include "InterfaceNode.h"
 
 namespace base
 {
@@ -38,17 +40,37 @@ namespace base
         {
             Wildcard val = arg->getValue(state).getValue();
             // for an object keep executing toString until we get a non-obj
-            while (Object **x = std::get_if<Object *>(&val))
+            while (Object **obj = std::get_if<Object *>(&val))
             {
-                if (state.implements(arg->getValue(state).getType(), "Printable"))
+                // get the interface from the state
+                Result<Value> interfaceResult = state.getVariable("Printable");
+                if (!interfaceResult.ok())
+                    return Result<Value>("making Printable:\n" + interfaceResult.getError());
+                Wildcard interfaceVal = interfaceResult.getValue().getValue();
+                Interface *printInterface;
+                if (Node **x = std::get_if<Node *>(&interfaceVal))
                 {
-                    Result<Node *> result = state.getClassMethod(arg->getValue(state).getType(), "toString");
+                    if (InterfaceNode *printInterfaceNode = dynamic_cast<InterfaceNode *>(*x))
+                    {
+                        printInterface = printInterfaceNode->getInterface();
+                    }
+                    else
+                        return Result<Value>("Printable is not an interface");
+                }
+                else
+                    return Result<Value>("Printable is not a node");
+                // check if the obj implements it
+                ClassDefinition *objClass = (*obj)->getClass();
+                if (objClass->implements(printInterface))
+                {
+                    // grab the method
+                    Result<Node *> result = objClass->getClassMethod("toString");
                     if (!result.ok())
-                        return Result<Value>("making printable:\n" + result.getError());
+                        return Result<Value>("making Printable:\n" + result.getError());
                     FunctionNode *function = (FunctionNode *)result.getValue();
                     if (!function)
                         return Result<Value>("invalid function");
-                    Result<Value> output = function->execute(state, args);
+                    Result<Value> output = function->executeInstanced(*obj, state, args);
                     if (!output.ok())
                         return Result<Value>(output.getError());
                     val = output.getValue().getValue();

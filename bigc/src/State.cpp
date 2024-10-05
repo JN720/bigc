@@ -86,25 +86,6 @@ Result<ClassDefinition *> State::getClass(std::string name)
     return Result<ClassDefinition *>("undefined class");
 }
 
-Result<Node *> State::getClassMethod(std::string name, std::string method)
-{
-    std::string className = name;
-    do
-    {
-        // check if it contains the method
-        Result<ClassDefinition *> result = getClass(name);
-        if (!result.ok())
-            return Result<Node *>("class not found");
-        Result<Node *> function = result.getValue()->getMethod(method);
-        if (function.ok())
-            return Result<Node *>(function.getValue());
-        // if not, check the parent class until there is no parent class
-        className = result.getValue()->getParentClassName();
-    } while (!className.empty());
-
-    return Result<Node *>("undefined class");
-}
-
 void State::listVars()
 {
     int i = 0;
