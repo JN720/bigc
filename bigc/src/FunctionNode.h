@@ -7,5 +7,5 @@ public:
     FunctionNode();
     Control resolve(State &state) override;
     Result<Value> execute(State &state, std::vector<Node *> &args);
-    Result<Value> executeInstanced(Object *obj, State &state, std::vector<Node *> &args);
+    Result<Value> executeInstanced(Object *obj, State *state, std::vector<Node *> &args);
 };

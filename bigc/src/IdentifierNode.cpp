@@ -1,6 +1,7 @@
 #include "IdentifierNode.h"
 #include "FunctionNode.h"
 #include "builtin.h"
+#include "ClassNode.h"
 
 const std::string FUNDAMENTAL_FUNCTIONS[] = {"print", "println", "len", "type", "input"};
 
@@ -81,13 +82,24 @@ Control IdentifierNode::resolve(State &state)
                 return control.stack("resolving function arguments:\n");
         }
         Wildcard val = result.getValue().getValue();
-        FunctionNode **function = (FunctionNode **)std::get_if<Node *>(&val);
-        if (!function)
-            return Control("value is not a function");
-        result = (*function)->execute(state, children);
-        if (!result.ok())
-            return "calling function:\n" + result.getError();
-        // execute the function with the resolved args
+        Node **node = std::get_if<Node *>(&val);
+        if (!node)
+            return Control("value is not a function or class");
+        if (FunctionNode *function = dynamic_cast<FunctionNode *>(*node))
+        {
+            // execute the function with the resolved args
+            result = function->execute(state, children);
+            if (!result.ok())
+                return "calling function:\n" + result.getError();
+        }
+        else if (ClassNode *objClass = dynamic_cast<ClassNode *>(*node))
+        {
+            result = objClass->getClassDefinition()->construct(&state, children);
+            if (!result.ok())
+                return "constructing object:\n" + result.getError();
+        }
+        else
+            return Control("value is not a function or a class");
         value = result.getValue();
     }
     return Control(OK);

@@ -20,7 +20,6 @@ Control ClassNode::resolve(State &state)
 {
     // the first children are interfaces and parent classes
     // the last child is the class sequence
-
     // start with a blank class
     definition = new ClassDefinition();
     Wildcard val;
@@ -29,6 +28,7 @@ Control ClassNode::resolve(State &state)
         if (dynamic_cast<IdentifierNode *>(children[i]))
         {
             IdentifierNode *identifier = (IdentifierNode *)children[i];
+            // ensure the interface r parent class exists
             Control control = identifier->resolve(state);
             if (control.control())
             {
@@ -61,31 +61,17 @@ Control ClassNode::resolve(State &state)
             return Control("expected an identifier for parent classes and interfaces");
     }
     // class sequence
-    Control control = children.back()->resolve(state);
-    if (control.control())
-    {
-        value = children.back()->getValue(state);
-        return control;
-    }
-    if (control.error())
-        return control.stack("during class definition:\n");
     // manually evaluate the sequence's children
     for (auto child : children.back()->getChildren())
     {
         if (dynamic_cast<VisibilityNode *>(child))
         {
             VisibilityNode *visibility = (VisibilityNode *)child;
-            Control control = visibility->resolve(state);
-            if (control.control())
-            {
-                value = visibility->getValue(state);
-                return control;
-            }
-            if (control.error())
-                return control.stack("during class definition:\n");
             visibility->applyToDefinition(definition);
         }
         else
             return Control("expected a visibility node");
     }
+    value = Value((Node *)this);
+    return Control(OK);
 }

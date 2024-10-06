@@ -1,4 +1,6 @@
 #include "ClassDefinition.h"
+#include "FunctionNode.h"
+#include "Object.h"
 
 ClassDefinition::ClassDefinition()
 {
@@ -24,13 +26,9 @@ const std::unordered_set<Interface *> &ClassDefinition::getInterfaces()
 void ClassDefinition::addMethod(std::string name, Node *method, bool isStatic)
 {
     if (isStatic)
-    {
         staticMethods[name] = method;
-    }
     else
-    {
         methods[name] = method;
-    }
 }
 
 void ClassDefinition::addAttribute(std::string name, AccessSpecifier access, bool isStatic)
@@ -111,4 +109,16 @@ Result<Node *> ClassDefinition::getClassMethod(std::string name)
         return Result<Node *>(methods.at(name));
     }
     return Result<Node *>("failed to find method");
+}
+
+Result<Value> ClassDefinition::construct(State *state, std::vector<Node *> &args)
+{
+    if (methods.find("constructor") == methods.end())
+        return Result<Value>("failed to find constructor function");
+    Node *methodNode = methods.at("constructor");
+    if (FunctionNode *constructor = dynamic_cast<FunctionNode *>(methodNode))
+    {
+        return constructor->executeInstanced(new Object(this), state, args);
+    }
+    return Result<Value>("constructor is not a function");
 };

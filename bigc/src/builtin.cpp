@@ -1,7 +1,7 @@
 #include "builtin.h"
 #include "FunctionNode.h"
-#include "Object.h"
 #include "InterfaceNode.h"
+#include "ClassDefinition.h"
 
 namespace base
 {
@@ -70,7 +70,8 @@ namespace base
                     FunctionNode *function = (FunctionNode *)result.getValue();
                     if (!function)
                         return Result<Value>("invalid function");
-                    Result<Value> output = function->executeInstanced(*obj, state, args);
+                    // execute with the object
+                    Result<Value> output = function->executeInstanced(*obj, &state, args);
                     if (!output.ok())
                         return Result<Value>(output.getError());
                     val = output.getValue().getValue();
@@ -108,11 +109,29 @@ namespace base
                 return Result<Value>("getting length:\n" + length.getError());
             return Result<Value>(Value(length.getValue()));
         }
-        else if (Object **x = std::get_if<Object *>(&val))
+        else if (Object **obj = std::get_if<Object *>(&val))
         {
-            if (state.implements(arg.getType(), "Measurable"))
+            Result<Value> interfaceResult = state.getVariable("Measurable");
+            if (!interfaceResult.ok())
+                return Result<Value>("making Measurable:\n" + interfaceResult.getError());
+            Wildcard interfaceVal = interfaceResult.getValue().getValue();
+            Interface *measureInterface;
+            if (Node **x = std::get_if<Node *>(&interfaceVal))
             {
-                Result<Node *> result = state.getClassMethod(arg.getType(), "len");
+                if (InterfaceNode *measureInterfaceNode = dynamic_cast<InterfaceNode *>(*x))
+                {
+                    measureInterface = measureInterfaceNode->getInterface();
+                }
+                else
+                    return Result<Value>("Measurable is not an interface");
+            }
+            else
+                return Result<Value>("Measurable is not a node");
+
+            ClassDefinition *objClass = (*obj)->getClass();
+            if (objClass->implements(measureInterface))
+            {
+                Result<Node *> result = objClass->getClassMethod("len");
                 if (!result.ok())
                     return Result<Value>("getting length:\n" + result.getError());
                 FunctionNode *function = (FunctionNode *)result.getValue();

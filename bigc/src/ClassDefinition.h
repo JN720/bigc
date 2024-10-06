@@ -5,6 +5,7 @@
 #include "Result.h"
 #include "Value.h"
 #include "Interface.h"
+#include "Object.h"
 
 /*
 Example Class:
@@ -34,6 +35,7 @@ enum AccessSpecifier
 };
 
 class Node;
+class State;
 
 class ClassDefinition
 {
@@ -52,6 +54,7 @@ public:
     void addAttribute(std::string name, AccessSpecifier access, bool isStatic);
     bool implements(Interface *interface);
     Result<Node *> getClassMethod(std::string name);
+    Result<Value> construct(State *state, std::vector<Node *> &args);
 
 private:
     // implemented interfaces

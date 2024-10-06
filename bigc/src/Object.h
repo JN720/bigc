@@ -1,7 +1,8 @@
 #pragma once
 #include <unordered_map>
 #include "Value.h"
-#include "State.h"
+
+class ClassDefinition;
 
 class Object
 {

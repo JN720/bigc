@@ -28,6 +28,8 @@ VisibilityNode::VisibilityNode(std::string specifier)
         access = PRIVATE;
     else if (specifier == "protected")
         access = PROTECTED;
+    isStatic = false;
+    isMethod = false;
 }
 
 AccessSpecifier VisibilityNode::getVisibility()
@@ -59,13 +61,10 @@ Control VisibilityNode::resolve(State &state)
     }
     else
     {
-        if (dynamic_cast<IdentifierNode *>(children[0]))
-        {
-            IdentifierNode *identifier = (IdentifierNode *)children[0];
-        }
-        else
+        if (!dynamic_cast<IdentifierNode *>(children[0]))
             return Control("expected an identifier for the attribute");
     }
+    return Control(OK);
 }
 
 std::string VisibilityNode::getVariable()
@@ -96,11 +95,7 @@ bool VisibilityNode::getIsStatic()
 void VisibilityNode::applyToDefinition(ClassDefinition *definition)
 {
     if (isMethod)
-    {
-        definition->addMethod(getVariable(), children[0], isStatic);
-    }
+        definition->addMethod(variable, children[0], isStatic);
     else
-    {
         definition->addAttribute(variable, access, isStatic);
-    }
 }

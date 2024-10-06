@@ -9,13 +9,10 @@ public:
     Result<Value> getVariable(std::string name) const;
     bool isKeyword(std::string word);
     bool isType(std::string word);
-    bool implements(std::string type, std::string interface);
+    // bool implements(std::string type, std::string interface);
     StateFrame *pushFrame();
     void popFrame();
-    Result<ClassDefinition *> getClass(std::string name);
-    Result<Node *> getClassMethod(std::string name, std::string method);
     void listVars();
-    void createType(ClassDefinition *definition);
 
 private:
     std::forward_list<StateFrame *> states;

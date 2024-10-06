@@ -1,5 +1,6 @@
 #pragma once
 #include "Node.h"
+#include "ClassDefinition.h"
 
 // this produces the class definition
 class ClassNode : public Node

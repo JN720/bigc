@@ -504,6 +504,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                                 return "expected identifier for method";
                             accessSpecifier->setVariable(tokens[index].value);
                             FunctionNode *fun = new FunctionNode();
+                            cur->addChild(fun);
                             error = createAST(state, tokens, ++index, fun, FUNDEFARGS, piped);
                             if (!error.empty())
                                 return error;
@@ -518,6 +519,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                                 return "expected identifier for utility";
                             FunctionNode *fun = new FunctionNode();
                             accessSpecifier->setVariable(tokens[index].value);
+                            cur->addChild(fun);
                             error = createAST(state, tokens, ++index, fun, FUNDEFARGS, piped);
                             if (!error.empty())
                                 return error;
@@ -526,6 +528,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                         else
                         {
                             // this functions like fundefargs
+                            accessSpecifier->setVariable(tokens[index].value);
                             error = createAST(state, tokens, index, cur, ATTDECL, piped);
                             if (!error.empty())
                                 return error;
