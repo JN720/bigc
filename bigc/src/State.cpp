@@ -2,10 +2,30 @@
 
 const std::unordered_set<std::string> BASE_KEYWORDS({"if", "else", "while", "collect", "funion", "break", "continue", "return", "class", "public", "private", "protected", "utility", "shared", "method"});
 const std::unordered_set<std::string> FUNDAMENTAL_TYPES({"int", "char", "long", "str", "float", "double", "arr", "fn"});
+const std::string FUNDAMENTAL_FUNCTIONS[] = {"print", "println", "len", "type", "input"};
 
 State::State()
 {
     states.push_front(new StateFrame());
+
+    registry = new StateFrame();
+    registry->setVariable("true", Value(true));
+    registry->setVariable("false", Value(false));
+}
+
+void State::registerVariable(std::string name, Value value)
+{
+    registry->setVariable(name, value);
+}
+
+bool State::isBuiltIn(std::string name)
+{
+    for (int i = 0; i < sizeof(FUNDAMENTAL_FUNCTIONS) / sizeof(FUNDAMENTAL_FUNCTIONS[0]); i++)
+    {
+        if (FUNDAMENTAL_FUNCTIONS[i] == name)
+            return true;
+    }
+    return false;
 }
 
 void State::setVariable(std::string name, Value value)

@@ -13,7 +13,12 @@ public:
     StateFrame *pushFrame();
     void popFrame();
     void listVars();
+    void registerVariable(std::string name, Value value);
+    bool isBuiltIn(std::string name);
+    Value getBuiltIn(std::string name);
 
 private:
     std::forward_list<StateFrame *> states;
+    // immutable registry of global variables and functions
+    StateFrame *registry;
 };

@@ -25,6 +25,8 @@ namespace base
             return "arr";
         else if (Node **x = std::get_if<Node *>(&val))
             return "<function>";
+        else if (Object **x = std::get_if<Object *>(&val))
+            return "<object>";
         return "nil";
     }
 

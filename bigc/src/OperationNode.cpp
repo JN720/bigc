@@ -45,7 +45,7 @@ Control OperationNode::resolve(State &state)
             var->setValue(state, children[1]->getValue(state));
         }
         else
-            return Control("cannot assign to non-identifier");
+            return Control("cannot assign to non-variable");
         value = children[1]->getValue(state);
         return Control(OK);
     case CAST:

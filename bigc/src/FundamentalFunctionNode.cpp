@@ -1,7 +1,6 @@
 #include "FundamentalFunctionNode.h"
 #include "builtin.h"
 
-const std::string FUNDAMENTAL_FUNCTIONS[] = {"print", "println", "len", "type", "input"};
 const std::unordered_map<std::string, int> FUNCTION_MAP = {
     {"print", 0},
     {"println", 1},

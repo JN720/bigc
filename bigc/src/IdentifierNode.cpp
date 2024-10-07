@@ -1,5 +1,5 @@
 #include "IdentifierNode.h"
-#include "FunctionNode.h"
+#include "FundamentalFunctionNode.h"
 #include "ClassNode.h"
 
 IdentifierNode::IdentifierNode()
@@ -16,7 +16,11 @@ IdentifierNode::IdentifierNode(Token &token)
 
 Control IdentifierNode::resolve(State &state)
 {
-
+    if (state.isBuiltIn(variable))
+    {
+        value = Value(new FundamentalFunctionNode(variable));
+        return Control(OK);
+    }
     Result<Value> result = state.getVariable(variable);
     if (!result.ok())
         return Control("variable not found: '" + variable + '\'');

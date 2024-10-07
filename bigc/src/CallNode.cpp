@@ -50,7 +50,6 @@ Control CallNode::resolve(State &state)
         if (!result.ok())
             return Control(result.getError()).stack("constructing object:\n");
         value = result.getValue();
-        base::debugPrint(value);
         return Control(OK);
     }
     // if this is an object check for a call method
