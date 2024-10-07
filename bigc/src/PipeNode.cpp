@@ -1,5 +1,6 @@
 #include "PipeNode.h"
 #include "IdentifierNode.h"
+#include "CallNode.h"
 
 PipeNode::PipeNode()
 {
@@ -25,8 +26,8 @@ Control PipeNode::resolve(State &state)
     if (children[1]->getType() == N_IDENTIFIER)
     {
         IdentifierNode *identifier = (IdentifierNode *)children[1];
-        identifier->addChild(new IdentifierNode());
-        identifier->makeCall();
+        CallNode *call = new CallNode(identifier);
+        call->addChild(new IdentifierNode());
         control = identifier->resolve(state);
         if (control.control())
         {

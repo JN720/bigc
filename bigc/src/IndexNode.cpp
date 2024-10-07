@@ -34,3 +34,20 @@ Control IndexNode::resolve(State &state)
     }
     return Control("tried to index non-iterable");
 }
+
+Control IndexNode::setValue(State &state, Value value)
+{
+    Wildcard val = children[0]->getValue(state).getValue();
+    if (Iterable<Value> **x = std::get_if<Iterable<Value> *>(&val))
+    {
+        Value index = children[1]->getValue(state);
+        return (*x)->set(&index, value);
+    }
+    else if (Node **x = std::get_if<Node *>(&val))
+    {
+        if (VariableNode *var = dynamic_cast<VariableNode *>(*x))
+            return var->setValue(state, value);
+        return Control("tried to assign to non-variable");
+    }
+    return Control("tried to assign to non-variable");
+}

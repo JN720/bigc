@@ -118,7 +118,9 @@ Result<Value> ClassDefinition::construct(State *state, std::vector<Node *> &args
     Node *methodNode = methods.at("constructor");
     if (FunctionNode *constructor = dynamic_cast<FunctionNode *>(methodNode))
     {
-        return constructor->executeInstanced(new Object(this), state, args);
+        Object *obj = new Object(this);
+        constructor->executeInstanced(obj, state, args);
+        return Result<Value>(Value(obj));
     }
     return Result<Value>("constructor is not a function");
 };

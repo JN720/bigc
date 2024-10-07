@@ -184,6 +184,8 @@ namespace base
             std::cout << **x << '\n';
         else if (Iterable<Value> **x = std::get_if<Iterable<Value> *>(&val))
             std::cout << "arr" << '\n';
+        else if (Object **x = std::get_if<Object *>(&val))
+            std::cout << "obj" << '\n';
         else
             std::cout << "no print implemented" << '\n';
     }

@@ -39,9 +39,10 @@ Control OperationNode::resolve(State &state)
         }
         if (control.error())
             return control.stack("during assignment:\n");
-        if (children[0]->getType() == N_IDENTIFIER && dynamic_cast<VariableNode *>(children[0]))
+        // if this is a variable node, set the value
+        if (VariableNode *var = dynamic_cast<VariableNode *>(children[0]))
         {
-            state.setVariable(((VariableNode *)children[0])->getVariable(), children[1]->getValue(state));
+            var->setValue(state, children[1]->getValue(state));
         }
         else
             return Control("cannot assign to non-identifier");

@@ -1,9 +1,10 @@
 #pragma once
-#include "Node.h"
+#include "VariableNode.h"
 
-class IndexNode : public Node
+class IndexNode : public VariableNode
 {
 public:
     IndexNode();
     Control resolve(State &state) override;
+    Control setValue(State &state, Value value) override;
 };

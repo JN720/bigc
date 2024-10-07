@@ -1,13 +1,13 @@
 #pragma once
 #include "VariableNode.h"
-#include "Token.h"
 
 class AccessNode : public VariableNode
 {
-public:
-    AccessNode(std::string property);
-    Control resolve(State &state) override;
-
-protected:
+private:
     std::string property;
+
+public:
+    AccessNode(const std::string &name);
+    Control resolve(State &state) override;
+    Control setValue(State &state, Value value) override;
 };

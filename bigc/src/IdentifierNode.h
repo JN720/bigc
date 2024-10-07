@@ -8,5 +8,4 @@ public:
     IdentifierNode();
     IdentifierNode(Token &token);
     Control resolve(State &state) override;
-    void makeCall();
 };

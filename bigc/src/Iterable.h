@@ -10,16 +10,17 @@ public:
     virtual Result<T> get(Hashable *index);
     virtual Result<int> len();
     virtual Result<Iterable<T> *> combine(Iterable<T> &other);
+    virtual Control set(Hashable *index, T value);
 };
 
 template <class T>
-std::string Iterable<T>::add(T val)
+inline std::string Iterable<T>::add(T val)
 {
     return std::string();
 }
 
 template <class T>
-Result<T> Iterable<T>::get(Hashable *index)
+inline Result<T> Iterable<T>::get(Hashable *index)
 {
     auto result = Result<T>();
     result.setError("not implemented");
@@ -27,13 +28,19 @@ Result<T> Iterable<T>::get(Hashable *index)
 }
 
 template <class T>
-Result<int> Iterable<T>::len()
+inline Result<int> Iterable<T>::len()
 {
     return Result<int>("not implemented");
 }
 
 template <class T>
-Result<Iterable<T> *> Iterable<T>::combine(Iterable<T> &other)
+inline Result<Iterable<T> *> Iterable<T>::combine(Iterable<T> &other)
 {
     return Result<Iterable *>("not implemented");
+}
+
+template <class T>
+inline Control Iterable<T>::set(Hashable *index, T value)
+{
+    return Control("not implemented");
 }

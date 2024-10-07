@@ -8,6 +8,7 @@ public:
     VariableNode(std::string var);
     virtual std::string getVariable();
     void setVariable(std::string name);
+    virtual Control setValue(State &state, Value value);
 
 protected:
     std::string variable;

@@ -20,6 +20,7 @@
 #include "CollectNode.h"
 #include "ClassNode.h"
 #include "VisibilityNode.h"
+#include "CallNode.h"
 #include "builtin.h"
 
 const std::string OPERATORS = "+-*!/=><@";
@@ -542,7 +543,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
             {
                 IdentifierNode *identifier = new IdentifierNode(token);
                 cur = identifier;
-
+                /*
                 // if we are calling a function
                 // as opposed to a var or fn as value
                 if (tokens.size() > index + 1 && tokens[index + 1].type == ARGEXPRSTART)
@@ -553,6 +554,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                     if (!error.empty())
                         return error;
                 }
+                */
             }
             break;
         case NUMBERSTR:
@@ -590,14 +592,23 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
             }
             break;
         case ACCESSOR:
-            if (!cur)
-                return "unexpected accessor";
-            if (tokens.size() > index + 1 && tokens[index + 1].type == TEXT && !state.isKeyword(tokens[index + 1].value))
+            if (cur)
             {
-                AccessNode *accessor = new AccessNode(tokens[index + 1].value);
-                accessor->addChild(cur);
-                cur = accessor;
+                // while the next token is text and not a keyword
+                while (tokens.size() > index + 1 && tokens[index + 1].type == TEXT && !state.isKeyword(tokens[index + 1].value))
+                {
+                    ++index;
+                    AccessNode *accessor = new AccessNode(tokens[index].value);
+                    accessor->addChild(cur);
+                    cur = accessor;
+                    if (tokens.size() > index + 1 && tokens[index + 1].type == ACCESSOR)
+                        ++index;
+                    else
+                        break;
+                }
             }
+            else
+                return "unexpected accessor";
             break;
         case DELIMITER:
             if (context == OPERATING || context == SIGNAL)
@@ -619,17 +630,26 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 return "unexpected comma";
             break;
         case ARGEXPRSTART:
-            if (!cur)
+            if (cur)
             {
+                // This is a function call
+                CallNode *callNode = new CallNode(cur);
+                cur = callNode;
+                error = createAST(state, tokens, ++index, cur, DELIMITED, piped);
+                if (!error.empty())
+                    return error;
+            }
+            else
+            {
+                // This is a regular parenthesized expression
                 WrapperNode *wrapper = new WrapperNode();
                 cur = wrapper;
                 error = createAST(state, tokens, ++index, cur, EXPR, piped);
                 if (!error.empty())
                     return error;
             }
-            else
-                return "unexpected (";
             break;
+
         case ARGEXPREND:
             // std::cout << "we hit ] " << tokens[index].value << " " << CONTEXT[context] << '\n';
             if (context == DELIMITED || context == EXPR || context == OPERATING || context == SIGNAL)
@@ -820,32 +840,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
             if (piped)
             {
                 IdentifierNode *identifier = new IdentifierNode();
-                // if we are calling a function
-                // as opposed to var or fn as value
-                if (tokens.size() > index + 1 && tokens[index + 1].type == ARGEXPRSTART)
-                {
-                    identifier->makeCall();
-                    cur = identifier;
-                    error = createAST(state, tokens, ++index, cur, DELIMITED, piped);
-                    if (!error.empty())
-                        return error;
-                }
-                // if we are indexing
-                else if (tokens.size() > index + 1 && tokens[index + 1].type == INDSTART)
-                {
-                    IndexNode *indexer = new IndexNode();
-                    cur = indexer;
-                    cur->addChild(identifier);
-                    error = createAST(state, tokens, ++index, cur, INDEXPR, piped);
-                    if (!error.empty())
-                        return error;
-                }
-                else
-                {
-                    if (cur)
-                        return "unexpected |";
-                    cur = identifier;
-                }
+                cur = identifier;
             }
             else
                 return "unexpected &";
