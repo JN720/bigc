@@ -10,6 +10,7 @@ class MethodNode : public FunctionNode
 public:
     MethodNode(Node *method, Object *object);
     Result<Value> execute(State &state, std::vector<Node *> &args) override;
+    Control resolve(State &state) override;
 
 private:
     Object *object;

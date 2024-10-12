@@ -33,16 +33,10 @@ void ClassDefinition::addMethod(std::string name, Node *method, bool isStatic)
 
 void ClassDefinition::addAttribute(std::string name, AccessSpecifier access, bool isStatic)
 {
-    std::cout << "adding attribute " << name << " with access " << access << " and isStatic " << isStatic << std::endl;
     if (isStatic)
-    {
         staticAttributes[name] = access;
-    }
     else
-    {
-        std::cout << "adding to instance attributes" << std::endl;
         attributes[name] = access;
-    }
 }
 
 const std::unordered_map<std::string, AccessSpecifier> &ClassDefinition::getAttributes()
@@ -107,9 +101,7 @@ bool ClassDefinition::implements(Interface *interface)
 Result<Node *> ClassDefinition::getClassMethod(std::string name)
 {
     if (methods.find(name) != methods.end())
-    {
         return Result<Node *>(methods.at(name));
-    }
     return Result<Node *>("failed to find method '" + name + "'");
 }
 

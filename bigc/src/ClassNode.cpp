@@ -63,14 +63,11 @@ Control ClassNode::resolve(State &state)
     // manually evaluate the sequence's children
     for (auto child : children.back()->getChildren())
     {
-        if (dynamic_cast<VisibilityNode *>(child))
-        {
-            VisibilityNode *visibility = (VisibilityNode *)child;
+        if (VisibilityNode *visibility = dynamic_cast<VisibilityNode *>(child))
             visibility->applyToDefinition(definition);
-        }
         else
             return Control("expected a visibility node");
     }
-    value = Value((Node *)this);
+    value = Value(this);
     return Control(OK);
 }

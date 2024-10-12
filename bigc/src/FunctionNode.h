@@ -1,6 +1,7 @@
 #pragma once
 #include "Node.h"
 
+// the arguments are first then the sequence
 class FunctionNode : public Node
 {
 public:
