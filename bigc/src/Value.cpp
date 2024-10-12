@@ -324,12 +324,12 @@ Result<Value> Value::add(Value other)
     {
         if (char *y = std::get_if<char>(&value))
         {
-            val = new std::string(**x + *y);
+            val = new std::string(*y + **x);
             return Result<Value>(Value(val));
         }
-        else if (std::string **x = std::get_if<std::string *>(&value))
+        else if (std::string **y = std::get_if<std::string *>(&value))
         {
-            val = new std::string(**x + *y);
+            val = new std::string(**y + **x);
             return Result<Value>(Value(val));
         }
         else
