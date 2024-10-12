@@ -2,10 +2,15 @@
 
 void Interface::addFunction(std::string name)
 {
-    methods.insert(name);
+    methods.insert({name, "fn"});
 }
 
-const std::unordered_set<std::string> &Interface::getFunctions()
+void Interface::addMethod(std::string name, std::string type)
+{
+    methods.insert({name, type});
+}
+
+const std::unordered_map<std::string, std::string> &Interface::getMethods()
 {
     return methods;
 }

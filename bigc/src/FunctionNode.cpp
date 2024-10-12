@@ -128,6 +128,7 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
     }
     // resolve the sequence node
     Control control = children.back()->resolve(*state);
+    std::cout << "instanced sequence has " << children.back()->getChildren().size() << " children" << std::endl;
     if (control.control())
     {
         // return from a function

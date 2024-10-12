@@ -15,5 +15,17 @@ FundamentalFunctionNode::FundamentalFunctionNode(const std::string &name)
 
 Result<Value> FundamentalFunctionNode::execute(State &state, std::vector<Node *> &args)
 {
+    // resolve the arguments
+    for (Node *arg : args)
+    {
+        Control control = arg->resolve(state);
+        if (control.control())
+        {
+            value = arg->getValue(state);
+            return control;
+        }
+        if (!control.ok())
+            return control.stack("resolving argument:\n");
+    }
     return base::executeFundamentalFunction(functionIndex, state, args);
 }

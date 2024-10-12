@@ -2,6 +2,9 @@
 
 #include "FunctionNode.h"
 
+// this encapsulates a method call and includes the object it is called on
+// it is used for instanced methods
+// this takes the place of a function node for methods
 class MethodNode : public FunctionNode
 {
 public:

@@ -19,6 +19,7 @@
 #include "SignalNode.h"
 #include "CollectNode.h"
 #include "ClassNode.h"
+#include "InterfaceNode.h"
 #include "VisibilityNode.h"
 #include "CallNode.h"
 #include "builtin.h"
@@ -370,11 +371,12 @@ enum Context
     SIGNAL,
     CLASSARGS,
     CLASSSEQ,
-    ATTDECL
+    ATTDECL,
+    INTERFARGS
 };
 
 const std::string CONTEXT[] = {"base", "expr", "operating", "delim", "arr", "indexpr", "ifexpr", "ifseq", "elseexpr", "seq",
-                               "loopexpr", "fundefargs", "signal", "classargs", "classseq", "attdecl"};
+                               "loopexpr", "fundefargs", "signal", "classargs", "classseq", "attdecl", "interfargs"};
 
 const std::string HELP[] = {"none", "numberstr", "operator", "text", "accessor", "delimiter", "argexpstart", "argexprend",
                             "indstart", "indend", "ctrlstart", "ctrlend", "pipe", "piperes", "spread", "end"};
@@ -436,6 +438,15 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                         return "unexpected function definition";
                     cur = new FunctionNode();
                     error = createAST(state, tokens, ++index, cur, FUNDEFARGS, piped);
+                    if (!error.empty())
+                        return error;
+                }
+                else if (token.value == "interface")
+                {
+                    if (cur)
+                        return "unexpected interface definition";
+                    cur = new InterfaceNode();
+                    error = createAST(state, tokens, ++index, cur, INTERFARGS, piped);
                     if (!error.empty())
                         return error;
                 }
@@ -565,7 +576,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 cur = new Node(Value(token));
             break;
         case OPERATOR:
-            if (context == FUNDEFARGS || context == ATTDECL)
+            if (context == FUNDEFARGS || context == ATTDECL || context == INTERFARGS)
             {
                 // the operator must be a cast
                 if (token.value != "@")
@@ -621,7 +632,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 index--;
                 return "";
             }
-            else if (context == DELIMITED || context == ARR || context == FUNDEFARGS || context == CLASSARGS)
+            else if (context == DELIMITED || context == ARR || context == FUNDEFARGS || context == CLASSARGS || context == INTERFARGS)
             {
                 parent->addChild(cur);
                 cur = nullptr;
@@ -712,7 +723,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
             break;
         case CTRLSTART:
             // start of a function
-            if (context == FUNDEFARGS)
+            if (context == FUNDEFARGS || context == INTERFARGS)
             {
                 if (cur)
                     parent->addChild(cur);

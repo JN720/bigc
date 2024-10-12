@@ -18,6 +18,11 @@ Control Object::setProperty(const std::string &property, const Value &value)
     return Control(OK);
 }
 
+void Object::addProperty(const std::string &property, const Value &value)
+{
+    attributes[property] = value;
+}
+
 Result<Value> Object::getProperty(const std::string &property)
 {
     if (attributes.find(property) == attributes.end())

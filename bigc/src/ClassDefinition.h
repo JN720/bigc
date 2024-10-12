@@ -54,6 +54,7 @@ public:
     void addAttribute(std::string name, AccessSpecifier access, bool isStatic);
     bool implements(Interface *interface);
     Result<Node *> getClassMethod(std::string name);
+    bool hasAttribute(std::string name);
     Result<Value> construct(State *state, std::vector<Node *> &args);
 
 private:

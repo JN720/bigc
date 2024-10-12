@@ -1,4 +1,5 @@
 #include "State.h"
+#include "Interface.h"
 
 const std::unordered_set<std::string> BASE_KEYWORDS({"if", "else", "while", "collect", "funion", "break", "continue", "return", "class", "public", "private", "protected", "utility", "shared", "method"});
 const std::unordered_set<std::string> FUNDAMENTAL_TYPES({"int", "char", "long", "str", "float", "double", "arr", "fn"});
@@ -30,7 +31,6 @@ bool State::isBuiltIn(std::string name)
 
 void State::setVariable(std::string name, Value value)
 {
-    int i = 0;
     // search for existing variable
     for (StateFrame *state : states)
     {

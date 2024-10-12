@@ -33,12 +33,14 @@ void ClassDefinition::addMethod(std::string name, Node *method, bool isStatic)
 
 void ClassDefinition::addAttribute(std::string name, AccessSpecifier access, bool isStatic)
 {
+    std::cout << "adding attribute " << name << " with access " << access << " and isStatic " << isStatic << std::endl;
     if (isStatic)
     {
         staticAttributes[name] = access;
     }
     else
     {
+        std::cout << "adding to instance attributes" << std::endl;
         attributes[name] = access;
     }
 }
@@ -108,7 +110,12 @@ Result<Node *> ClassDefinition::getClassMethod(std::string name)
     {
         return Result<Node *>(methods.at(name));
     }
-    return Result<Node *>("failed to find method");
+    return Result<Node *>("failed to find method '" + name + "'");
+}
+
+bool ClassDefinition::hasAttribute(std::string name)
+{
+    return attributes.find(name) != attributes.end();
 }
 
 Result<Value> ClassDefinition::construct(State *state, std::vector<Node *> &args)
@@ -119,7 +126,13 @@ Result<Value> ClassDefinition::construct(State *state, std::vector<Node *> &args
     if (FunctionNode *constructor = dynamic_cast<FunctionNode *>(methodNode))
     {
         Object *obj = new Object(this);
-        constructor->executeInstanced(obj, state, args);
+        for (auto attribute : attributes)
+        {
+            obj->addProperty(attribute.first, Value(false));
+        }
+        Result<Value> result = constructor->executeInstanced(obj, state, args);
+        if (!result.ok())
+            return Result<Value>(result.getError());
         return Result<Value>(Value(obj));
     }
     return Result<Value>("constructor is not a function");

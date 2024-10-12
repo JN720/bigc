@@ -43,9 +43,8 @@ Control ClassNode::resolve(State &state)
             if (!x)
                 return Control("invalid value for parent class/interface");
             // parent class
-            if (dynamic_cast<ClassNode *>(*x))
+            if (ClassNode *parentDef = dynamic_cast<ClassNode *>(*x))
             {
-                ClassNode *parentDef = (ClassNode *)(*x);
                 definition->applyParent(parentDef->getClassDefinition());
             }
             // interface

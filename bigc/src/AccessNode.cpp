@@ -47,8 +47,7 @@ Control AccessNode::resolve(State &state)
                 value = Value(new MethodNode(method.getValue(), *obj));
                 return Control(OK);
             }
-            else
-                return Control(method.getError()).stack("accessing property:\n");
+            return Control(method.getError()).stack("accessing property:\n");
         }
     }
     else

@@ -4,6 +4,7 @@
 #include "ClassNode.h"
 #include "Object.h"
 #include "builtin.h"
+#include "MethodNode.h"
 
 CallNode::CallNode(Node *callable) : Node()
 {
