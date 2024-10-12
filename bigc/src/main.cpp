@@ -446,9 +446,16 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                     if (cur)
                         return "unexpected interface definition";
                     cur = new InterfaceNode();
-                    error = createAST(state, tokens, ++index, cur, INTERFARGS, piped);
-                    if (!error.empty())
-                        return error;
+                    // if we have an interface name we expect a ( and go until )
+                    if (tokens.size() > index + 1 && tokens[index + 1].type == ARGEXPRSTART)
+                    {
+                        ++index;
+                        error = createAST(state, tokens, ++index, cur, INTERFARGS, piped);
+                        if (!error.empty())
+                            return error;
+                    }
+                    else
+                        return "expected ( for interface methods";
                 }
                 else if (token.value == "class")
                 {
@@ -663,7 +670,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
 
         case ARGEXPREND:
             // std::cout << "we hit ] " << tokens[index].value << " " << CONTEXT[context] << '\n';
-            if (context == DELIMITED || context == EXPR || context == OPERATING || context == SIGNAL)
+            if (context == DELIMITED || context == EXPR || context == OPERATING || context == SIGNAL || context == INTERFARGS)
             {
                 if (cur)
                     parent->addChild(cur);
@@ -723,7 +730,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
             break;
         case CTRLSTART:
             // start of a function
-            if (context == FUNDEFARGS || context == INTERFARGS)
+            if (context == FUNDEFARGS)
             {
                 if (cur)
                     parent->addChild(cur);

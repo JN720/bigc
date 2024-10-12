@@ -1,7 +1,8 @@
 #include "State.h"
 #include "Interface.h"
 
-const std::unordered_set<std::string> BASE_KEYWORDS({"if", "else", "while", "collect", "funion", "break", "continue", "return", "class", "public", "private", "protected", "utility", "shared", "method"});
+const std::unordered_set<std::string> BASE_KEYWORDS({"if", "else", "while", "collect", "funion", "break", "continue",
+                                                     "return", "class", "public", "private", "protected", "utility", "shared", "method", "interface"});
 const std::unordered_set<std::string> FUNDAMENTAL_TYPES({"int", "char", "long", "str", "float", "double", "arr", "fn"});
 const std::string FUNDAMENTAL_FUNCTIONS[] = {"print", "println", "len", "type", "input"};
 
