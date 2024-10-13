@@ -37,7 +37,7 @@ Control AccessNode::resolve(State &state)
                 value = Value(method.getValue());
                 return Control(OK);
             }
-            return Control(method.getError()).stack("accessing property:\n");
+            return Control(method.getError()).stack("accessing class property:\n");
         }
     }
     else if (VariableNode **var = (VariableNode **)std::get_if<Node *>(&val))
@@ -68,7 +68,7 @@ Control AccessNode::resolve(State &state)
                 value = Value(new MethodNode(method.getValue(), *obj));
                 return Control(OK);
             }
-            return Control(method.getError()).stack("accessing property:\n");
+            return Control(method.getError()).stack("accessing object property:\n");
         }
     }
     else
@@ -91,7 +91,11 @@ Control AccessNode::setValue(State &state, Value value)
         return control.stack("Error resolving child for attribute access");
 
     Wildcard val = children[0]->getValue(state).getValue();
-    if (VariableNode **var = (VariableNode **)std::get_if<Node *>(&val))
+    if (ClassNode **cls = (ClassNode **)std::get_if<Node *>(&val))
+    {
+        (*cls)->getClassDefinition()->setStaticAttribute(property, value);
+    }
+    else if (VariableNode **var = (VariableNode **)std::get_if<Node *>(&val))
     {
         (*var)->setValue(state, value);
     }

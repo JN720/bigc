@@ -100,23 +100,7 @@ bool VisibilityNode::getIsStatic()
 void VisibilityNode::applyToDefinition(ClassDefinition *definition, const State &state)
 {
     if (isMethod)
-        definition->addMethod(variable, children[0], isStatic);
+        definition->addMethod(variable, children[0], isStatic, access);
     else
-    {
-        if (isStatic)
-        {
-            if (children.size())
-                definition->addStaticAttribute(variable, children[0]->getValue(state), access);
-            else
-                definition->addStaticAttribute(variable, Value(false), access);
-        }
-        else
-        {
-            definition->addAttribute(variable, access, isStatic);
-            if (children.size())
-                definition->setAttributeDefault(variable, children[0]->getValue(state));
-            else
-                definition->setAttributeDefault(variable, Value(false));
-        }
-    }
+        definition->addAttribute(variable, access, isStatic, children.size() ? children[0]->getValue(state) : Value(false));
 }

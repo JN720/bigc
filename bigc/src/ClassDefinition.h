@@ -14,13 +14,13 @@ Dog = class Animal, INoisemaker {
     public name@str;
     public height;
     private age@int;
-    protected oerform_trick@fn
+    protected perform_trick@fn
 
-    publicm Dog() {
+    public method Dog() {
         this.age = 10;
     }
 
-    privatem internal_method() {
+    private method internal_method() {
 
     }
 }
@@ -37,6 +37,32 @@ enum AccessSpecifier
 class Node;
 class State;
 
+struct Method
+{
+    Node *method;
+    AccessSpecifier access;
+    Method() {}
+    Method(Node *method, AccessSpecifier access)
+    {
+        this->method = method;
+        this->access = access;
+    }
+};
+
+struct Attribute
+{
+    Value value;
+    AccessSpecifier access;
+    Value defaultValue;
+    Attribute() {}
+    Attribute(Value value, AccessSpecifier access, Value defaultValue)
+    {
+        this->value = value;
+        this->access = access;
+        this->defaultValue = defaultValue;
+    }
+};
+
 class ClassDefinition
 {
 public:
@@ -44,23 +70,22 @@ public:
     ClassDefinition *getParent();
     Result<Node *> getMethod(std::string name);
     void applyParent(ClassDefinition *parent);
-    const std::unordered_map<std::string, Node *> &getMethods();
-    const std::unordered_map<std::string, Node *> &getStaticMethods();
-    const std::unordered_map<std::string, AccessSpecifier> &getAttributes();
-    const std::unordered_map<std::string, AccessSpecifier> &getStaticAttributeAccess();
-    const std::unordered_map<std::string, Value> &getStaticAttributes();
+    const std::unordered_map<std::string, Method> &getMethods();
+    const std::unordered_map<std::string, Method> &getStaticMethods();
+    const std::unordered_map<std::string, Attribute> &getAttributes();
+    const std::unordered_map<std::string, Attribute> &getStaticAttributes();
     const std::unordered_set<Interface *> &getInterfaces();
+    const std::unordered_map<std::string, Attribute> &getAttributeDefaults();
     void applyInterface(Interface *interface);
-    void addMethod(std::string name, Node *method, bool isStatic);
-    void addAttribute(std::string name, AccessSpecifier access, bool isStatic);
+    void addMethod(std::string name, Node *method, bool isStatic, AccessSpecifier access);
+    void addAttribute(std::string name, AccessSpecifier access, bool isStatic, Value defaultValue);
     bool implements(Interface *interface);
     Result<Node *> getClassMethod(std::string name);
     bool hasAttribute(std::string name);
     Result<Value> construct(State *state, std::vector<Node *> &args);
     Result<Node *> getStaticMethod(std::string name);
     Result<Value> getStaticAttribute(std::string name);
-    void addStaticAttribute(std::string name, Value value, AccessSpecifier access);
-    void setAttributeDefault(std::string name, Value value);
+    void setStaticAttribute(std::string name, Value value);
 
 private:
     // implemented interfaces
@@ -69,14 +94,11 @@ private:
     // changeable attribute definitions
     // when checking inheritance, we traverse the chain
     // these should have public:, private:, or protected: at the beginning
-    std::unordered_map<std::string, AccessSpecifier> attributes;
+    std::unordered_map<std::string, Attribute> attributes;
     // non-changeable methods
     // these cannot be changed, though an attribute can be a function
-    std::unordered_map<std::string, Node *> methods;
+    std::unordered_map<std::string, Method> methods;
     // static versions
-    std::unordered_map<std::string, AccessSpecifier> staticAttributeAccess;
-    std::unordered_map<std::string, Value> staticAttributes;
-    std::unordered_map<std::string, Node *> staticMethods;
-    // default values for attributes
-    std::unordered_map<std::string, Value> attributeDefaults;
+    std::unordered_map<std::string, Attribute> staticAttributes;
+    std::unordered_map<std::string, Method> staticMethods;
 };

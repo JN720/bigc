@@ -531,6 +531,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                         // static method
                         else if (tokens[index].value == "utility")
                         {
+                            std::cout << "\nmaking utility\n\n";
                             accessSpecifier->makeMethod();
                             accessSpecifier->makeStatic();
                             ++index;

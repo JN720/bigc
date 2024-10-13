@@ -15,7 +15,7 @@ Result<Node *> ClassDefinition::getMethod(std::string name)
 {
     if (methods.find(name) == methods.end())
         return Result<Node *>("undefined method");
-    return Result<Node *>(methods[name]);
+    return Result<Node *>(methods.at(name).method);
 }
 
 const std::unordered_set<Interface *> &ClassDefinition::getInterfaces()
@@ -23,33 +23,38 @@ const std::unordered_set<Interface *> &ClassDefinition::getInterfaces()
     return interfaces;
 }
 
-void ClassDefinition::addMethod(std::string name, Node *method, bool isStatic)
+void ClassDefinition::addMethod(std::string name, Node *method, bool isStatic, AccessSpecifier access)
 {
     if (isStatic)
-        staticMethods[name] = method;
+        staticMethods[name] = Method(method, access);
     else
-        methods[name] = method;
+        methods[name] = Method(method, access);
 }
 
-void ClassDefinition::addAttribute(std::string name, AccessSpecifier access, bool isStatic)
+void ClassDefinition::addAttribute(std::string name, AccessSpecifier access, bool isStatic, Value defaultValue)
 {
     if (isStatic)
-        staticAttributeAccess[name] = access;
+        staticAttributes[name] = Attribute(defaultValue, access, defaultValue);
     else
-        attributes[name] = access;
+        attributes[name] = Attribute(defaultValue, access, defaultValue);
 }
 
-const std::unordered_map<std::string, AccessSpecifier> &ClassDefinition::getAttributes()
+const std::unordered_map<std::string, Attribute> &ClassDefinition::getAttributes()
 {
     return attributes;
 }
 
-const std::unordered_map<std::string, AccessSpecifier> &ClassDefinition::getStaticAttributeAccess()
+const std::unordered_map<std::string, Attribute> &ClassDefinition::getAttributeDefaults()
 {
-    return staticAttributeAccess;
+    return attributes;
 }
 
-const std::unordered_map<std::string, Node *> &ClassDefinition::getMethods()
+const std::unordered_map<std::string, Attribute> &ClassDefinition::getStaticAttributes()
+{
+    return staticAttributes;
+}
+
+const std::unordered_map<std::string, Method> &ClassDefinition::getMethods()
 {
     return methods;
 }
@@ -59,12 +64,7 @@ void ClassDefinition::applyInterface(Interface *interface)
     interfaces.insert(interface);
 }
 
-const std::unordered_map<std::string, Value> &ClassDefinition::getStaticAttributes()
-{
-    return staticAttributes;
-}
-
-const std::unordered_map<std::string, Node *> &ClassDefinition::getStaticMethods()
+const std::unordered_map<std::string, Method> &ClassDefinition::getStaticMethods()
 {
     return staticMethods;
 }
@@ -74,12 +74,12 @@ void ClassDefinition::applyParent(ClassDefinition *parent)
     // attributes
     for (auto attribute : parent->getAttributes())
     {
-        attributes.insert(attribute);
+        attributes[attribute.first] = attribute.second;
     }
     // static
     for (auto attribute : parent->getStaticAttributes())
     {
-        staticAttributes.insert(attribute);
+        staticAttributes[attribute.first] = attribute.second;
     }
     // interfaces
     for (auto interface : parent->getInterfaces())
@@ -106,7 +106,7 @@ bool ClassDefinition::implements(Interface *interface)
 Result<Node *> ClassDefinition::getClassMethod(std::string name)
 {
     if (methods.find(name) != methods.end())
-        return Result<Node *>(methods.at(name));
+        return Result<Node *>(methods.at(name).method);
     return Result<Node *>("failed to find method '" + name + "'");
 }
 
@@ -119,15 +119,15 @@ Result<Value> ClassDefinition::construct(State *state, std::vector<Node *> &args
 {
     if (methods.find("constructor") == methods.end())
         return Result<Value>("failed to find constructor function");
-    Node *methodNode = methods.at("constructor");
-    if (FunctionNode *constructor = dynamic_cast<FunctionNode *>(methodNode))
+    Method constructor = methods.at("constructor");
+    if (FunctionNode *methodNode = dynamic_cast<FunctionNode *>(constructor.method))
     {
         Object *obj = new Object(this);
-        for (auto attribute : attributeDefaults)
+        for (auto attribute : attributes)
         {
-            obj->addProperty(attribute.first, attribute.second);
+            obj->addProperty(attribute.first, attribute.second.defaultValue);
         }
-        Result<Value> result = constructor->executeInstanced(obj, state, args);
+        Result<Value> result = methodNode->executeInstanced(obj, state, args);
         if (!result.ok())
             return Result<Value>(result.getError());
         return Result<Value>(Value(obj));
@@ -139,23 +139,17 @@ Result<Node *> ClassDefinition::getStaticMethod(std::string name)
 {
     if (staticMethods.find(name) == staticMethods.end())
         return Result<Node *>("failed to find static method '" + name + "'");
-    return Result<Node *>(staticMethods.at(name));
+    return Result<Node *>(staticMethods.at(name).method);
 }
 
 Result<Value> ClassDefinition::getStaticAttribute(std::string name)
 {
     if (staticAttributes.find(name) == staticAttributes.end())
         return Result<Value>("failed to find static attribute '" + name + "'");
-    return Result<Value>(Value(staticAttributes.at(name)));
+    return Result<Value>(staticAttributes.at(name).value);
 }
 
-void ClassDefinition::addStaticAttribute(std::string name, Value value, AccessSpecifier access)
+void ClassDefinition::setStaticAttribute(std::string name, Value value)
 {
-    staticAttributes[name] = value;
-    staticAttributeAccess[name] = access;
-}
-
-void ClassDefinition::setAttributeDefault(std::string name, Value value)
-{
-    attributeDefaults[name] = value;
+    staticAttributes[name].value = value;
 }
