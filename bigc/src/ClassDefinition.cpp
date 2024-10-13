@@ -123,9 +123,9 @@ Result<Value> ClassDefinition::construct(State *state, std::vector<Node *> &args
     if (FunctionNode *constructor = dynamic_cast<FunctionNode *>(methodNode))
     {
         Object *obj = new Object(this);
-        for (auto attribute : attributes)
+        for (auto attribute : attributeDefaults)
         {
-            obj->addProperty(attribute.first, Value(false));
+            obj->addProperty(attribute.first, attribute.second);
         }
         Result<Value> result = constructor->executeInstanced(obj, state, args);
         if (!result.ok())
@@ -153,4 +153,9 @@ void ClassDefinition::addStaticAttribute(std::string name, Value value, AccessSp
 {
     staticAttributes[name] = value;
     staticAttributeAccess[name] = access;
+}
+
+void ClassDefinition::setAttributeDefault(std::string name, Value value)
+{
+    attributeDefaults[name] = value;
 }

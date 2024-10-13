@@ -60,6 +60,7 @@ public:
     Result<Node *> getStaticMethod(std::string name);
     Result<Value> getStaticAttribute(std::string name);
     void addStaticAttribute(std::string name, Value value, AccessSpecifier access);
+    void setAttributeDefault(std::string name, Value value);
 
 private:
     // implemented interfaces
@@ -76,4 +77,6 @@ private:
     std::unordered_map<std::string, AccessSpecifier> staticAttributeAccess;
     std::unordered_map<std::string, Value> staticAttributes;
     std::unordered_map<std::string, Node *> staticMethods;
+    // default values for attributes
+    std::unordered_map<std::string, Value> attributeDefaults;
 };

@@ -87,11 +87,6 @@ void VisibilityNode::setType(std::string type)
     this->attributeType = type;
 }
 
-std::string VisibilityNode::getAttributeType()
-{
-    return attributeType;
-}
-
 bool VisibilityNode::getIsMethod()
 {
     return isMethod;
@@ -116,6 +111,12 @@ void VisibilityNode::applyToDefinition(ClassDefinition *definition, const State 
                 definition->addStaticAttribute(variable, Value(false), access);
         }
         else
+        {
             definition->addAttribute(variable, access, isStatic);
+            if (children.size())
+                definition->setAttributeDefault(variable, children[0]->getValue(state));
+            else
+                definition->setAttributeDefault(variable, Value(false));
+        }
     }
 }

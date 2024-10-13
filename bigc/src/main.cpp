@@ -505,7 +505,6 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                         // static attribute
                         if (tokens[index].value == "shared")
                         {
-                            std::cout << "\nmaking " << tokens[index + 1].value << " static\n\n";
                             accessSpecifier->makeStatic();
                             ++index;
                             if (tokens[index].type != TEXT)
@@ -547,7 +546,6 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                         // non-static attribute
                         else
                         {
-                            std::cout << "\nthe variable is " << tokens[index].value << "\n\n";
                             // this functions like fundefargs
                             accessSpecifier->setVariable(tokens[index].value);
                             error = createAST(state, tokens, ++index, cur, ATTDECL, piped);
@@ -975,10 +973,10 @@ int main(int argc, char *argv[])
             return 0;
         }
         std::string programText;
-        std::string text;
-        while (file >> text)
+        std::string line;
+        while (std::getline(file, line))
         {
-            programText += ' ' + text + ' ';
+            programText += line + '\n';
         }
         Result<std::vector<Token>> result = tokenize(programText);
 
