@@ -39,8 +39,8 @@ AccessSpecifier VisibilityNode::getVisibility()
 
 Control VisibilityNode::resolve(State &state)
 {
-    if (children.size() != 1)
-        return Control("expected one access-specified value");
+    if (children.size() != 1 && children.size() != 2)
+        return Control("expected one or two access-specified values");
     // this will be a method node or just an identifier
     if (isMethod)
     {
@@ -61,20 +61,15 @@ Control VisibilityNode::resolve(State &state)
     }
     else
     {
-        if (!dynamic_cast<IdentifierNode *>(children[0]))
-            return Control("expected an identifier for the attribute");
+        // if we have an attribute and there is a child, it is a default value
+        if (children.size() == 1)
+        {
+            Control control = children[0]->resolve(state);
+            if (!control.ok())
+                return control.stack("during attribute declaration:\n");
+        }
     }
     return Control(OK);
-}
-
-std::string VisibilityNode::getVariable()
-{
-    if (dynamic_cast<VariableNode *>(children[0]))
-    {
-        VariableNode *variable = (VariableNode *)children[0];
-        return variable->getVariable();
-    }
-    return "";
 }
 
 void VisibilityNode::makeStatic()
@@ -87,15 +82,40 @@ void VisibilityNode::makeMethod()
     isMethod = true;
 }
 
+void VisibilityNode::setType(std::string type)
+{
+    this->attributeType = type;
+}
+
+std::string VisibilityNode::getAttributeType()
+{
+    return attributeType;
+}
+
+bool VisibilityNode::getIsMethod()
+{
+    return isMethod;
+}
+
 bool VisibilityNode::getIsStatic()
 {
     return isStatic;
 }
 
-void VisibilityNode::applyToDefinition(ClassDefinition *definition)
+void VisibilityNode::applyToDefinition(ClassDefinition *definition, const State &state)
 {
     if (isMethod)
         definition->addMethod(variable, children[0], isStatic);
     else
-        definition->addAttribute(variable, access, isStatic);
+    {
+        if (isStatic)
+        {
+            if (children.size())
+                definition->addStaticAttribute(variable, children[0]->getValue(state), access);
+            else
+                definition->addStaticAttribute(variable, Value(false), access);
+        }
+        else
+            definition->addAttribute(variable, access, isStatic);
+    }
 }

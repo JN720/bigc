@@ -505,12 +505,13 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                         // static attribute
                         if (tokens[index].value == "shared")
                         {
+                            std::cout << "\nmaking " << tokens[index + 1].value << " static\n\n";
                             accessSpecifier->makeStatic();
                             ++index;
                             if (tokens[index].type != TEXT)
                                 return "expected identifier for shared attribute";
                             accessSpecifier->setVariable(tokens[index].value);
-                            error = createAST(state, tokens, index, cur, ATTDECL, piped);
+                            error = createAST(state, tokens, ++index, cur, ATTDECL, piped);
                             if (!error.empty())
                                 return error;
                         }
@@ -546,9 +547,10 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                         // non-static attribute
                         else
                         {
+                            std::cout << "\nthe variable is " << tokens[index].value << "\n\n";
                             // this functions like fundefargs
                             accessSpecifier->setVariable(tokens[index].value);
-                            error = createAST(state, tokens, index, cur, ATTDECL, piped);
+                            error = createAST(state, tokens, ++index, cur, ATTDECL, piped);
                             if (!error.empty())
                                 return error;
                         }
@@ -583,7 +585,7 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                 cur = new Node(Value(token));
             break;
         case OPERATOR:
-            if (context == FUNDEFARGS || context == ATTDECL || context == INTERFARGS)
+            if (context == FUNDEFARGS || context == INTERFARGS)
             {
                 // the operator must be a cast
                 if (token.value != "@")
@@ -596,6 +598,36 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                     type->addChild(cur);
                     cur = nullptr;
                 }
+            }
+            // we are declaring an attribute
+            else if (context == ATTDECL)
+            {
+                if (token.value == "@")
+                {
+                    // cur should be an identifier
+                    if (tokens.size() > index + 1 && tokens[index + 1].type == TEXT)
+                    {
+                        ++index;
+                        if (VisibilityNode *visibility = dynamic_cast<VisibilityNode *>(parent))
+                            visibility->setType(tokens[index].value);
+                        else
+                            return "expected visibility node";
+                    }
+                    else
+                        return "expected type after @";
+                }
+                else if (token.value == "=")
+                {
+                    // check the next tokens as just a regular value
+                    // the SIGNAL context will handle this already
+                    // this is the default value
+
+                    error = createAST(state, tokens, ++index, parent, SIGNAL, piped);
+                    if (!error.empty())
+                        return error;
+                }
+                else
+                    return "unexpected operator in attribute declaration";
             }
             else
             {

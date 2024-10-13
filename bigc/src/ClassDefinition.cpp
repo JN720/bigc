@@ -34,7 +34,7 @@ void ClassDefinition::addMethod(std::string name, Node *method, bool isStatic)
 void ClassDefinition::addAttribute(std::string name, AccessSpecifier access, bool isStatic)
 {
     if (isStatic)
-        staticAttributes[name] = access;
+        staticAttributeAccess[name] = access;
     else
         attributes[name] = access;
 }
@@ -42,6 +42,11 @@ void ClassDefinition::addAttribute(std::string name, AccessSpecifier access, boo
 const std::unordered_map<std::string, AccessSpecifier> &ClassDefinition::getAttributes()
 {
     return attributes;
+}
+
+const std::unordered_map<std::string, AccessSpecifier> &ClassDefinition::getStaticAttributeAccess()
+{
+    return staticAttributeAccess;
 }
 
 const std::unordered_map<std::string, Node *> &ClassDefinition::getMethods()
@@ -54,7 +59,7 @@ void ClassDefinition::applyInterface(Interface *interface)
     interfaces.insert(interface);
 }
 
-const std::unordered_map<std::string, AccessSpecifier> &ClassDefinition::getStaticAttributes()
+const std::unordered_map<std::string, Value> &ClassDefinition::getStaticAttributes()
 {
     return staticAttributes;
 }
@@ -128,4 +133,24 @@ Result<Value> ClassDefinition::construct(State *state, std::vector<Node *> &args
         return Result<Value>(Value(obj));
     }
     return Result<Value>("constructor is not a function");
-};
+}
+
+Result<Node *> ClassDefinition::getStaticMethod(std::string name)
+{
+    if (staticMethods.find(name) == staticMethods.end())
+        return Result<Node *>("failed to find static method '" + name + "'");
+    return Result<Node *>(staticMethods.at(name));
+}
+
+Result<Value> ClassDefinition::getStaticAttribute(std::string name)
+{
+    if (staticAttributes.find(name) == staticAttributes.end())
+        return Result<Value>("failed to find static attribute '" + name + "'");
+    return Result<Value>(Value(staticAttributes.at(name)));
+}
+
+void ClassDefinition::addStaticAttribute(std::string name, Value value, AccessSpecifier access)
+{
+    staticAttributes[name] = value;
+    staticAttributeAccess[name] = access;
+}

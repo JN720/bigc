@@ -61,10 +61,21 @@ Control ClassNode::resolve(State &state)
     }
     // class sequence
     // manually evaluate the sequence's children
-    for (auto child : children.back()->getChildren())
+    for (int index = 0; index < children.back()->getChildren().size(); index++)
     {
+        Node *child = children.back()->getChildren()[index];
         if (VisibilityNode *visibility = dynamic_cast<VisibilityNode *>(child))
-            visibility->applyToDefinition(definition);
+        {
+            // if the visibility node has two children, the second is the default value
+            // therefore, we resolve the second child first
+            if (!visibility->getIsMethod() && visibility->getChildren().size())
+            {
+                Control control = visibility->getChildren()[0]->resolve(state);
+                if (!control.ok())
+                    return control.stack("during declaration " + std::to_string(index + 1) + " in class definition:\n");
+            }
+            visibility->applyToDefinition(definition, state);
+        }
         else
             return Control("expected a visibility node");
     }

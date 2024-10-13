@@ -1,6 +1,6 @@
 #include "AccessNode.h"
 #include "Object.h"
-#include "ClassDefinition.h"
+#include "ClassNode.h"
 #include "MethodNode.h"
 #include "builtin.h"
 
@@ -16,10 +16,31 @@ Control AccessNode::resolve(State &state)
     if (children.size() != 1)
         return Control("invalid access node");
     Control control = children.front()->resolve(state);
-    if (control.error())
+    if (!control.ok())
         return control.stack("accessing property:\n");
     Wildcard val = children.front()->getValue(state).getValue();
-    if (VariableNode **var = (VariableNode **)std::get_if<Node *>(&val))
+    if (ClassNode **cls = (ClassNode **)std::get_if<Node *>(&val))
+    {
+        // this is like accessing on an instanced object but we check the static attributes and methods
+        Result<Value> result = (*cls)->getClassDefinition()->getStaticAttribute(property);
+        if (result.ok())
+        {
+            value = result.getValue();
+            return Control(OK);
+        }
+        // else try to access the method
+        else
+        {
+            Result<Node *> method = (*cls)->getClassDefinition()->getStaticMethod(property);
+            if (method.ok())
+            {
+                value = Value(method.getValue());
+                return Control(OK);
+            }
+            return Control(method.getError()).stack("accessing property:\n");
+        }
+    }
+    else if (VariableNode **var = (VariableNode **)std::get_if<Node *>(&val))
     {
         // try to access the attribute first
         Result<Value> result = (*var)->getValue(state);
@@ -29,7 +50,7 @@ Control AccessNode::resolve(State &state)
             return Control(OK);
         }
     }
-    if (Object **obj = std::get_if<Object *>(&val))
+    else if (Object **obj = std::get_if<Object *>(&val))
     {
         // try to access the attribute first
         Result<Value> result = (*obj)->getProperty(property);
@@ -52,6 +73,7 @@ Control AccessNode::resolve(State &state)
     }
     else
         return Control("tried to access property of non-object");
+    return Control("failed to resolve access node");
 }
 
 Control AccessNode::setValue(State &state, Value value)

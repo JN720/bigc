@@ -47,7 +47,8 @@ public:
     const std::unordered_map<std::string, Node *> &getMethods();
     const std::unordered_map<std::string, Node *> &getStaticMethods();
     const std::unordered_map<std::string, AccessSpecifier> &getAttributes();
-    const std::unordered_map<std::string, AccessSpecifier> &getStaticAttributes();
+    const std::unordered_map<std::string, AccessSpecifier> &getStaticAttributeAccess();
+    const std::unordered_map<std::string, Value> &getStaticAttributes();
     const std::unordered_set<Interface *> &getInterfaces();
     void applyInterface(Interface *interface);
     void addMethod(std::string name, Node *method, bool isStatic);
@@ -56,6 +57,9 @@ public:
     Result<Node *> getClassMethod(std::string name);
     bool hasAttribute(std::string name);
     Result<Value> construct(State *state, std::vector<Node *> &args);
+    Result<Node *> getStaticMethod(std::string name);
+    Result<Value> getStaticAttribute(std::string name);
+    void addStaticAttribute(std::string name, Value value, AccessSpecifier access);
 
 private:
     // implemented interfaces
@@ -69,6 +73,7 @@ private:
     // these cannot be changed, though an attribute can be a function
     std::unordered_map<std::string, Node *> methods;
     // static versions
-    std::unordered_map<std::string, AccessSpecifier> staticAttributes;
+    std::unordered_map<std::string, AccessSpecifier> staticAttributeAccess;
+    std::unordered_map<std::string, Value> staticAttributes;
     std::unordered_map<std::string, Node *> staticMethods;
 };
