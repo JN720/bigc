@@ -7,18 +7,14 @@ Control OperationNode::resolve(State &state)
     if (children.empty())
         return Control("no operands");
     // do not do this for assignment
-    if (op != ASS && op != CAST)
+    if (op != ASS && op != CAST && op != ADDASS && op != SUBASS && op != MULASS && op != DIVASS && op != MODASS)
     {
         for (auto child : children)
         {
             Control control = child->resolve(state);
-            if (control.control())
-            {
-                value = child->getValue(state);
-                return control;
-            }
-            if (control.error())
+            if (!control.ok())
                 return control.stack("during operation:\n");
+            value = child->getValue(state);
         }
     }
     Result<Value> result("failed to perform operation");
@@ -32,12 +28,7 @@ Control OperationNode::resolve(State &state)
             return Control("invalid number of operands for assignment: '" + std::to_string(children.size()) + '\'');
         // resolve right hand side of assignment operator
         control = children[1]->resolve(state);
-        if (control.control())
-        {
-            value = children[1]->getValue(state);
-            return control;
-        }
-        if (control.error())
+        if (!control.ok())
             return control.stack("during assignment:\n");
         // if this is a variable node, set the value
         if (VariableNode *var = dynamic_cast<VariableNode *>(children[0]))
@@ -275,11 +266,112 @@ Control OperationNode::resolve(State &state)
         if (children.size() == 1)
             result = children[0]->getValue(state).negate();
         break;
+    case ADDASS:
+        if (children.size() != 2)
+            return Control("invalid number of operands for additive assignment: '" + std::to_string(children.size()) + '\'');
+
+        control = children[0]->resolve(state);
+        if (!control.ok())
+            return control.stack("during assignment:\n");
+        control = children[1]->resolve(state);
+        if (!control.ok())
+            return control.stack("during assignment:\n");
+        result = children[0]->getValue(state).add(children[1]->getValue(state));
+        if (!result.ok())
+            return Control(result.getError() + "\nduring assignment:\n");
+        if (VariableNode *var = dynamic_cast<VariableNode *>(children[0]))
+        {
+            var->setValue(state, result.getValue());
+        }
+        else
+            return Control("cannot assign to non-variable");
+        value = result.getValue();
+        return Control(OK);
+    case SUBASS:
+        if (children.size() != 2)
+            return Control("invalid number of operands for subtractive assignment: '" + std::to_string(children.size()) + '\'');
+        control = children[0]->resolve(state);
+        if (!control.ok())
+            return control.stack("during assignment:\n");
+        control = children[1]->resolve(state);
+        if (!control.ok())
+            return control.stack("during assignment:\n");
+        result = children[0]->getValue(state).subtract(children[1]->getValue(state));
+        if (!result.ok())
+            return Control(result.getError() + "\nduring assignment:\n");
+        if (VariableNode *var = dynamic_cast<VariableNode *>(children[0]))
+        {
+            var->setValue(state, result.getValue());
+        }
+        else
+            return Control("cannot assign to non-variable");
+        value = result.getValue();
+        return Control(OK);
+    case MULASS:
+        if (children.size() != 2)
+            return Control("invalid number of operands for multiplicative assignment: '" + std::to_string(children.size()) + '\'');
+        control = children[0]->resolve(state);
+        if (!control.ok())
+            return control.stack("during assignment:\n");
+        control = children[1]->resolve(state);
+        if (!control.ok())
+            return control.stack("during assignment:\n");
+        result = children[0]->getValue(state).multiply(children[1]->getValue(state));
+        if (!result.ok())
+            return Control(result.getError() + "\nduring assignment:\n");
+        if (VariableNode *var = dynamic_cast<VariableNode *>(children[0]))
+        {
+            var->setValue(state, result.getValue());
+        }
+        else
+            return Control("cannot assign to non-variable");
+        value = result.getValue();
+        return Control(OK);
+    case DIVASS:
+        if (children.size() != 2)
+            return Control("invalid number of operands for division assignment: '" + std::to_string(children.size()) + '\'');
+        control = children[0]->resolve(state);
+        if (!control.ok())
+            return control.stack("during assignment:\n");
+        control = children[1]->resolve(state);
+        if (!control.ok())
+            return control.stack("during assignment:\n");
+        result = children[0]->getValue(state).divide(children[1]->getValue(state));
+        if (!result.ok())
+            return Control(result.getError() + "\nduring assignment:\n");
+        if (VariableNode *var = dynamic_cast<VariableNode *>(children[0]))
+        {
+            var->setValue(state, result.getValue());
+        }
+        else
+            return Control("cannot assign to non-variable");
+        value = result.getValue();
+        return Control(OK);
+    case MODASS:
+        if (children.size() != 2)
+            return Control("invalid number of operands for modulo assignment: '" + std::to_string(children.size()) + '\'');
+        control = children[0]->resolve(state);
+        if (!control.ok())
+            return control.stack("during assignment:\n");
+        control = children[1]->resolve(state);
+        if (!control.ok())
+            return control.stack("during assignment:\n");
+        result = children[0]->getValue(state).modulo(children[1]->getValue(state));
+        if (!result.ok())
+            return Control(result.getError() + "\nduring assignment:\n");
+        if (VariableNode *var = dynamic_cast<VariableNode *>(children[0]))
+        {
+            var->setValue(state, result.getValue());
+        }
+        else
+            return Control("cannot assign to non-variable");
+        value = result.getValue();
+        return Control(OK);
     default:
         return Control("no operator specified");
     }
     if (!result.ok())
-        return "during operation:\n" + result.getError();
+        return Control(result.getError() + "\nduring operation:\n");
     value = result.getValue();
     return Control(OK);
 }
@@ -316,5 +408,15 @@ OperationNode::OperationNode(Token &token)
         op = GTE;
     else if (token.value == "!")
         op = NOT;
+    else if (token.value == "+=")
+        op = ADDASS;
+    else if (token.value == "-=")
+        op = SUBASS;
+    else if (token.value == "*=")
+        op = MULASS;
+    else if (token.value == "/=")
+        op = DIVASS;
+    else if (token.value == "%=")
+        op = MODASS;
     type = N_OPERATION;
 }

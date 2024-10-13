@@ -16,7 +16,12 @@ enum Operation
     LTE,
     GT,
     GTE,
-    NOT
+    NOT,
+    ADDASS,
+    SUBASS,
+    MULASS,
+    DIVASS,
+    MODASS
 };
 
 class OperationNode : public Node
