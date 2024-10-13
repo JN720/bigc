@@ -1,4 +1,5 @@
 #include "SequenceNode.h"
+#include "SignalNode.h"
 
 SequenceNode::SequenceNode()
 {

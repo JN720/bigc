@@ -26,5 +26,5 @@ Control SignalNode::resolve(State &state)
     }
     if (control.error())
         return control.stack("while evaluating signal:\n");
-    return control;
+    return signal;
 }
