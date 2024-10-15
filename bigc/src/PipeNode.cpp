@@ -19,7 +19,7 @@ Control PipeNode::resolve(State &state)
     if (control.error())
         return control.stack("resolving pipe value:\n");
     // add pipe to new state frame
-    StateFrame *frame = state.pushFrame();
+    StateFrame *frame = state.pushFrame(true);
     frame->setVariable("&", children[0]->getValue(state));
     // if it's just a single identifier,
     // pass in the pipe value as the first argument

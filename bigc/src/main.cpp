@@ -21,7 +21,9 @@
 #include "ClassNode.h"
 #include "InterfaceNode.h"
 #include "VisibilityNode.h"
+#include "RegisterNode.h"
 #include "CallNode.h"
+#include "GroupNode.h"
 #include "builtin.h"
 
 const std::string OPERATORS = "+-*!/=><@";
@@ -489,6 +491,28 @@ std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node
                     error = createAST(state, tokens, ++index, cur, SIGNAL, piped);
                     if (!error.empty())
                         return error;
+                }
+                else if (token.value == "group")
+                {
+                    if (cur)
+                        return "unexpected group";
+                    cur = new GroupNode(token.value);
+                }
+                else if (token.value == "register")
+                {
+                    if (cur)
+                        return "unexpected register";
+                    if (tokens.size() > index + 1 && tokens[index + 1].type == TEXT)
+                    {
+                        ++index;
+                        cur = new RegisterNode(tokens[index].value);
+                        // register expects one value
+                        error = createAST(state, tokens, ++index, cur, SIGNAL, piped);
+                        if (!error.empty())
+                            return error;
+                    }
+                    else
+                        return "expected identifier for register";
                 }
                 else if (token.value == "public" || token.value == "private" || token.value == "protected")
                 {

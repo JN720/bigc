@@ -159,7 +159,9 @@ namespace base
 
     Result<Value> input(State &state, std::vector<Node *> &args)
     {
-        return Result<Value>();
+        std::string input;
+        std::cin >> input;
+        return Result<Value>(Value(new std::string(input)));
     }
 
     void debugPrint(Value value)
@@ -206,7 +208,7 @@ namespace base
         case 3:
             return base::type(state, args);
         case 4:
-            result = base::input(state, args);
+            return base::input(state, args);
         }
         return Result<Value>("failed to execute fundamental function");
     }

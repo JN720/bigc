@@ -21,7 +21,7 @@ Result<Value> FunctionNode::execute(State &state, std::vector<Node *> &args)
     // each arg should be a variable node or type node
     // the final one can also be a spread node
     // create the frame for the arguments we pass in
-    StateFrame *frame = state.pushFrame();
+    StateFrame *frame = state.pushFrame(true);
     // take each arg, do type assertions, and add to the frame
     int curVal = 0;
     int curArg = 0;
@@ -84,7 +84,7 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
     // each arg should be a variable node or type node
     // the final one can also be a spread node
     // create the frame for the arguments we pass in
-    StateFrame *frame = state->pushFrame();
+    StateFrame *frame = state->pushFrame(true);
     // add this
     frame->setVariable("this", Value(obj));
     // take each arg, do type assertions, and add to the frame

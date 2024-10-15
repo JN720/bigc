@@ -23,11 +23,14 @@ enum NodeType
     N_SIGNAL,
     N_CLASS,
     N_VISIBILITY,
-    N_INTERFACE
+    N_INTERFACE,
+    N_REGISTER,
+    N_GROUP
 };
 
 const std::string NODETYPES[] = {"leafvalue", "identifier", "call", "operation", "assignment", "index", "sequence",
-                                 "spread", "branch", "access", "pipe", "wrapper", "unbranch", "loop", "signal", "class", "visibility", "interface"};
+                                 "spread", "branch", "access", "pipe", "wrapper", "unbranch", "loop", "signal",
+                                 "class", "visibility", "interface", "register", "group"};
 
 class Node
 {

@@ -82,7 +82,7 @@ public:
     bool implements(Interface *interface);
     Result<Node *> getClassMethod(std::string name);
     bool hasAttribute(std::string name);
-    Result<Value> construct(State *state, std::vector<Node *> &args);
+    virtual Result<Value> construct(State *state, std::vector<Node *> &args);
     Result<Node *> getStaticMethod(std::string name);
     Result<Value> getStaticAttribute(std::string name);
     void setStaticAttribute(std::string name, Value value);

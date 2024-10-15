@@ -1,7 +1,8 @@
 #include "StateFrame.h"
 
-StateFrame::StateFrame()
+StateFrame::StateFrame(bool closure)
 {
+    this->closure = closure;
 }
 
 void StateFrame::setVariable(std::string name, Value value)
@@ -26,4 +27,9 @@ void StateFrame::listVars()
             std::cout << ", " << *x;
         std::cout << '\n';
     }
+}
+
+bool StateFrame::isClosure() const
+{
+    return closure;
 }
