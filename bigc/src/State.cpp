@@ -9,6 +9,7 @@ const std::string FUNDAMENTAL_FUNCTIONS[] = {"print", "println", "len", "type", 
 
 State::State()
 {
+    currentGroup = "global";
     states.push_front(new StateFrame(true));
 
     registry = new Registry();
@@ -51,6 +52,8 @@ void State::setVariable(std::string name, Value value)
             state->setVariable(name, value);
             return;
         }
+        if (state->isClosure())
+            break;
     }
     // check the registry
     // registered variables are not allowed to be reassigned

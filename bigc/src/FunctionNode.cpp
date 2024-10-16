@@ -60,7 +60,10 @@ Result<Value> FunctionNode::execute(State &state, std::vector<Node *> &args)
             curVal++;
         }*/
         else
+        {
+            state.popFrame();
             return Result<Value>("invalid node in function arguments");
+        }
     }
     // resolve the sequence node
     Control control = children.back()->resolve(state);
@@ -109,7 +112,10 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
         {
             TypeNode *typed = (TypeNode *)arg;
             if (typed->getArgType() != val.getType())
+            {
+                state->popFrame();
                 return Result<Value>("type assertion failed");
+            }
             frame->setVariable(typed->getVariable(), val);
             curVal++;
             curArg++;
@@ -134,11 +140,18 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
     {
         // return from a function
         if (control.getSignal() == RETURN)
+        {
+            state->popFrame();
             return Result<Value>(children.back()->getValue(*state));
+        }
+        state->popFrame();
         return Result<Value>("unexpected control signal");
     }
     if (control.error())
+    {
+        state->popFrame();
         return Result<Value>(control.stack("during function execution:\n"));
+    }
     Value result = children.back()->getValue(*state);
     state->popFrame();
     return Result<Value>(result);

@@ -2,6 +2,7 @@
 #include "Object.h"
 #include "ClassNode.h"
 #include "MethodNode.h"
+#include "StaticMethodNode.h"
 #include "builtin.h"
 
 AccessNode::AccessNode(const std::string &property)
@@ -34,7 +35,7 @@ Control AccessNode::resolve(State &state)
             Result<Node *> method = (*cls)->getClassDefinition()->getStaticMethod(property);
             if (method.ok())
             {
-                value = Value(method.getValue());
+                value = Value(new StaticMethodNode(method.getValue(), *cls));
                 return Control(OK);
             }
             return Control(method.getError()).stack("accessing class property:\n");
