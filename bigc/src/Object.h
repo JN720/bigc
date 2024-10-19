@@ -12,7 +12,6 @@ class Object
 public:
     Object(ClassDefinition *definition);
     ClassDefinition *getClass();
-    Result<Value> callMethod(State &state, const std::vector<Node *> &args);
     Control setProperty(const std::string &property, const Value &value);
     void addProperty(const std::string &property, const Value &value);
     Result<Value> getProperty(const std::string &property);

@@ -5,7 +5,7 @@
 #include "Object.h"
 #include "builtin.h"
 #include "MethodNode.h"
-
+#include "InterfaceNode.h"
 CallNode::CallNode(Node *callable) : Node()
 {
     children.push_back(callable);
@@ -54,15 +54,40 @@ Control CallNode::resolve(State &state)
         return Control(OK);
     }
     // if this is an object check for a call method
-    /*
     else if (Object *obj = dynamic_cast<Object *>(*node))
     {
-        Result<Value> result = obj->callMethod(state, args);
+        // check that the interface exists
+        Result<Value> interfaceResult = state.getVariable("Callable");
+        if (!interfaceResult.ok())
+            return Control("Callable interface is not defined");
+        Wildcard val = interfaceResult.getValue().getValue();
+        // ensure it is a node
+        Node **callableNode = std::get_if<Node *>(&val);
+        if (!callableNode)
+            return Control("Callable interface is not a node");
+        // ensure it is an interface
+        InterfaceNode *interfaceNode = dynamic_cast<InterfaceNode *>(*callableNode);
+        if (!interfaceNode)
+            return Control("Callable interface is not an interface");
+        Interface *interface = interfaceNode->getInterface();
+        // check that the object implements the interface
+        if (!obj->getClass()->implements(interface))
+            return Control("object does not implement Callable interface");
+        // check that the object has a call method
+        Result<Node *> methodResult = obj->getClass()->getMethod("call");
+        if (!methodResult.ok())
+            return Control(methodResult.getError()).stack("calling method:\n");
+        // ensure it is a function
+        FunctionNode *function = dynamic_cast<FunctionNode *>(methodResult.getValue());
+        if (!function)
+            return Control("Callable method is not a function");
+        // execute the method
+        Result<Value> result = function->executeInstanced(obj, &state, args);
         if (!result.ok())
             return Control(result.getError()).stack("calling method:\n");
         value = result.getValue();
         return Control(OK);
-    }*/
+    }
     else
         return Control("value is not a function, class, or callable object");
 }
