@@ -5,6 +5,7 @@
 #include "StaticMethodNode.h"
 #include "builtin.h"
 #include "LibraryNode.h"
+#include <typeinfo>
 
 AccessNode::AccessNode(const std::string &property)
 {
@@ -21,53 +22,57 @@ Control AccessNode::resolve(State &state)
     if (!control.ok())
         return control.stack("accessing property:\n");
     Wildcard val = children.front()->getValue(state).getValue();
-    if (LibraryNode **lib = (LibraryNode **)std::get_if<Node *>(&val))
-    {
-        Result<Value> result = (*lib)->getRegistry()->getVariable(property);
-        if (result.ok())
-        {
-            value = result.getValue();
-            return Control(OK);
-        }
-    }
-    if (ClassNode **cls = (ClassNode **)std::get_if<Node *>(&val))
-    {
-        if (*cls == nullptr)
-            return Control("tried to access property of null");
-        // this is like accessing on an instanced object but we check the static attributes and methods
-        ClassDefinition *classDefinition = (*cls)->getClassDefinition();
-        if (classDefinition == nullptr)
-            return Control("tried to access property of null");
-        Result<Value> classData = classDefinition->getStaticAttribute(property);
 
-        if (classData.ok())
+    if (Node **node = std::get_if<Node *>(&val))
+    {
+        if (ClassNode *cls = dynamic_cast<ClassNode *>(*node))
         {
-            value = classData.getValue();
-            return Control(OK);
-        }
-        // else try to access the method
-        else
-        {
-            Result<Node *> method = (*cls)->getClassDefinition()->getStaticMethod(property);
-            if (method.ok())
+            if (cls == nullptr)
+                return Control("tried to access property of null");
+            // this is like accessing on an instanced object but we check the static attributes and methods
+            ClassDefinition *classDefinition = cls->getClassDefinition();
+            if (classDefinition == nullptr)
+                return Control("tried to access property of null");
+            Result<Value> classData = classDefinition->getStaticAttribute(property);
+
+            if (classData.ok())
             {
-                value = Value(new StaticMethodNode(method.getValue(), *cls));
+                value = classData.getValue();
                 return Control(OK);
             }
-            return Control(method.getError()).stack("accessing class property:\n");
+            // else try to access the method
+            else
+            {
+                Result<Node *> method = cls->getClassDefinition()->getStaticMethod(property);
+                if (method.ok())
+                {
+                    value = Value(new StaticMethodNode(method.getValue(), cls));
+                    return Control(OK);
+                }
+                return Control(method.getError()).stack("accessing class property:\n");
+            }
         }
-    }
-    else if (VariableNode **var = (VariableNode **)std::get_if<Node *>(&val))
-    {
-        // try to access the attribute first
-        Result<Value> result = (*var)->getValue(state);
-        if (result.ok())
+        else if (LibraryNode *lib = dynamic_cast<LibraryNode *>(*node))
         {
-            value = result.getValue();
-            return Control(OK);
+            Result<Value> result = lib->getRegistry()->getVariable(property);
+            if (result.ok())
+            {
+                value = result.getValue();
+                return Control(OK);
+            }
+        }
+        else if (VariableNode *var = dynamic_cast<VariableNode *>(*node))
+        {
+            // try to access the attribute first
+            Result<Value> result = var->getValue(state);
+            if (result.ok())
+            {
+                value = result.getValue();
+                return Control(OK);
+            }
         }
     }
-    if (Object **obj = std::get_if<Object *>(&val))
+    else if (Object **obj = std::get_if<Object *>(&val))
     {
         // try to access the attribute first
         Result<Value> result = (*obj)->getProperty(property);
@@ -108,17 +113,25 @@ Control AccessNode::setValue(State &state, Value value)
         return control.stack("Error resolving child for attribute access");
 
     Wildcard val = children[0]->getValue(state).getValue();
-    if (ClassNode **cls = (ClassNode **)std::get_if<Node *>(&val))
+
+    if (Node **node = std::get_if<Node *>(&val))
     {
-        (*cls)->getClassDefinition()->setStaticAttribute(property, value);
-    }
-    else if (LibraryNode **lib = (LibraryNode **)std::get_if<Node *>(&val))
-    {
-        return Control("Cannot set attribute on library");
-    }
-    else if (VariableNode **var = (VariableNode **)std::get_if<Node *>(&val))
-    {
-        (*var)->setValue(state, value);
+        if (ClassNode *cls = dynamic_cast<ClassNode *>(*node))
+        {
+            cls->getClassDefinition()->setStaticAttribute(property, value);
+        }
+        else if (LibraryNode *lib = dynamic_cast<LibraryNode *>(*node))
+        {
+            return Control("Cannot set attribute on library");
+        }
+        else if (VariableNode *var = dynamic_cast<VariableNode *>(*node))
+        {
+            var->setValue(state, value);
+        }
+        else
+        {
+            return Control("Cannot set attribute on unknown Node type");
+        }
     }
     else if (Object **obj = std::get_if<Object *>(&val))
     {
