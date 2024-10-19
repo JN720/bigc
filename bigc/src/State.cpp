@@ -77,7 +77,11 @@ Result<Value> State::getVariable(std::string name) const
     // check registry
     Result<Value> registered = registry->getVariable(name);
     if (registered.ok())
+    {
+        std::cout << "found variable '" << name << "' in registry" << std::endl;
         return registered;
+    }
+    std::cout << "variable '" << name << "' not found" << std::endl;
     return Result<Value>("undefined variable");
 }
 

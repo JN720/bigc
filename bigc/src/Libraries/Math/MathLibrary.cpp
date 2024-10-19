@@ -2,6 +2,7 @@
 #include "ExponentiateFunction.h"
 #include "SqrtFunction.h"
 #include "TrigFunctions.h"
+#include "GeneralMathFunction.h"
 #include <cmath>
 
 Registry *libmath::init()
@@ -19,51 +20,51 @@ Registry *libmath::init()
     registry->registerVariable("cos", Value(new CosFunction()));
     registry->registerVariable("tan", Value(new TanFunction()));
 
-    // Additional mathematical functions
-    registry->registerVariable("abs", Value([](State &state, std::vector<Node *> &args) -> Result<Value>
-                                            {
+    // Additional mathematical functions using GeneralMathFunction
+    registry->registerVariable("abs", Value(new GeneralMathFunction([](State &state, std::vector<Node *> &args) -> Result<Value>
+                                                                    {
         if (args.size() != 1) return Result<Value>("invalid arity");
         Wildcard arg = args[0]->getValue(state).getValue();
         if (double *x = std::get_if<double>(&arg)) return Result<Value>(Value(std::abs(*x)));
         if (int *x = std::get_if<int>(&arg)) return Result<Value>(Value(std::abs(*x)));
         if (float *x = std::get_if<float>(&arg)) return Result<Value>(Value(std::abs(*x)));
-        return Result<Value>("expected number argument"); }));
+        return Result<Value>("expected number argument"); })));
 
-    registry->registerVariable("log", Value([](State &state, std::vector<Node *> &args) -> Result<Value>
-                                            {
+    registry->registerVariable("log", Value(new GeneralMathFunction([](State &state, std::vector<Node *> &args) -> Result<Value>
+                                                                    {
         if (args.size() != 1) return Result<Value>("invalid arity");
         Wildcard arg = args[0]->getValue(state).getValue();
         if (double *x = std::get_if<double>(&arg)) return Result<Value>(Value(std::log(*x)));
         if (int *x = std::get_if<int>(&arg)) return Result<Value>(Value(std::log(static_cast<double>(*x))));
         if (float *x = std::get_if<float>(&arg)) return Result<Value>(Value(std::log(*x)));
-        return Result<Value>("expected number argument"); }));
+        return Result<Value>("expected number argument"); })));
 
-    registry->registerVariable("log10", Value([](State &state, std::vector<Node *> &args) -> Result<Value>
-                                              {
+    registry->registerVariable("log10", Value(new GeneralMathFunction([](State &state, std::vector<Node *> &args) -> Result<Value>
+                                                                      {
         if (args.size() != 1) return Result<Value>("invalid arity");
         Wildcard arg = args[0]->getValue(state).getValue();
         if (double *x = std::get_if<double>(&arg)) return Result<Value>(Value(std::log10(*x)));
         if (int *x = std::get_if<int>(&arg)) return Result<Value>(Value(std::log10(static_cast<double>(*x))));
         if (float *x = std::get_if<float>(&arg)) return Result<Value>(Value(std::log10(*x)));
-        return Result<Value>("expected number argument"); }));
+        return Result<Value>("expected number argument"); })));
 
-    registry->registerVariable("ceil", Value([](State &state, std::vector<Node *> &args) -> Result<Value>
-                                             {
+    registry->registerVariable("ceil", Value(new GeneralMathFunction([](State &state, std::vector<Node *> &args) -> Result<Value>
+                                                                     {
         if (args.size() != 1) return Result<Value>("invalid arity");
         Wildcard arg = args[0]->getValue(state).getValue();
         if (double *x = std::get_if<double>(&arg)) return Result<Value>(Value(std::ceil(*x)));
         if (int *x = std::get_if<int>(&arg)) return Result<Value>(Value(*x));
         if (float *x = std::get_if<float>(&arg)) return Result<Value>(Value(std::ceil(*x)));
-        return Result<Value>("expected number argument"); }));
+        return Result<Value>("expected number argument"); })));
 
-    registry->registerVariable("floor", Value([](State &state, std::vector<Node *> &args) -> Result<Value>
-                                              {
+    registry->registerVariable("floor", Value(new GeneralMathFunction([](State &state, std::vector<Node *> &args) -> Result<Value>
+                                                                      {
         if (args.size() != 1) return Result<Value>("invalid arity");
         Wildcard arg = args[0]->getValue(state).getValue();
         if (double *x = std::get_if<double>(&arg)) return Result<Value>(Value(std::floor(*x)));
         if (int *x = std::get_if<int>(&arg)) return Result<Value>(Value(*x));
         if (float *x = std::get_if<float>(&arg)) return Result<Value>(Value(std::floor(*x)));
-        return Result<Value>("expected number argument"); }));
+        return Result<Value>("expected number argument"); })));
 
     return registry;
 }

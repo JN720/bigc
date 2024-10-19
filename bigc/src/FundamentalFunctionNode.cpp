@@ -6,7 +6,9 @@ const std::unordered_map<std::string, int> FUNCTION_MAP = {
     {"println", 1},
     {"len", 2},
     {"type", 3},
-    {"input", 4}};
+    {"input", 4},
+    {"import", 5},
+    {"include", 6}};
 
 FundamentalFunctionNode::FundamentalFunctionNode(const std::string &name)
 {

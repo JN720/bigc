@@ -21,13 +21,28 @@ Control AccessNode::resolve(State &state)
     if (!control.ok())
         return control.stack("accessing property:\n");
     Wildcard val = children.front()->getValue(state).getValue();
-    if (ClassNode **cls = (ClassNode **)std::get_if<Node *>(&val))
+    if (LibraryNode **lib = (LibraryNode **)std::get_if<Node *>(&val))
     {
-        // this is like accessing on an instanced object but we check the static attributes and methods
-        Result<Value> result = (*cls)->getClassDefinition()->getStaticAttribute(property);
+        Result<Value> result = (*lib)->getRegistry()->getVariable(property);
         if (result.ok())
         {
             value = result.getValue();
+            return Control(OK);
+        }
+    }
+    if (ClassNode **cls = (ClassNode **)std::get_if<Node *>(&val))
+    {
+        if (*cls == nullptr)
+            return Control("tried to access property of null");
+        // this is like accessing on an instanced object but we check the static attributes and methods
+        ClassDefinition *classDefinition = (*cls)->getClassDefinition();
+        if (classDefinition == nullptr)
+            return Control("tried to access property of null");
+        Result<Value> classData = classDefinition->getStaticAttribute(property);
+
+        if (classData.ok())
+        {
+            value = classData.getValue();
             return Control(OK);
         }
         // else try to access the method
@@ -42,15 +57,6 @@ Control AccessNode::resolve(State &state)
             return Control(method.getError()).stack("accessing class property:\n");
         }
     }
-    else if (LibraryNode **lib = (LibraryNode **)std::get_if<Node *>(&val))
-    {
-        Result<Value> result = (*lib)->getRegistry()->getVariable(property);
-        if (result.ok())
-        {
-            value = result.getValue();
-            return Control(OK);
-        }
-    }
     else if (VariableNode **var = (VariableNode **)std::get_if<Node *>(&val))
     {
         // try to access the attribute first
@@ -61,7 +67,7 @@ Control AccessNode::resolve(State &state)
             return Control(OK);
         }
     }
-    else if (Object **obj = std::get_if<Object *>(&val))
+    if (Object **obj = std::get_if<Object *>(&val))
     {
         // try to access the attribute first
         Result<Value> result = (*obj)->getProperty(property);

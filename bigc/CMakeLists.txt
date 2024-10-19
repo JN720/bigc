@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
 project(Lemurr-Engine CXX)
 set(CMAKE_CXX_STANDARD 17)
-file(GLOB SOURCES "src/*.cpp" "src/Libraries/*.cpp")
+file(GLOB SOURCES "src/*.cpp" "src/Libraries/*.cpp" "src/Libraries/Math/*.cpp")
 add_executable(BigC ${SOURCES})

@@ -4,7 +4,7 @@
 #include "InterfaceNode.h"
 #include "LibraryNode.h"
 #include "ClassDefinition.h"
-#include "Libraries/Math/MathLibrary.h"
+#include "./Libraries/Math/MathLibrary.h"
 
 namespace base
 {
@@ -195,7 +195,7 @@ namespace base
         else
             return Result<Value>("invalid library");
         if (*library == "math")
-            return Result<Value>(Value(new LibraryNode(libmath::init())));
+            return Result<Value>(Value((Node *)new LibraryNode(libmath::init())));
         return Result<Value>("library not found");
     }
     // imported files

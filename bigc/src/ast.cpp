@@ -123,7 +123,13 @@ namespace ast
                     {
                         if (cur)
                             return "unexpected group";
-                        cur = new GroupNode(token.value);
+                        if (tokens.size() > index + 1 && tokens[index + 1].type == TEXT)
+                        {
+                            ++index;
+                            cur = new GroupNode(tokens[index].value);
+                        }
+                        else
+                            return "expected identifier for group";
                     }
                     else if (token.value == "register")
                     {

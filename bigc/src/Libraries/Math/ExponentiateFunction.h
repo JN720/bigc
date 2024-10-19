@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FunctionNode.h"
+#include "../../FunctionNode.h"
 
 namespace libmath
 {
