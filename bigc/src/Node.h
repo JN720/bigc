@@ -24,6 +24,7 @@ enum NodeType
     N_CLASS,
     N_VISIBILITY,
     N_INTERFACE,
+    N_LIBRARY,
     N_REGISTER,
     N_GROUP
 };
