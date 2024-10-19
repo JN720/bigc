@@ -16,8 +16,8 @@ public:
     void listVars();
     void registerVariable(std::string name, Value value);
     bool isBuiltIn(std::string name);
-    void registerVariable(std::string name, Value value, std::string group);
     void setGroup(std::string group);
+    Registry *getRegistry();
 
 private:
     std::forward_list<StateFrame *> states;

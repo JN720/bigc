@@ -16,6 +16,13 @@ namespace base
 
     Result<Value> input(State &state, std::vector<Node *> &args);
 
+    // imported groups
+    Result<Value> library(State &state, std::vector<Node *> &args);
+    // built-in/installed libraries
+    Result<Value> include(State &state, std::vector<Node *> &args);
+    // imported files
+    Result<Value> import(State &state, std::vector<Node *> &args);
+
     void debugPrint(Value value);
 
     Result<Value> executeFundamentalFunction(int index, State &state, std::vector<Node *> &args);

@@ -5,7 +5,7 @@ const std::unordered_set<std::string> BASE_KEYWORDS({"if", "else", "while", "col
                                                      "return", "class", "public", "private", "protected", "utility",
                                                      "shared", "method", "interface", "group", "register"});
 const std::unordered_set<std::string> FUNDAMENTAL_TYPES({"int", "char", "long", "str", "float", "double", "arr", "fn"});
-const std::string FUNDAMENTAL_FUNCTIONS[] = {"print", "println", "len", "type", "input"};
+const std::string FUNDAMENTAL_FUNCTIONS[] = {"print", "println", "len", "type", "input", "import", "include"};
 
 State::State()
 {
@@ -19,17 +19,17 @@ State::State()
 
 void State::registerVariable(std::string name, Value value)
 {
-    registry->registerVariable(name, value, currentGroup);
-}
-
-void State::registerVariable(std::string name, Value value, std::string group)
-{
-    registry->registerVariable(name, value, group);
+    registry->registerVariable(name, value);
 }
 
 void State::setGroup(std::string group)
 {
     currentGroup = group;
+}
+
+Registry *State::getRegistry()
+{
+    return registry;
 }
 
 bool State::isBuiltIn(std::string name)
@@ -57,7 +57,7 @@ void State::setVariable(std::string name, Value value)
     }
     // check the registry
     // registered variables are not allowed to be reassigned
-    Result<Value> registered = registry->getVariable(name, currentGroup);
+    Result<Value> registered = registry->getVariable(name);
     if (registered.ok())
         return;
     // if none exists, add it to the current scope
@@ -75,7 +75,7 @@ Result<Value> State::getVariable(std::string name) const
             break;
     }
     // check registry
-    Result<Value> registered = registry->getVariable(name, currentGroup);
+    Result<Value> registered = registry->getVariable(name);
     if (registered.ok())
         return registered;
     return Result<Value>("undefined variable");
@@ -92,7 +92,7 @@ bool State::isType(std::string name)
         return true;
     // check registry
     // for a class or interface to be recognized as a type, it must be registered
-    Result<Value> registered = registry->getVariable(name, currentGroup);
+    Result<Value> registered = registry->getVariable(name);
     if (registered.ok())
         return true;
     return false;

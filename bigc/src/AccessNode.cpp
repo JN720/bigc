@@ -4,6 +4,7 @@
 #include "MethodNode.h"
 #include "StaticMethodNode.h"
 #include "builtin.h"
+#include "LibraryNode.h"
 
 AccessNode::AccessNode(const std::string &property)
 {
@@ -39,6 +40,15 @@ Control AccessNode::resolve(State &state)
                 return Control(OK);
             }
             return Control(method.getError()).stack("accessing class property:\n");
+        }
+    }
+    else if (LibraryNode **lib = (LibraryNode **)std::get_if<Node *>(&val))
+    {
+        Result<Value> result = (*lib)->getRegistry()->getVariable(property);
+        if (result.ok())
+        {
+            value = result.getValue();
+            return Control(OK);
         }
     }
     else if (VariableNode **var = (VariableNode **)std::get_if<Node *>(&val))
@@ -95,6 +105,10 @@ Control AccessNode::setValue(State &state, Value value)
     if (ClassNode **cls = (ClassNode **)std::get_if<Node *>(&val))
     {
         (*cls)->getClassDefinition()->setStaticAttribute(property, value);
+    }
+    else if (LibraryNode **lib = (LibraryNode **)std::get_if<Node *>(&val))
+    {
+        return Control("Cannot set attribute on library");
     }
     else if (VariableNode **var = (VariableNode **)std::get_if<Node *>(&val))
     {

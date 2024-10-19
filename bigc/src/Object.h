@@ -12,9 +12,9 @@ class Object
 public:
     Object(ClassDefinition *definition);
     ClassDefinition *getClass();
-    Control setProperty(const std::string &property, const Value &value);
+    virtual Control setProperty(const std::string &property, const Value &value);
     void addProperty(const std::string &property, const Value &value);
-    Result<Value> getProperty(const std::string &property);
+    virtual Result<Value> getProperty(const std::string &property);
 
 protected:
     std::unordered_map<std::string, Value> attributes;

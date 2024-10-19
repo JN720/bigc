@@ -1,7 +1,10 @@
 #include "builtin.h"
+#include "ast.h"
 #include "FunctionNode.h"
 #include "InterfaceNode.h"
+#include "LibraryNode.h"
 #include "ClassDefinition.h"
+#include "Libraries/Math/MathLibrary.h"
 
 namespace base
 {
@@ -163,6 +166,55 @@ namespace base
         std::cin >> input;
         return Result<Value>(Value(new std::string(input)));
     }
+    // imported groups
+    Result<Value> library(State &state, std::vector<Node *> &args)
+    {
+        if (args.size() != 1)
+            return Result<Value>("invalid arity");
+        Wildcard val = args[0]->getValue(state).getValue();
+        std::string *path;
+        if (std::string **x = std::get_if<std::string *>(&val))
+            path = *x;
+        else
+            return Result<Value>("invalid path");
+        Result<State> result = ast::evaluate(*path);
+        if (!result.ok())
+            return Result<Value>(result.getError());
+        State libState = result.getValue();
+        return Result<Value>(Value(new LibraryNode(libState.getRegistry())));
+    }
+    // built-in/installed libraries
+    Result<Value> include(State &state, std::vector<Node *> &args)
+    {
+        if (args.size() != 1)
+            return Result<Value>("invalid arity");
+        Wildcard val = args[0]->getValue(state).getValue();
+        std::string *library;
+        if (std::string **x = std::get_if<std::string *>(&val))
+            library = *x;
+        else
+            return Result<Value>("invalid library");
+        if (*library == "math")
+            return Result<Value>(Value(new LibraryNode(libmath::init())));
+        return Result<Value>("library not found");
+    }
+    // imported files
+    Result<Value> import(State &state, std::vector<Node *> &args)
+    {
+        if (args.size() != 1)
+            return Result<Value>("invalid arity");
+        Wildcard val = args[0]->getValue(state).getValue();
+        std::string *path;
+        if (std::string **x = std::get_if<std::string *>(&val))
+            path = *x;
+        else
+            return Result<Value>("invalid path");
+        Result<State> result = ast::evaluate(*path);
+        if (!result.ok())
+            return Result<Value>(result.getError());
+        State libState = result.getValue();
+        return Result<Value>(Value(new LibraryNode(libState.getRegistry())));
+    }
 
     void debugPrint(Value value)
     {
@@ -209,6 +261,10 @@ namespace base
             return base::type(state, args);
         case 4:
             return base::input(state, args);
+        case 5:
+            return base::import(state, args);
+        case 6:
+            return base::include(state, args);
         }
         return Result<Value>("failed to execute fundamental function");
     }

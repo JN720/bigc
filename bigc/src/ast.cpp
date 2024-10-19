@@ -1,4 +1,5 @@
 #include "ast.h"
+#include <fstream>
 
 namespace ast
 {
@@ -605,5 +606,27 @@ namespace ast
         {
             printTree(*child, depth + 1);
         }
+    }
+
+    Result<State> evaluate(std::string filename)
+    {
+        State state;
+        std::ifstream file(filename);
+        std::string programText;
+        std::string line;
+        while (std::getline(file, line))
+        {
+            programText += line + '\n';
+        }
+        Result<std::vector<Token>> result = tokenizer::tokenize(programText);
+        if (!result.ok())
+            return state;
+        SequenceNode *program = new SequenceNode();
+        int index = 0;
+        std::vector<Token> tokens = result.getValue();
+        std::string error = createAST(state, tokens, index, program, BASE, false);
+        if (!error.empty())
+            return Result<State>(error);
+        return Result<State>(state);
     }
 }

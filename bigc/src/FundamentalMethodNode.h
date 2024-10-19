@@ -1,6 +1,8 @@
 #pragma once
 #include "MethodNode.h"
 
+// this is the superclass for all fundamental methods
+// each fundamental method must implement the execute method
 class FundamentalMethodNode : public MethodNode
 {
 public:

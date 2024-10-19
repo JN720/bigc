@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include "builtin.h"
 
 void interpreter::interpretFile(const std::string &filename)
 {
@@ -52,7 +53,7 @@ void interpreter::interpretFile(const std::string &filename)
     }
 }
 
-void interpreter::repl()
+void interpreter::debugRepl()
 {
     State state;
     std::string line = "";
@@ -96,5 +97,42 @@ void interpreter::repl()
         Wildcard valueValue = value.getValue();
         std::cout << "type: " << value.getType() << ' ' << '\n';
         base::debugPrint(value);
+    }
+}
+
+void interpreter::repl()
+{
+    State state;
+    std::string line = "";
+
+    std::cout << "Welcome to the Big C Lemur Engine!\n\n";
+    while (true)
+    {
+        std::cout << ">> ";
+        std::cin >> line;
+        if (line == "exit")
+            break;
+        Result<std::vector<Token>> result = tokenizer::tokenize(line);
+
+        if (!result.ok())
+        {
+            std::cout << "Tokenization Error: " << result.getError() << '\n';
+            continue;
+        }
+        SequenceNode *program = new SequenceNode();
+        int index = 0;
+        auto tokens = result.getValue();
+        std::string error = ast::createAST(state, tokens, index, program, ast::BASE, false);
+        if (!error.empty())
+        {
+            std::cout << "Interpretation Error: " << error << '\n';
+            continue;
+        }
+        Control control = program->resolve(state);
+        if (control.error())
+        {
+            std::cout << "Runtime Error:\n"
+                      << control.getError() << '\n';
+        }
     }
 }
