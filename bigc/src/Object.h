@@ -9,6 +9,7 @@
 class Object
 {
 public:
+    Object();
     Object(ClassDefinitionInterface *definition);
     ClassDefinitionInterface *getClass();
     virtual Control setProperty(const std::string &property, const Value &value);

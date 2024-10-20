@@ -99,6 +99,7 @@ public:
     Result<Value> getStaticAttribute(std::string name);
     void setStaticAttribute(std::string name, Value value);
     bool hasProperty(std::string name);
+    ClassDefinition *getMethodClass(std::string name);
 
 private:
     // implemented interfaces

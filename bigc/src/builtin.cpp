@@ -5,7 +5,8 @@
 #include "LibraryNode.h"
 #include "ClassDefinition.h"
 #include "./Libraries/Math/MathLibrary.h"
-
+#include "./Libraries/File/FileLibrary.h"
+#include <fstream>
 namespace base
 {
     std::string fmtValue(Wildcard val)
@@ -196,6 +197,8 @@ namespace base
             return Result<Value>("invalid library");
         if (*library == "math")
             return Result<Value>(Value((Node *)new LibraryNode(libmath::init())));
+        else if (*library == "file")
+            return Result<Value>(Value((Node *)new LibraryNode(libfile::init())));
         return Result<Value>("library not found");
     }
     // imported files

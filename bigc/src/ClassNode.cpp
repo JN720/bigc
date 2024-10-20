@@ -10,6 +10,12 @@ ClassNode::ClassNode()
     type = N_CLASS;
 }
 
+ClassNode::ClassNode(ClassDefinition *definition)
+{
+    this->definition = definition;
+    type = N_CLASS;
+}
+
 ClassDefinition *ClassNode::getClassDefinition()
 {
     return definition;

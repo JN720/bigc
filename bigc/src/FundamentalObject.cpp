@@ -1,5 +1,9 @@
 #include "FundamentalObject.h"
 
+FundamentalObject::FundamentalObject()
+{
+}
+
 Result<Value> FundamentalObject::getProperty(const std::string &property)
 {
     return Result<Value>("FundamentalObject cannot have properties get");

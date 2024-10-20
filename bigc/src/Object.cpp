@@ -1,5 +1,9 @@
 #include "Object.h"
 
+Object::Object()
+{
+}
+
 Object::Object(ClassDefinitionInterface *definition)
 {
     objClass = definition;

@@ -191,3 +191,40 @@ bool ClassDefinition::hasProperty(std::string name)
         return true;
     return false;
 }
+
+ClassDefinition *ClassDefinition::getMethodClass(std::string name)
+{
+    Method method;
+    bool isStatic = false;
+    if (methods.find(name) != methods.end())
+    {
+        method = methods.at(name);
+        isStatic = false;
+    }
+    else if (staticMethods.find(name) != staticMethods.end())
+    {
+        method = staticMethods.at(name);
+        isStatic = true;
+    }
+    else
+        return nullptr;
+    if (method.access != PARENT)
+        return this;
+    ClassDefinition *currentParent = parentClass;
+    // get the parent associated with the method
+    while (currentParent)
+    {
+        if (isStatic)
+        {
+            if (currentParent->getStaticMethods().at(name).access == PRIVATE)
+                return currentParent;
+        }
+        else
+        {
+            if (currentParent->getMethods().at(name).access == PRIVATE)
+                return currentParent;
+        }
+        currentParent = currentParent->getParent();
+    }
+    return nullptr;
+}

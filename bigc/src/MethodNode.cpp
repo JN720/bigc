@@ -1,5 +1,9 @@
 #include "MethodNode.h"
 
+MethodNode::MethodNode()
+{
+}
+
 MethodNode::MethodNode(Node *method, Object *object)
 {
     this->object = object;
