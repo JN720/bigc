@@ -15,7 +15,6 @@ AccessNode::AccessNode(const std::string &property)
 
 Control AccessNode::resolve(State &state)
 {
-    // this should be an object
     if (children.size() != 1)
         return Control("invalid access node");
     Control control = children.front()->resolve(state);
@@ -23,16 +22,22 @@ Control AccessNode::resolve(State &state)
         return control.stack("accessing property:\n");
     Wildcard val = children.front()->getValue(state).getValue();
 
+    bool instanced = (dynamic_cast<VariableNode *>(children.front()) &&
+                      static_cast<VariableNode *>(children.front())->getVariable() == "this");
+
     if (Node **node = std::get_if<Node *>(&val))
     {
         if (ClassNode *cls = dynamic_cast<ClassNode *>(*node))
         {
             if (cls == nullptr)
                 return Control("tried to access property of null");
-            // this is like accessing on an instanced object but we check the static attributes and methods
             ClassDefinition *classDefinition = cls->getClassDefinition();
             if (classDefinition == nullptr)
                 return Control("tried to access property of null");
+
+            if (!classDefinition->canAccess(property, instanced))
+                return Control("Cannot access " + property + ": access denied");
+
             Result<Value> classData = classDefinition->getStaticAttribute(property);
 
             if (classData.ok())
@@ -40,7 +45,6 @@ Control AccessNode::resolve(State &state)
                 value = classData.getValue();
                 return Control(OK);
             }
-            // else try to access the method
             else
             {
                 Result<Node *> method = cls->getClassDefinition()->getStaticMethod(property);
@@ -63,7 +67,6 @@ Control AccessNode::resolve(State &state)
         }
         else if (VariableNode *var = dynamic_cast<VariableNode *>(*node))
         {
-            // try to access the attribute first
             Result<Value> result = var->getValue(state);
             if (result.ok())
             {
@@ -74,17 +77,19 @@ Control AccessNode::resolve(State &state)
     }
     else if (Object **obj = std::get_if<Object *>(&val))
     {
-        // try to access the attribute first
+        ClassDefinition *classDefinition = static_cast<ClassDefinition *>((*obj)->getClass());
+        if (!classDefinition->canAccess(property, instanced))
+            return Control("Cannot access " + property + ": access denied");
+
         Result<Value> result = (*obj)->getProperty(property);
         if (result.ok())
         {
             value = result.getValue();
             return Control(OK);
         }
-        // else try to access the method
         else
         {
-            Result<Node *> method = (*obj)->getClass()->getClassMethod(property);
+            Result<Node *> method = classDefinition->getClassMethod(property);
             if (method.ok())
             {
                 value = Value(new MethodNode(method.getValue(), *obj));
@@ -114,11 +119,17 @@ Control AccessNode::setValue(State &state, Value value)
 
     Wildcard val = children[0]->getValue(state).getValue();
 
+    bool instanced = (dynamic_cast<VariableNode *>(children[0]) &&
+                      static_cast<VariableNode *>(children[0])->getVariable() == "this");
+
     if (Node **node = std::get_if<Node *>(&val))
     {
         if (ClassNode *cls = dynamic_cast<ClassNode *>(*node))
         {
-            cls->getClassDefinition()->setStaticAttribute(property, value);
+            ClassDefinition *classDefinition = cls->getClassDefinition();
+            if (!classDefinition->canAccess(property, instanced))
+                return Control("Cannot set " + property + ": access denied");
+            classDefinition->setStaticAttribute(property, value);
         }
         else if (LibraryNode *lib = dynamic_cast<LibraryNode *>(*node))
         {
@@ -135,6 +146,9 @@ Control AccessNode::setValue(State &state, Value value)
     }
     else if (Object **obj = std::get_if<Object *>(&val))
     {
+        ClassDefinition *classDefinition = static_cast<ClassDefinition *>((*obj)->getClass());
+        if (!classDefinition->canAccess(property, instanced))
+            return Control("Cannot set " + property + ": access denied");
         control = (*obj)->setProperty(property, value);
         if (control.error())
             return control.stack("Error setting object property");

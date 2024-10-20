@@ -1,11 +1,11 @@
 #include "Object.h"
 
-Object::Object(ClassDefinition *definition)
+Object::Object(ClassDefinitionInterface *definition)
 {
     objClass = definition;
 }
 
-ClassDefinition *Object::getClass()
+ClassDefinitionInterface *Object::getClass()
 {
     return objClass;
 }

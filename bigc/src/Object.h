@@ -4,19 +4,18 @@
 #include "State.h"
 #include "Node.h"
 #include <vector>
-
-class ClassDefinition;
+#include "ClassDefinitionInterface.h"
 
 class Object
 {
 public:
-    Object(ClassDefinition *definition);
-    ClassDefinition *getClass();
+    Object(ClassDefinitionInterface *definition);
+    ClassDefinitionInterface *getClass();
     virtual Control setProperty(const std::string &property, const Value &value);
     void addProperty(const std::string &property, const Value &value);
     virtual Result<Value> getProperty(const std::string &property);
 
 protected:
     std::unordered_map<std::string, Value> attributes;
-    ClassDefinition *objClass;
+    ClassDefinitionInterface *objClass;
 };

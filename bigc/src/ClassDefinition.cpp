@@ -74,12 +74,12 @@ void ClassDefinition::applyParent(ClassDefinition *parent)
     // attributes
     for (auto attribute : parent->getAttributes())
     {
-        attributes[attribute.first] = attribute.second;
+        attributes[attribute.first] = attribute.second.inherit();
     }
     // static
     for (auto attribute : parent->getStaticAttributes())
     {
-        staticAttributes[attribute.first] = attribute.second;
+        staticAttributes[attribute.first] = attribute.second.inherit();
     }
     // interfaces
     for (auto interface : parent->getInterfaces())
@@ -89,13 +89,38 @@ void ClassDefinition::applyParent(ClassDefinition *parent)
     // methods
     for (auto pair : parent->getMethods())
     {
-        methods[pair.first] = pair.second;
+        methods[pair.first] = pair.second.inherit();
     }
     // static
     for (auto pair : parent->getStaticMethods())
     {
-        staticMethods[pair.first] = pair.second;
+        staticMethods[pair.first] = pair.second.inherit();
     }
+}
+
+bool ClassDefinition::canAccess(std::string property, bool instanced)
+{
+    if (instanced)
+    {
+        if (attributes.find(property) != attributes.end())
+            return attributes.at(property).access != PARENT;
+        if (methods.find(property) != methods.end())
+            return methods.at(property).access != PARENT;
+        if (staticMethods.find(property) != staticMethods.end())
+            return staticMethods.at(property).access != PARENT;
+        if (staticAttributes.find(property) != staticAttributes.end())
+            return staticAttributes.at(property).access != PARENT;
+        return false;
+    }
+    if (staticAttributes.find(property) != staticAttributes.end())
+        return staticAttributes.at(property).access == PUBLIC;
+    if (staticMethods.find(property) != staticMethods.end())
+        return staticMethods.at(property).access == PUBLIC;
+    if (attributes.find(property) != attributes.end())
+        return attributes.at(property).access == PUBLIC;
+    if (methods.find(property) != methods.end())
+        return methods.at(property).access == PUBLIC;
+    return false;
 }
 
 bool ClassDefinition::implements(Interface *interface)
@@ -152,4 +177,17 @@ Result<Value> ClassDefinition::getStaticAttribute(std::string name)
 void ClassDefinition::setStaticAttribute(std::string name, Value value)
 {
     staticAttributes[name].value = value;
+}
+
+bool ClassDefinition::hasProperty(std::string name)
+{
+    if (attributes.find(name) != attributes.end())
+        return true;
+    if (methods.find(name) != methods.end())
+        return true;
+    if (staticAttributes.find(name) != staticAttributes.end())
+        return true;
+    if (staticMethods.find(name) != staticMethods.end())
+        return true;
+    return false;
 }

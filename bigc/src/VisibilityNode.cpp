@@ -87,6 +87,11 @@ void VisibilityNode::setType(std::string type)
     this->attributeType = type;
 }
 
+std::string VisibilityNode::getAttributeType()
+{
+    return attributeType;
+}
+
 bool VisibilityNode::getIsMethod()
 {
     return isMethod;
@@ -97,10 +102,47 @@ bool VisibilityNode::getIsStatic()
     return isStatic;
 }
 
-void VisibilityNode::applyToDefinition(ClassDefinition *definition, const State &state)
+Control VisibilityNode::applyToDefinition(ClassDefinition *definition, const State &state)
 {
+    // method overrides should only work for public and protected methods
+    // TODO: they also require the same type signature
     if (isMethod)
+    {
+        if (definition->hasProperty(variable))
+        {
+            auto methods = definition->getMethods();
+            Method method;
+            if (methods.find(variable) == methods.end())
+                methods = definition->getStaticMethods();
+            if (methods.find(variable) == methods.end())
+                return Control("method " + variable + " not found");
+            method = methods.at(variable);
+            if (method.access != PUBLIC && method.access != PROTECTED)
+                return Control("method " + variable + " must be public or protected to override");
+            // if (method.method->getType() != getAttributeType())
+            //     return Control("method " + variable + " has wrong type signature");
+        }
         definition->addMethod(variable, children[0], isStatic, access);
+    }
+    // the overriding rules for attributes are the same
+    // they also require the same type
     else
+    {
+        if (definition->hasProperty(variable))
+        {
+            auto attributes = definition->getAttributes();
+            Attribute attribute;
+            if (attributes.find(variable) == attributes.end())
+                attributes = definition->getStaticAttributes();
+            if (attributes.find(variable) == attributes.end())
+                return Control("attribute " + variable + " not found");
+            attribute = attributes.at(variable);
+            if (attribute.access != PUBLIC && attribute.access != PROTECTED)
+                return Control("attribute " + variable + " must be public or protected to override");
+            if (attribute.value.getType() != getAttributeType())
+                return Control("attribute " + variable + " has wrong type signature");
+        }
         definition->addAttribute(variable, access, isStatic, children.size() ? children[0]->getValue(state) : Value(false));
+    }
+    return Control(OK);
 }

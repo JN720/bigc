@@ -65,7 +65,7 @@ namespace base
                 else
                     return Result<Value>("Printable is not a node");
                 // check if the obj implements it
-                ClassDefinition *objClass = (*obj)->getClass();
+                ClassDefinition *objClass = static_cast<ClassDefinition *>((*obj)->getClass());
                 if (objClass->implements(printInterface))
                 {
                     // grab the method
@@ -133,7 +133,7 @@ namespace base
             else
                 return Result<Value>("Measurable is not a node");
 
-            ClassDefinition *objClass = (*obj)->getClass();
+            ClassDefinition *objClass = static_cast<ClassDefinition *>((*obj)->getClass());
             if (objClass->implements(measureInterface))
             {
                 Result<Node *> result = objClass->getClassMethod("len");

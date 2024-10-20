@@ -52,10 +52,10 @@ Control CallNode::resolve(State &state)
             return Control("Callable interface is not an interface");
         Interface *interface = interfaceNode->getInterface();
         // check that the object implements the interface
-        if (!obj->getClass()->implements(interface))
+        if (!static_cast<ClassDefinition *>(obj->getClass())->implements(interface))
             return Control("object does not implement Callable interface");
         // check that the object has a call method
-        Result<Node *> methodResult = obj->getClass()->getMethod("call");
+        Result<Node *> methodResult = static_cast<ClassDefinition *>(obj->getClass())->getClassMethod("call");
         if (!methodResult.ok())
             return Control(methodResult.getError()).stack("calling method:\n");
         // ensure it is a function

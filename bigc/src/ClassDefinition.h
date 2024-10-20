@@ -31,7 +31,8 @@ enum AccessSpecifier
 {
     PUBLIC,
     PRIVATE,
-    PROTECTED
+    PROTECTED,
+    PARENT
 };
 
 class Node;
@@ -47,6 +48,10 @@ struct Method
         this->method = method;
         this->access = access;
     }
+    Method inherit()
+    {
+        return (access == PRIVATE || access == PARENT) ? Method(method, PARENT) : *this;
+    }
 };
 
 struct Attribute
@@ -61,15 +66,22 @@ struct Attribute
         this->access = access;
         this->defaultValue = defaultValue;
     }
+
+    // replace private access with parent access
+    Attribute inherit()
+    {
+        return (access == PRIVATE || access == PARENT) ? Attribute(defaultValue, PARENT, defaultValue) : *this;
+    }
 };
 
-class ClassDefinition
+class ClassDefinition : public ClassDefinitionInterface
 {
 public:
     ClassDefinition();
     ClassDefinition *getParent();
     Result<Node *> getMethod(std::string name);
     void applyParent(ClassDefinition *parent);
+    bool canAccess(std::string property, bool instanced) override;
     const std::unordered_map<std::string, Method> &getMethods();
     const std::unordered_map<std::string, Method> &getStaticMethods();
     const std::unordered_map<std::string, Attribute> &getAttributes();
@@ -86,6 +98,7 @@ public:
     Result<Node *> getStaticMethod(std::string name);
     Result<Value> getStaticAttribute(std::string name);
     void setStaticAttribute(std::string name, Value value);
+    bool hasProperty(std::string name);
 
 private:
     // implemented interfaces

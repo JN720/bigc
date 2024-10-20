@@ -74,7 +74,9 @@ Control ClassNode::resolve(State &state)
                 if (!control.ok())
                     return control.stack("during declaration " + std::to_string(index + 1) + " in class definition:\n");
             }
-            visibility->applyToDefinition(definition, state);
+            Control control = visibility->applyToDefinition(definition, state);
+            if (!control.ok())
+                return control.stack("during declaration " + std::to_string(index + 1) + " in class definition:\n");
         }
         else
             return Control("expected a visibility node");
