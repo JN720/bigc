@@ -1,22 +1,31 @@
 #pragma once
 #include "Hashable.h"
+#include "Result.h"
 #include <vector>
+
+template <class T>
+struct IteratorResult
+{
+    T value;
+    int nextState;
+};
 
 template <class T>
 class Iterable
 {
 public:
-    virtual std::string add(T val);
+    virtual Control add(T val);
     virtual Result<T> get(Hashable *index);
     virtual Result<int> len();
     virtual Result<Iterable<T> *> combine(Iterable<T> &other);
     virtual Control set(Hashable *index, T value);
+    virtual Result<IteratorResult<T>> next(int state);
 };
 
 template <class T>
-inline std::string Iterable<T>::add(T val)
+inline Control Iterable<T>::add(T val)
 {
-    return std::string();
+    return Control("not implemented");
 }
 
 template <class T>
@@ -43,4 +52,10 @@ template <class T>
 inline Control Iterable<T>::set(Hashable *index, T value)
 {
     return Control("not implemented");
+}
+
+template <class T>
+inline Result<IteratorResult<T>> Iterable<T>::next(int state)
+{
+    return Result<IteratorResult<T>>(Control("not implemented"));
 }

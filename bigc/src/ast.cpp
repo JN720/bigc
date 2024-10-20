@@ -147,6 +147,22 @@ namespace ast
                         else
                             return "expected identifier for register";
                     }
+                    else if (token.value == "iterate")
+                    {
+                        if (cur)
+                            return "unexpected iterate";
+                        if (tokens.size() > index + 1 && tokens[index + 1].type == TEXT)
+                        {
+                            ++index;
+                            cur = new IterateNode(tokens[index].value);
+                            // this functions similarly to while so we can use LOOPEXPR
+                            error = createAST(state, tokens, ++index, cur, LOOPEXPR, piped);
+                            if (!error.empty())
+                                return error;
+                        }
+                        else
+                            return "expected identifier for iterate";
+                    }
                     else if (token.value == "public" || token.value == "private" || token.value == "protected")
                     {
                         // sets the access

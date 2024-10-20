@@ -24,7 +24,7 @@
 #include "RegisterNode.h"
 #include "CallNode.h"
 #include "GroupNode.h"
-
+#include "IterateNode.h"
 namespace ast
 {
 

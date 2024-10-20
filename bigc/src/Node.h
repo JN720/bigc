@@ -26,7 +26,8 @@ enum NodeType
     N_INTERFACE,
     N_LIBRARY,
     N_REGISTER,
-    N_GROUP
+    N_GROUP,
+    N_ITERATE
 };
 
 const std::string NODETYPES[] = {"leafvalue", "identifier", "call", "operation", "assignment", "index", "sequence",

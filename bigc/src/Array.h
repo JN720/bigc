@@ -1,5 +1,6 @@
 #pragma once
 #include "Value.h"
+#include "Iterable.h"
 #include <vector>
 
 template <class T>
@@ -7,19 +8,20 @@ class Array : public Iterable<T>
 {
 public:
     Array<T>();
-    std::string add(Value val) override;
+    Control add(Value val) override;
     Result<T> get(Hashable *index) override;
     Result<int> len() override;
+    Result<IteratorResult<T>> next(int state) override;
 
 protected:
     std::vector<T> values;
 };
 
 template <class T>
-std::string Array<T>::add(Value val)
+Control Array<T>::add(Value val)
 {
     values.push_back(val);
-    return "";
+    return Control(OK);
 }
 
 template <class T>
@@ -47,4 +49,14 @@ Result<int> Array<T>::len()
 template <class T>
 Array<T>::Array()
 {
+}
+
+template <class T>
+Result<IteratorResult<T>> Array<T>::next(int state)
+{
+    if (state >= values.size())
+    {
+        return Result<IteratorResult<T>>(Control(BREAK));
+    }
+    return Result<IteratorResult<T>>(IteratorResult<T>{values[state], state + 1});
 }
