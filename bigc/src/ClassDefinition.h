@@ -71,6 +71,7 @@ struct Attribute
     Attribute inherit()
     {
         return (access == PRIVATE || access == PARENT) ? Attribute(defaultValue, PARENT, defaultValue) : *this;
+        // return Attribute(value, PARENT, defaultValue);
     }
 };
 

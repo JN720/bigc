@@ -156,3 +156,19 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
     state->popFrame();
     return Result<Value>(result);
 }
+
+Control FunctionNode::resolveArguments(State &state, std::vector<Node *> &args)
+{
+    // resolve arguments until we hit the sequence
+    std::cout << "resolving " << args.size() << " arguments" << std::endl;
+    for (Node *arg : args)
+    {
+        Control control = arg->resolve(state);
+        if (control.control())
+            return control;
+        if (control.error())
+            return control.stack("resolving arguments:\n");
+    }
+
+    return Control(OK);
+}

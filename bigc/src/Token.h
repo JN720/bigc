@@ -1,6 +1,24 @@
 #pragma once
 #include <string>
 
+const std::string TOKEN_TYPES[] = {
+    "none",
+    "number",
+    "operator",
+    "text",
+    "accessor",
+    "delimiter",
+    "argexprstart",
+    "argexprend",
+    "indstart",
+    "indend",
+    "ctrlstart",
+    "ctrlend",
+    "pipe",
+    "piperes",
+    "spread",
+    "end"};
+
 enum TokenType
 {
     NONE,

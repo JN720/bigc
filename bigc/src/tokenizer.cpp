@@ -265,6 +265,7 @@ namespace tokenizer
                     tokens.push_back(Token(accumulated, accType));
                 accumulated = "";
                 inString = true;
+                accType = NUMBERSTR;
                 continue;
             }
             else if (c == '"' && inString && str[i - 1] != '\\')
