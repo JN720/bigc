@@ -6,6 +6,7 @@
 #include "ClassDefinition.h"
 #include "./Libraries/Math/MathLibrary.h"
 #include "./Libraries/File/FileLibrary.h"
+#include "./Libraries/OS/OSLibrary.h"
 #include <fstream>
 namespace base
 {
@@ -199,6 +200,8 @@ namespace base
             return Result<Value>(Value((Node *)new LibraryNode(libmath::init())));
         else if (*library == "file")
             return Result<Value>(Value((Node *)new LibraryNode(libfile::init())));
+        else if (*library == "os")
+            return Result<Value>(Value((Node *)new LibraryNode(libos::init())));
         return Result<Value>("library not found");
     }
     // imported files
