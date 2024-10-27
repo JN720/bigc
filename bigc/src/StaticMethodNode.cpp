@@ -14,7 +14,7 @@ Result<Value> StaticMethodNode::execute(State &state, std::vector<Node *> &args)
 {
     // function call scopes are closed
     StateFrame *frame = state.pushFrame(true);
-    frame->setVariable("this", Value((Node *)cls));
+    frame->setVariable("static", Value((Node *)cls));
 
     int curVal = 0;
     int curArg = 0;

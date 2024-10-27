@@ -35,6 +35,12 @@ enum AccessSpecifier
     PARENT
 };
 
+const std::string ACCESS_SPECIFIERS[] = {
+    "public",
+    "private",
+    "protected",
+    "parent"};
+
 class Node;
 class State;
 
@@ -71,7 +77,6 @@ struct Attribute
     Attribute inherit()
     {
         return (access == PRIVATE || access == PARENT) ? Attribute(defaultValue, PARENT, defaultValue) : *this;
-        // return Attribute(value, PARENT, defaultValue);
     }
 };
 
@@ -79,10 +84,10 @@ class ClassDefinition : public ClassDefinitionInterface
 {
 public:
     ClassDefinition();
-    ClassDefinition *getParent();
+    ClassDefinition *getParent() override;
     Result<Node *> getMethod(std::string name);
     void applyParent(ClassDefinition *parent);
-    bool canAccess(std::string property, bool instanced) override;
+    bool canAccess(std::string property, AccessType instanced) override;
     const std::unordered_map<std::string, Method> &getMethods();
     const std::unordered_map<std::string, Method> &getStaticMethods();
     const std::unordered_map<std::string, Attribute> &getAttributes();

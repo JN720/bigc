@@ -22,8 +22,16 @@ Control AccessNode::resolve(State &state)
         return control.stack("accessing property:\n");
     Wildcard val = children.front()->getValue(state).getValue();
 
-    bool instanced = (dynamic_cast<VariableNode *>(children.front()) &&
-                      static_cast<VariableNode *>(children.front())->getVariable() == "this");
+    AccessType accessType = (dynamic_cast<VariableNode *>(children.front()) &&
+                                 static_cast<VariableNode *>(children.front())->getVariable() == "this" ||
+                             static_cast<VariableNode *>(children.front())->getVariable() == "static")
+                                ? THIS
+                                : OUTSIDE;
+
+    if (dynamic_cast<VariableNode *>(children.front())->getVariable() == "super")
+        accessType = SUPER;
+    if (dynamic_cast<VariableNode *>(children.front())->getVariable() == "superstatic")
+        accessType = SUPER;
 
     if (Node **node = std::get_if<Node *>(&val))
     {
@@ -35,7 +43,7 @@ Control AccessNode::resolve(State &state)
             if (classDefinition == nullptr)
                 return Control("tried to access property of null");
 
-            if (!classDefinition->canAccess(property, instanced))
+            if (!classDefinition->canAccess(property, accessType))
                 return Control("Cannot access " + property + ": access denied");
 
             Result<Value> classData = classDefinition->getStaticAttribute(property);
@@ -78,7 +86,7 @@ Control AccessNode::resolve(State &state)
     else if (Object **obj = std::get_if<Object *>(&val))
     {
         ClassDefinition *classDefinition = static_cast<ClassDefinition *>((*obj)->getClass());
-        if (!classDefinition->canAccess(property, instanced))
+        if (!classDefinition->canAccess(property, accessType))
             return Control("Cannot access " + property + ": access denied");
 
         Result<Value> result = (*obj)->getProperty(property);
@@ -119,15 +127,23 @@ Control AccessNode::setValue(State &state, Value value)
 
     Wildcard val = children[0]->getValue(state).getValue();
 
-    bool instanced = (dynamic_cast<VariableNode *>(children[0]) &&
-                      static_cast<VariableNode *>(children[0])->getVariable() == "this");
+    AccessType accessType = (dynamic_cast<VariableNode *>(children.front()) &&
+                                 static_cast<VariableNode *>(children.front())->getVariable() == "this" ||
+                             static_cast<VariableNode *>(children.front())->getVariable() == "static")
+                                ? THIS
+                                : OUTSIDE;
+
+    if (dynamic_cast<VariableNode *>(children.front())->getVariable() == "super")
+        accessType = SUPER;
+    if (dynamic_cast<VariableNode *>(children.front())->getVariable() == "superstatic")
+        accessType = SUPER;
 
     if (Node **node = std::get_if<Node *>(&val))
     {
         if (ClassNode *cls = dynamic_cast<ClassNode *>(*node))
         {
             ClassDefinition *classDefinition = cls->getClassDefinition();
-            if (!classDefinition->canAccess(property, instanced))
+            if (!classDefinition->canAccess(property, accessType))
                 return Control("Cannot set " + property + ": access denied");
             classDefinition->setStaticAttribute(property, value);
         }
@@ -147,7 +163,7 @@ Control AccessNode::setValue(State &state, Value value)
     else if (Object **obj = std::get_if<Object *>(&val))
     {
         ClassDefinition *classDefinition = static_cast<ClassDefinition *>((*obj)->getClass());
-        if (!classDefinition->canAccess(property, instanced))
+        if (!classDefinition->canAccess(property, accessType))
             return Control("Cannot set " + property + ": access denied");
         control = (*obj)->setProperty(property, value);
         if (control.error())

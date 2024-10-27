@@ -2,6 +2,8 @@
 #include "TypeNode.h"
 #include "SpreadNode.h"
 #include "SequenceNode.h"
+#include "Object.h"
+#include "ClassNode.h"
 
 FunctionNode::FunctionNode()
 {
@@ -88,8 +90,16 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
     // the final one can also be a spread node
     // create the frame for the arguments we pass in
     StateFrame *frame = state->pushFrame(true);
-    // add this
+    // add this, static, and super
     frame->setVariable("this", Value(obj));
+    frame->setVariable("static", Value((Node *)new ClassNode(obj->getClass())));
+    Object *superObject = obj->getSuper();
+    if (superObject)
+        frame->setVariable("super", Value(superObject));
+    ClassDefinition *superClass = static_cast<ClassDefinition *>(obj->getClass()->getParent());
+    if (superClass)
+        frame->setVariable("superstatic", Value((Node *)new ClassNode(superClass)));
+
     // take each arg, do type assertions, and add to the frame
     int curVal = 0;
     int curArg = 0;

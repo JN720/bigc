@@ -8,6 +8,7 @@ class ClassNode : public Node
 public:
     ClassNode();
     ClassNode(ClassDefinition *definition);
+    ClassNode(ClassDefinitionInterface *definition);
     ClassDefinition *getClassDefinition();
     Control resolve(State &state) override;
 

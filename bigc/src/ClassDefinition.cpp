@@ -71,6 +71,7 @@ const std::unordered_map<std::string, Method> &ClassDefinition::getStaticMethods
 
 void ClassDefinition::applyParent(ClassDefinition *parent)
 {
+    parentClass = parent;
     // attributes
     for (auto attribute : parent->getAttributes())
     {
@@ -98,9 +99,10 @@ void ClassDefinition::applyParent(ClassDefinition *parent)
     }
 }
 
-bool ClassDefinition::canAccess(std::string property, bool instanced)
+bool ClassDefinition::canAccess(std::string property, AccessType instanced)
 {
-    if (instanced)
+    std::cout << "canAccess(" << property << ", " << ACCESS_TYPES[instanced] << ")" << std::endl;
+    if (instanced == THIS)
     {
         if (attributes.find(property) != attributes.end())
             return attributes.at(property).access != PARENT;
@@ -110,6 +112,18 @@ bool ClassDefinition::canAccess(std::string property, bool instanced)
             return staticMethods.at(property).access != PARENT;
         if (staticAttributes.find(property) != staticAttributes.end())
             return staticAttributes.at(property).access != PARENT;
+        return false;
+    }
+    else if (instanced == SUPER)
+    {
+        if (attributes.find(property) != attributes.end())
+            return attributes.at(property).access % 2 == 0;
+        if (methods.find(property) != methods.end())
+            return methods.at(property).access % 2 == 0;
+        if (staticMethods.find(property) != staticMethods.end())
+            return staticMethods.at(property).access % 2 == 0;
+        if (staticAttributes.find(property) != staticAttributes.end())
+            return staticAttributes.at(property).access % 2 == 0;
         return false;
     }
     if (staticAttributes.find(property) != staticAttributes.end())
