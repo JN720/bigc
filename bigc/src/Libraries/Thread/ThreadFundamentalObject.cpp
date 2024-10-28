@@ -2,16 +2,17 @@
 
 libthread::ThreadFundamentalObject::ThreadFundamentalObject(Node *method, State *state)
 {
+    result = Result<Value>(Value(79));
     curThread = std::thread([this, method, state]()
                             {
                                 State stateRef = *state; 
                                 Control control = method->resolve(stateRef);
                                 if (!control.ok())
                                 {
-                                    result.set_value(Result<Value>(control.stack("executing thread:\n")));
+                                    promise.set_value(Result<Value>(control.stack("executing thread:\n")));
                                     return;                                                               
                                 }
-                                result.set_value(method->getValue(stateRef)); });
+                                this->promise.set_value(method->getValue(stateRef)); });
 }
 
 libthread::ThreadFundamentalObject::~ThreadFundamentalObject()
@@ -28,12 +29,15 @@ Control libthread::ThreadFundamentalObject::setProperty(const std::string &prope
     return Control("cannot set property of thread");
 }
 
-std::thread libthread::ThreadFundamentalObject::getThread()
+std::thread &libthread::ThreadFundamentalObject::getThread()
 {
-    return std::move(curThread);
+    return curThread;
 }
 
 Result<Value> libthread::ThreadFundamentalObject::getResult()
 {
-    return result.get_future().get();
+
+    curThread.join();
+    result = promise.get_future().get();
+    return result;
 }

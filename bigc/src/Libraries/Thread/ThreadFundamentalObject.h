@@ -13,11 +13,12 @@ namespace libthread
 
         Result<Value> getProperty(const std::string &property) override;
         Control setProperty(const std::string &property, const Value &value) override;
-        std::thread getThread();
+        std::thread &getThread();
         Result<Value> getResult();
 
     private:
         std::thread curThread;
-        std::promise<Result<Value>> result;
+        std::promise<Result<Value>> promise;
+        Result<Value> result;
     };
 }

@@ -18,7 +18,6 @@ Result<Value> libthread::awaitFunction(State &state, std::vector<Node *> &args)
         if (ThreadFundamentalObject *threadObj = dynamic_cast<ThreadFundamentalObject *>(*obj))
         {
             Result<Value> result = threadObj->getResult();
-            threadObj->getThread().join();
             return result;
         }
         else
@@ -30,7 +29,7 @@ Result<Value> libthread::awaitFunction(State &state, std::vector<Node *> &args)
 
 Result<Value> libthread::asyncFunction(State &state, std::vector<Node *> &args)
 {
-    if (!args.size() == 1)
+    if (args.size() != 1)
         return Result<Value>("async requires one argument: method");
     return Result<Value>(Value(new ThreadFundamentalObject(args[0], &state)));
 }
