@@ -6,7 +6,6 @@ namespace tokenizer
     const std::string DIGITS = "0123456789";
     const std::string WORDS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_:";
     const std::string SINGULARS = ".,()[]{}|&~;";
-    const std::string KEYWORDS[] = {"if"};
 
     Result<TokenType> allowSingularTokens(char c, TokenType allowed[12], std::string error)
     {
@@ -42,8 +41,10 @@ namespace tokenizer
 
     Result<TokenType> getTokenType(char c, TokenType prev, std::string acc, bool prevWhitespace)
     {
-        if (c == ' ' || c == '\t' || c == '\n')
+        if (c == ' ' || c == '\t')
             return Result<TokenType>(NONE);
+        if (c == '\n')
+            return Result<TokenType>(SOFTEND);
         bool hasDot = acc.find('.') != std::string::npos;
         TokenType allowed[12] = {
             ACCESSOR,
@@ -93,6 +94,15 @@ namespace tokenizer
             allowed[PIPERES - 4] = NONE;
             allowed[END - 4] = NONE;
             return allowSingularTokens(c, allowed, "unexpected start of statement");
+
+        case SOFTEND:
+            if (OPERATORS.find(c) != std::string::npos)
+                return Result<TokenType>(OPERATOR);
+            if (DIGITS.find(c) != std::string::npos)
+                return Result<TokenType>(NUMBERSTR);
+            if (WORDS.find(c) != std::string::npos)
+                return Result<TokenType>(TEXT);
+            return allowSingularTokens(c, allowed, "unexpected token after soft end");
 
         case NUMBERSTR:
             if (c == '.' && hasDot)

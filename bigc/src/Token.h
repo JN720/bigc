@@ -36,7 +36,8 @@ enum TokenType
     PIPE,
     PIPERES,
     SPREAD,
-    END
+    END,
+    SOFTEND
 };
 
 class Token

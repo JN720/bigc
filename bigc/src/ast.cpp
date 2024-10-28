@@ -10,6 +10,20 @@ namespace ast
     const std::string HELP[] = {"none", "numberstr", "operator", "text", "accessor", "delimiter", "argexpstart", "argexprend",
                                 "indstart", "indend", "ctrlstart", "ctrlend", "pipe", "piperes", "spread", "end"};
 
+    // drops you right before the next non-softend token
+    void skipSoftends(std::vector<Token> &tokens, int &index)
+    {
+        while (tokens[index].type == SOFTEND)
+        {
+            index++;
+            if (tokens[index].type != SOFTEND || index == tokens.size())
+            {
+                index--;
+                break;
+            }
+        }
+    }
+
     std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node *parent, Context context, bool piped)
     {
         // assume we are accumulating an expression
@@ -17,9 +31,9 @@ namespace ast
 
         for (; index < tokens.size(); index++)
         {
-
+            skipSoftends(tokens, index);
             Token token = tokens[index];
-            std::cout << index << ' ' << token.value << ' ' << CONTEXT[(int)context] << '\n';
+            std::cout << index << ' ' << (token.value == "\n" ? "\\n" : token.value) << ' ' << CONTEXT[(int)context] << '\n';
             //  handle operators: any operator
             //  handle calls: function followed by (
             //  handle expressions: (
@@ -76,6 +90,7 @@ namespace ast
                             return "unexpected interface definition";
                         cur = new InterfaceNode();
                         // if we have an interface name we expect a ( and go until )
+                        skipSoftends(tokens, index);
                         if (tokens.size() > index + 1 && tokens[index + 1].type == ARGEXPRSTART)
                         {
                             ++index;
@@ -123,6 +138,7 @@ namespace ast
                     {
                         if (cur)
                             return "unexpected group";
+                        skipSoftends(tokens, index);
                         if (tokens.size() > index + 1 && tokens[index + 1].type == TEXT)
                         {
                             ++index;
@@ -135,6 +151,7 @@ namespace ast
                     {
                         if (cur)
                             return "unexpected register";
+                        skipSoftends(tokens, index);
                         if (tokens.size() > index + 1 && tokens[index + 1].type == TEXT)
                         {
                             ++index;
@@ -151,6 +168,7 @@ namespace ast
                     {
                         if (cur)
                             return "unexpected iterate";
+                        skipSoftends(tokens, index);
                         if (tokens.size() > index + 1 && tokens[index + 1].type == TEXT)
                         {
                             ++index;
@@ -172,6 +190,7 @@ namespace ast
                         // we either have a method, identifier, or static
                         cur = accessSpecifier;
                         // check 2 for the possibilities of it being static or a method
+                        skipSoftends(tokens, index);
                         if (tokens.size() > index + 2 && tokens[index + 1].type == TEXT)
                         {
                             ++index;
@@ -192,6 +211,7 @@ namespace ast
                             {
                                 accessSpecifier->makeMethod();
                                 ++index;
+                                skipSoftends(tokens, index);
                                 if (tokens[index].type != TEXT)
                                     return "expected identifier for method";
                                 accessSpecifier->setVariable(tokens[index].value);
@@ -204,7 +224,6 @@ namespace ast
                             // static method
                             else if (tokens[index].value == "utility")
                             {
-                                std::cout << "\nmaking utility\n\n";
                                 accessSpecifier->makeMethod();
                                 accessSpecifier->makeStatic();
                                 ++index;
@@ -264,6 +283,7 @@ namespace ast
                         return "only the cast operator is allowed in function definitions";
                     if (!cur)
                         return "unexpected @";
+                    skipSoftends(tokens, index);
                     if (tokens.size() > index + 1 && tokens[index + 1].type == TEXT)
                     {
                         TypeNode *type = new TypeNode(tokens[index + 1].value);
@@ -277,6 +297,7 @@ namespace ast
                     if (token.value == "@")
                     {
                         // cur should be an identifier
+                        skipSoftends(tokens, index);
                         if (tokens.size() > index + 1 && tokens[index + 1].type == TEXT)
                         {
                             ++index;
@@ -323,6 +344,7 @@ namespace ast
                         AccessNode *accessor = new AccessNode(tokens[index].value);
                         accessor->addChild(cur);
                         cur = accessor;
+                        skipSoftends(tokens, index);
                         if (tokens.size() > index + 1 && tokens[index + 1].type == ACCESSOR)
                             ++index;
                         else
@@ -373,7 +395,6 @@ namespace ast
                 break;
 
             case ARGEXPREND:
-                // std::cout << "we hit ] " << tokens[index].value << " " << CONTEXT[context] << '\n';
                 if (context == DELIMITED || context == EXPR || context == OPERATING || context == SIGNAL || context == INTERFARGS)
                 {
                     if (cur)
@@ -385,7 +406,6 @@ namespace ast
                 }
                 else
                 {
-                    std::cout << CONTEXT[context] << '\n';
                     return "unexpected end of expression";
                 }
                 break;
@@ -487,17 +507,22 @@ namespace ast
                     // after the sequence ends we will have hit the ctrlend
                     // there is no kickback so we are on the }
                     // check for else and if so, add a sequence for that
+                    skipSoftends(tokens, index);
                     if (tokens.size() > index + 2 && tokens[index + 1].type == TEXT)
                     {
-                        if (tokens[index + 1].value == "else" && tokens[index + 2].type == CTRLSTART)
+                        if (tokens[index + 1].value == "else")
                         {
-                            SequenceNode *elseseq = new SequenceNode();
-                            // add the else sequence after the if sequence on the branch
-                            parent->addChild(elseseq);
-                            index += 2;
-                            error = createAST(state, tokens, ++index, elseseq, IFSEQ, piped);
-                            if (!error.empty())
-                                return error;
+                            skipSoftends(tokens, index);
+                            if (tokens[index + 1].type == CTRLSTART)
+                            {
+                                SequenceNode *elseseq = new SequenceNode();
+                                ++index;
+                                // add the else sequence after the if sequence on the branch
+                                parent->addChild(elseseq);
+                                error = createAST(state, tokens, ++index, elseseq, IFSEQ, piped);
+                                if (!error.empty())
+                                    return error;
+                            }
                         }
                     }
                     // return to where we initialized the ifexpr
@@ -580,6 +605,22 @@ namespace ast
                 else
                     return "unexpected ~";
                 break;
+            case SOFTEND:
+                skipSoftends(tokens, index);
+                // if we're operating with cur, assume this will be an end
+                if (cur && (context == OPERATING || context == SIGNAL || context == ATTDECL))
+                {
+                    if (cur)
+                        parent->addChild(cur);
+                    index--;
+                    return "";
+                }
+                // if we aren't in a sequence-like context ignore this token
+                // otherwise we bleed into end
+                if (context != BASE && context != SEQ && context != IFSEQ && context != CLASSSEQ)
+                    break;
+                if (!cur)
+                    break;
             case END:
                 if (!cur && context == OPERATING)
                     return "unexpected ;";
@@ -600,7 +641,8 @@ namespace ast
                 // proper new statement
                 else if (context == BASE)
                 {
-                    parent->addChild(cur);
+                    if (cur)
+                        parent->addChild(cur);
                     cur = nullptr;
                     break;
                 }

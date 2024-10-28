@@ -101,7 +101,6 @@ void ClassDefinition::applyParent(ClassDefinition *parent)
 
 bool ClassDefinition::canAccess(std::string property, AccessType instanced)
 {
-    std::cout << "canAccess(" << property << ", " << ACCESS_TYPES[instanced] << ")" << std::endl;
     if (instanced == THIS)
     {
         if (attributes.find(property) != attributes.end())
