@@ -7,6 +7,8 @@
 #include "./Libraries/Math/MathLibrary.h"
 #include "./Libraries/File/FileLibrary.h"
 #include "./Libraries/OS/OSLibrary.h"
+#include "./Libraries/Thread/ThreadLibrary.h"
+#include "./Libraries/Time/TimeLibrary.h"
 #include <fstream>
 namespace base
 {
@@ -202,6 +204,10 @@ namespace base
             return Result<Value>(Value((Node *)new LibraryNode(libfile::init())));
         else if (*library == "os")
             return Result<Value>(Value((Node *)new LibraryNode(libos::init())));
+        else if (*library == "thread")
+            return Result<Value>(Value((Node *)new LibraryNode(libthread::init())));
+        else if (*library == "time")
+            return Result<Value>(Value((Node *)new LibraryNode(libtime::init())));
         return Result<Value>("library not found");
     }
     // imported files
