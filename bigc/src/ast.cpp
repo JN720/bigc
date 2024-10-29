@@ -183,20 +183,24 @@ namespace ast
                     }
                     else if (token.value == "public" || token.value == "private" || token.value == "protected")
                     {
+                        std::cout << "class context: " << CONTEXT[context] << '\n';
+                        if (context != CLASSSEQ)
+                            return "unexpected access specifier";
                         // sets the access
                         VisibilityNode *accessSpecifier = new VisibilityNode(token.value);
                         if (cur)
                             return "unexpected access specifier";
                         // we either have a method, identifier, or static
                         cur = accessSpecifier;
-                        // check 2 for the possibilities of it being static or a method
                         skipSoftends(tokens, index);
+                        // check 2 for the possibilities of it being static or a method
                         if (tokens.size() > index + 2 && tokens[index + 1].type == TEXT)
                         {
                             ++index;
                             // static attribute
                             if (tokens[index].value == "shared")
                             {
+                                skipSoftends(tokens, index);
                                 accessSpecifier->makeStatic();
                                 ++index;
                                 if (tokens[index].type != TEXT)
@@ -209,6 +213,7 @@ namespace ast
                             // non-static method
                             else if (tokens[index].value == "method")
                             {
+                                skipSoftends(tokens, index);
                                 accessSpecifier->makeMethod();
                                 ++index;
                                 skipSoftends(tokens, index);
@@ -224,6 +229,7 @@ namespace ast
                             // static method
                             else if (tokens[index].value == "utility")
                             {
+                                skipSoftends(tokens, index);
                                 accessSpecifier->makeMethod();
                                 accessSpecifier->makeStatic();
                                 ++index;
@@ -314,10 +320,12 @@ namespace ast
                         // check the next tokens as just a regular value
                         // the SIGNAL context will handle this already
                         // this is the default value
-
-                        error = createAST(state, tokens, ++index, parent, SIGNAL, piped);
-                        if (!error.empty())
-                            return error;
+                        if (cur)
+                            return "unexpected default value";
+                        context = SIGNAL;
+                        // error = createAST(state, tokens, ++index, parent, SIGNAL, piped);
+                        // if (!error.empty())
+                        //     return error;
                     }
                     else
                         return "unexpected operator in attribute declaration";
@@ -547,20 +555,7 @@ namespace ast
                     return "unexpected {";
                 break;
             case CTRLEND:
-                if (context == IFSEQ)
-                {
-                    if (cur)
-                        parent->addChild(cur);
-                    return "";
-                }
-                else if (context == CLASSSEQ)
-                {
-                    if (cur)
-                        parent->addChild(cur);
-                    return "";
-                }
-                // end of general sequence
-                else if (context == SEQ)
+                if (context == IFSEQ || context == CLASSSEQ || context == SEQ)
                 {
                     if (cur)
                         parent->addChild(cur);
