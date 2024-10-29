@@ -288,8 +288,22 @@ namespace tokenizer
             }
             else if (inString)
             {
-                if (c != '\\')
+                if (c == 'n' && i > 0 && str[i - 1] == '\\')
+                    accumulated += '\n';
+                else if (c == 't' && i > 0 && str[i - 1] == '\\')
+                    accumulated += '\t';
+                else if (c != '\\')
                     accumulated += c;
+                continue;
+            }
+            // comments
+            if (c == '#')
+            {
+                while (i < str.size() && str[i] != '\n')
+                {
+                    i++;
+                }
+                i--;
                 continue;
             }
             Result<TokenType> result = getTokenType(c, accType, accumulated, prevWhitespace);
