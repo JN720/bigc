@@ -75,6 +75,15 @@ namespace ast
                         if (!error.empty())
                             return error;
                     }
+                    else if (token.value == "try")
+                    {
+                        if (cur)
+                            return "unexpected collect";
+                        cur = new TryNode();
+                        error = createAST(state, tokens, ++index, cur, SEQ, piped);
+                        if (!error.empty())
+                            return error;
+                    }
                     else if (token.value == "funion")
                     {
                         if (cur)

@@ -27,3 +27,9 @@ Control IdentifierNode::resolve(State &state)
     value = result.getValue();
     return Control(OK);
 }
+
+IdentifierNode::IdentifierNode(std::string var)
+{
+    variable = var;
+    type = N_IDENTIFIER;
+}

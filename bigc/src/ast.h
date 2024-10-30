@@ -25,6 +25,7 @@
 #include "CallNode.h"
 #include "GroupNode.h"
 #include "IterateNode.h"
+#include "TryNode.h"
 namespace ast
 {
 

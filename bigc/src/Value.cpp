@@ -249,7 +249,6 @@ Result<Value> Value::add(Value other)
     // float
     else if (float *x = std::get_if<float>(&otherVal))
     {
-        std::cout << "one type is float";
         if (bool *y = std::get_if<bool>(&value))
         {
             val = (*x + *y);

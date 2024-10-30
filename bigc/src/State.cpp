@@ -3,7 +3,8 @@
 
 const std::unordered_set<std::string> BASE_KEYWORDS({"if", "else", "while", "collect", "funion", "break", "continue",
                                                      "return", "class", "public", "private", "protected", "utility",
-                                                     "shared", "method", "interface", "group", "register", "iterate"});
+                                                     "shared", "method", "interface", "group", "register", "iterate",
+                                                     "try"});
 const std::unordered_set<std::string> FUNDAMENTAL_TYPES({"int", "char", "long", "str", "float", "double", "arr", "fn"});
 const std::string FUNDAMENTAL_FUNCTIONS[] = {"print", "println", "len", "type", "input", "import", "include"};
 
@@ -13,8 +14,6 @@ State::State()
     states.push_front(new StateFrame(true));
 
     registry = new Registry();
-    registry->registerVariable("true", Value(true));
-    registry->registerVariable("false", Value(false));
 }
 
 void State::registerVariable(std::string name, Value value)

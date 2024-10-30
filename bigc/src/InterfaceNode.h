@@ -14,6 +14,7 @@ class InterfaceNode : public Node
 {
 public:
     InterfaceNode();
+    InterfaceNode(Interface *interface);
     Control resolve(State &state) override;
     Interface *getInterface();
 

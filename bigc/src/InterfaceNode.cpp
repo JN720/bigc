@@ -7,6 +7,12 @@ InterfaceNode::InterfaceNode()
     type = N_INTERFACE;
 }
 
+InterfaceNode::InterfaceNode(Interface *interface)
+{
+    type = N_INTERFACE;
+    this->interface = interface;
+}
+
 Control InterfaceNode::resolve(State &state)
 {
     // the children for this should be identifiers of methods or type nodes containing the method type
