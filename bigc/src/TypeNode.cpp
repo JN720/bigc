@@ -1,9 +1,9 @@
 #include "TypeNode.h"
 
-TypeNode::TypeNode(std::string &type)
+TypeNode::TypeNode(std::string type)
 {
     argType = type;
-    type = N_IDENTIFIER;
+    type = N_TYPE;
 }
 
 Control TypeNode::resolve(State &state)

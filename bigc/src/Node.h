@@ -27,12 +27,13 @@ enum NodeType
     N_LIBRARY,
     N_REGISTER,
     N_GROUP,
-    N_ITERATE
+    N_ITERATE,
+    N_TYPE
 };
 
 const std::string NODETYPES[] = {"leafvalue", "identifier", "call", "operation", "assignment", "index", "sequence",
                                  "spread", "branch", "access", "pipe", "wrapper", "unbranch", "loop", "signal",
-                                 "class", "visibility", "interface", "library", "register", "group"};
+                                 "class", "visibility", "interface", "library", "register", "group", "type"};
 
 class Node
 {

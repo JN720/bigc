@@ -2,6 +2,7 @@
 #include "IdentifierNode.h"
 #include "FunctionNode.h"
 #include "Value.h"
+#include "NullObject.h"
 
 VisibilityNode::VisibilityNode()
 {
@@ -119,8 +120,18 @@ Control VisibilityNode::applyToDefinition(ClassDefinition *definition, const Sta
             method = methods.at(variable);
             if (method.access != PUBLIC && method.access != PROTECTED)
                 return Control("method " + variable + " must be public or protected to override");
-            // if (method.method->getType() != getAttributeType())
-            //     return Control("method " + variable + " has wrong type signature");
+            if (FunctionNode *func1 = dynamic_cast<FunctionNode *>(method.method))
+            {
+                if (FunctionNode *func2 = dynamic_cast<FunctionNode *>(children[0]))
+                {
+                    if (func1->getFunctionSignature() != func2->getFunctionSignature())
+                        return Control("method " + variable + " has wrong type signature");
+                }
+                else
+                    return Control("expected method value to be function");
+            }
+            else
+                return Control("expected function for method override");
         }
         definition->addMethod(variable, children[0], isStatic, access);
     }
@@ -142,7 +153,7 @@ Control VisibilityNode::applyToDefinition(ClassDefinition *definition, const Sta
             if (attribute.value.getType() != getAttributeType())
                 return Control("attribute " + variable + " has wrong type signature");
         }
-        definition->addAttribute(variable, access, isStatic, children.size() ? children[0]->getValue(state) : Value(false));
+        definition->addAttribute(variable, access, isStatic, children.size() ? children[0]->getValue(state) : Value(new NullObject()));
     }
     return Control(OK);
 }

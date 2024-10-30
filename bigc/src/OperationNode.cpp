@@ -371,7 +371,7 @@ Control OperationNode::resolve(State &state)
         return Control("no operator specified");
     }
     if (!result.ok())
-        return Control(result.getError() + "\nduring operation:\n");
+        return Control(result.getError()).stack("during operation:\n");
     value = result.getValue();
     return Control(OK);
 }

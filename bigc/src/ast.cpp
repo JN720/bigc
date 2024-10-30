@@ -294,6 +294,7 @@ namespace ast
                     {
                         TypeNode *type = new TypeNode(tokens[index + 1].value);
                         type->addChild(cur);
+                        parent->addChild(type);
                         cur = nullptr;
                     }
                 }

@@ -1,5 +1,6 @@
 #include "LoopNode.h"
 #include "builtin.h"
+#include "NullObject.h"
 
 LoopNode::LoopNode()
 {
@@ -11,7 +12,7 @@ Control LoopNode::resolve(State &state)
     if (children.size() != 2)
         return Control("loop requires a condition and a sequence");
     // if the loop does not execute let the value be false
-    value = Value(false);
+    value = Value(new NullObject());
     while (true)
     {
         // get condition

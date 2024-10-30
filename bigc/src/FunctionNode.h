@@ -10,4 +10,5 @@ public:
     virtual Result<Value> execute(State &state, std::vector<Node *> &args);
     Result<Value> executeInstanced(Object *obj, State *state, std::vector<Node *> &args);
     Control resolveArguments(State &state, std::vector<Node *> &args);
+    virtual std::string getFunctionSignature();
 };

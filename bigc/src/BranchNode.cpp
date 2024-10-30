@@ -1,4 +1,5 @@
 #include "BranchNode.h"
+#include "NullObject.h"
 
 BranchNode::BranchNode()
 {
@@ -71,7 +72,7 @@ Control BranchNode::resolve(State &state)
         // if there is no else statement it is false
         else
         {
-            value = Value(false);
+            value = Value(new NullObject());
             return Control(OK);
         }
     }

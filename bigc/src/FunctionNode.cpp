@@ -35,19 +35,19 @@ Result<Value> FunctionNode::execute(State &state, std::vector<Node *> &args)
         // there should be one more child than args because the last is the end
         // we have already resolved it so get the value
         Value val = args[curVal]->getValue(state);
-        if (dynamic_cast<VariableNode *>(child))
+        if (dynamic_cast<TypeNode *>(child))
         {
-            // get the name of the function arg and set its value to val
-            frame->setVariable(((VariableNode *)child)->getVariable(), val);
-            curVal++;
-            curArg++;
-        }
-        else if (dynamic_cast<TypeNode *>(child))
-        {
-            TypeNode *typed = (TypeNode *)arg;
+            TypeNode *typed = (TypeNode *)child;
             if (typed->getArgType() != val.getType())
                 return Result<Value>("type assertion failed");
             frame->setVariable(typed->getVariable(), val);
+            curVal++;
+            curArg++;
+        }
+        else if (dynamic_cast<VariableNode *>(child))
+        {
+            // get the name of the function arg and set its value to val
+            frame->setVariable(((VariableNode *)child)->getVariable(), val);
             curVal++;
             curArg++;
         }
@@ -111,22 +111,22 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
         // there should be one more child than args because the last is the end
         // we have already resolved it so get the value
         Value val = args[curVal]->getValue(*state);
-        if (dynamic_cast<VariableNode *>(child))
+        if (dynamic_cast<TypeNode *>(child))
         {
-            // get the name of the function arg and set its value to val
-            frame->setVariable(((VariableNode *)child)->getVariable(), val);
-            curVal++;
-            curArg++;
-        }
-        else if (dynamic_cast<TypeNode *>(child))
-        {
-            TypeNode *typed = (TypeNode *)arg;
+            TypeNode *typed = (TypeNode *)child;
             if (typed->getArgType() != val.getType())
             {
                 state->popFrame();
                 return Result<Value>("type assertion failed");
             }
             frame->setVariable(typed->getVariable(), val);
+            curVal++;
+            curArg++;
+        }
+        else if (dynamic_cast<VariableNode *>(child))
+        {
+            // get the name of the function arg and set its value to val
+            frame->setVariable(((VariableNode *)child)->getVariable(), val);
             curVal++;
             curArg++;
         }
@@ -181,4 +181,25 @@ Control FunctionNode::resolveArguments(State &state, std::vector<Node *> &args)
     }
 
     return Control(OK);
+}
+
+std::string FunctionNode::getFunctionSignature()
+{
+    std::string signature = "fn";
+    if (children.size() > 1)
+    {
+        signature += '(';
+        for (int i = 0; i < children.size() - 1; ++i)
+        {
+            if (TypeNode *argType = dynamic_cast<TypeNode *>(children[i]))
+                signature += argType->getArgType();
+            else
+                signature += "dyn";
+            if (i != children.size() - 2)
+                signature += ',';
+        }
+        signature += ')';
+    }
+    std::cout << "signature is " << signature << "\n\n";
+    return signature;
 }
