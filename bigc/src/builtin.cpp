@@ -47,10 +47,17 @@ namespace base
         std::string printout;
         for (Node *arg : args)
         {
+            Control control = arg->resolve(state);
+            if (control.control())
+                return Result<Value>(control);
+            if (control.error())
+                return Result<Value>(control.stack("resolving arguments:\n"));
             Wildcard val = arg->getValue(state).getValue();
             // for an object keep executing toString until we get a non-obj
             while (Object **obj = std::get_if<Object *>(&val))
             {
+                if (!*obj)
+                    return Result<Value>("invalid object");
                 // get the interface from the state
                 Result<Value> interfaceResult = state.getVariable("Printable");
                 if (!interfaceResult.ok())

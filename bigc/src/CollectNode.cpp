@@ -11,7 +11,7 @@ Control CollectNode::resolve(State &state)
 {
     if (children.size() != 2)
         return Control("loop requires a condition and a sequence");
-    // if the loop does not execute let the value be false
+    // if the loop does not execute let the value be an empty array
     Array<Value> *array = new Array<Value>();
     value = Value(array);
     while (true)

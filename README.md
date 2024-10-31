@@ -116,6 +116,18 @@ accumulatedItems = collect count < 8 {
 You can use `break` to exit a loop prematurely and `continue` to skip the current iteration and proceed to the next one.
 
 ```
+count = 2
+result = collect count < 20 {
+    if count % 2 == 0 {
+        continue 0;
+    }
+    if count % 9 == 0 {
+        break 500;
+    }
+    println("Iteration: " + i@str)
+    count += 1
+}
+println(result);
 
 ```
 

@@ -2,7 +2,7 @@
 
 namespace tokenizer
 {
-    const std::string OPERATORS = "+-*!/=><@";
+    const std::string OPERATORS = "+-*!/=><@%";
     const std::string DIGITS = "0123456789";
     const std::string WORDS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_:";
     const std::string SINGULARS = ".,()[]{}|&~;";
@@ -115,6 +115,7 @@ namespace tokenizer
             allowed[INDSTART - 4] = NONE;
             allowed[PIPERES - 4] = NONE;
             allowed[SPREAD - 4] = NONE;
+            std::cout << "c is " << c << std::endl;
             return allowSingularTokens(c, allowed, "invalid token after number or string");
         case TEXT:
             if (prevWhitespace && DIGITS.find(c) != std::string::npos)
