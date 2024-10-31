@@ -170,7 +170,6 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
 Control FunctionNode::resolveArguments(State &state, std::vector<Node *> &args)
 {
     // resolve arguments until we hit the sequence
-    std::cout << "resolving " << args.size() << " arguments" << std::endl;
     for (Node *arg : args)
     {
         Control control = arg->resolve(state);

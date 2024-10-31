@@ -13,6 +13,6 @@ public:
     Result<Value> execute(State &state, std::vector<Node *> &args) override;
     Control resolve(State &state) override;
 
-private:
+protected:
     Object *object;
 };
