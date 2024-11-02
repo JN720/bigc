@@ -116,25 +116,38 @@ accumulatedItems = collect count < 8 {
 You can use `break` to exit a loop prematurely and `continue` to skip the current iteration and proceed to the next one.
 
 ```
-count = 2
-result = collect count < 20 {
-    if count % 2 == 0 {
-        continue 0;
+count = 0
+while count < 10 {
+    println(count)
+    if (count % 2) == 0 {
+        continue
     }
-    if count % 9 == 0 {
-        break 500;
+    if count > 5 {
+        break
     }
-    println("Iteration: " + i@str)
     count += 1
 }
-println(result);
-
+#
 ```
 
 You can also break or continue with a value (similar to return), causing that value to be used for the expression behavior.
 
 ```
-
+count = 2
+nums = collect count < 20 {
+    count += 1
+    if (count % 2) == 0 {
+        continue 0;
+    }
+    if (count % 9) == 0 {
+        break 500;
+    }
+    count
+}
+# [3, 0, 5, 0, 7, 0, 500]
+iterate num nums {
+    println(num)
+}
 ```
 
 ## TODO: Functions

@@ -1376,11 +1376,11 @@ Result<Value> Value::isGreaterThan(Value other)
     if (lessThanResult.ok())
     {
         auto lessThan = lessThanResult.getValue().getValue();
-        isLessThan = std::get_if<bool>(&lessThan);
+        isLessThan = *std::get_if<bool>(&lessThan);
     }
     else
         isLessThan = false;
-    val = (isEqual || isLessThan);
+    val = !(isEqual || isLessThan);
     return Result<Value>(Value(val));
 }
 
@@ -1401,10 +1401,10 @@ Result<Value> Value::isLessThanEqual(Value other)
 
 Result<Value> Value::isGreaterThanEqual(Value other)
 {
-    auto greaterThanResult = isLessThan(other);
+    auto greaterThanResult = isGreaterThan(other);
     if (!greaterThanResult.ok())
         return greaterThanResult.getError();
-    auto greaterThan = greaterThanResult.getValue().getValue();
+    Wildcard greaterThan = greaterThanResult.getValue().getValue();
     bool *isGreaterThan = std::get_if<bool>(&greaterThan);
     auto equalResult = isEqual(other);
     if (!equalResult.ok())
