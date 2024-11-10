@@ -68,3 +68,11 @@ bool Node::hasChildren() const
 {
     return children.size();
 }
+
+Node *Node::copy()
+{
+    Wildcard val = value.getValue();
+    if (Node **node = std::get_if<Node *>(&val))
+        return new Node(Value((*node)->copy()));
+    return new Node(value);
+}

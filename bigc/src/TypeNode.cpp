@@ -22,3 +22,10 @@ std::string TypeNode::getArgType()
 {
     return argType;
 }
+
+Node *TypeNode::copy()
+{
+    TypeNode *typeNode = new TypeNode(argType);
+    typeNode->addChild(children[0]->copy());
+    return typeNode;
+}

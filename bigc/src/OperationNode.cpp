@@ -420,3 +420,19 @@ OperationNode::OperationNode(Token &token)
         op = MODASS;
     type = N_OPERATION;
 }
+
+OperationNode::OperationNode(Operation op)
+{
+    type = N_OPERATION;
+    this->op = op;
+}
+
+Node *OperationNode::copy()
+{
+    OperationNode *operation = new OperationNode(op);
+    for (auto child : children)
+    {
+        operation->addChild(child->copy());
+    }
+    return operation;
+}

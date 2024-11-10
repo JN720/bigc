@@ -11,4 +11,5 @@ public:
     Result<Value> executeInstanced(Object *obj, State *state, std::vector<Node *> &args);
     Control resolveArguments(State &state, std::vector<Node *> &args);
     virtual std::string getFunctionSignature();
+    Node *copy() override;
 };

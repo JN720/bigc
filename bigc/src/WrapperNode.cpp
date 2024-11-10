@@ -16,3 +16,13 @@ Control WrapperNode::resolve(State &state)
         return Control("empty wrapper");
     return children[0]->resolve(state);
 }
+
+Node *WrapperNode::copy()
+{
+    WrapperNode *wrapper = new WrapperNode();
+    for (auto child : children)
+    {
+        child->copy();
+    }
+    return wrapper;
+}

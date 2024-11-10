@@ -39,7 +39,7 @@ Result<Value> StaticMethodNode::execute(State &state, std::vector<Node *> &args)
             if (typed->getArgType() != val.getType())
             {
                 state.popFrame();
-                return Result<Value>("type assertion failed");
+                return Result<Value>("type assertion failed: expected " + typed->getArgType() + " but got " + val.getType() + " instead");
             }
             frame->setVariable(typed->getVariable(), val);
             curVal++;

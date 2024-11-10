@@ -12,4 +12,8 @@ class CallNode : public Node
 public:
     CallNode(Node *callable);
     Control resolve(State &state) override;
+    Node *copy() override;
+    // this is only for copying
+private:
+    CallNode();
 };

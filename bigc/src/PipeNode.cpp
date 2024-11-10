@@ -19,24 +19,27 @@ Control PipeNode::resolve(State &state)
     if (control.error())
         return control.stack("resolving pipe value:\n");
     // add pipe to new state frame
-    StateFrame *frame = state.pushFrame(true);
+    StateFrame *frame = state.pushFrame(false);
     frame->setVariable("&", children[0]->getValue(state));
-    // if it's just a single identifier,
+    // if it's a variable node
     // pass in the pipe value as the first argument
-    if (children[1]->getType() == N_IDENTIFIER)
+    if (VariableNode *var = dynamic_cast<VariableNode *>(children[1]))
     {
-        IdentifierNode *identifier = (IdentifierNode *)children[1];
-        CallNode *call = new CallNode(identifier);
+        CallNode *call = new CallNode(var);
         call->addChild(new IdentifierNode());
-        control = identifier->resolve(state);
+        control = call->resolve(state);
         if (control.control())
         {
-            value = identifier->getValue(state);
+            state.popFrame();
+            value = call->getValue(state);
             return control;
         }
         if (control.error())
+        {
+            state.popFrame();
             return control.stack("resolving pipe function:\n");
-        value = identifier->getValue(state);
+        }
+        value = var->getValue(state);
     }
     // if we pipe into an expression
     else
@@ -44,10 +47,15 @@ Control PipeNode::resolve(State &state)
         control = children[1]->resolve(state);
         if (control.control())
         {
+            state.popFrame();
             value = children[1]->getValue(state);
+            return control;
         }
         if (control.error())
+        {
+            state.popFrame();
             return control.stack("resolving pipe expression:\n");
+        }
         value = children[1]->getValue(state);
     }
     return Control(OK);

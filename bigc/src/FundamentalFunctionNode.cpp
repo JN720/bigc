@@ -31,3 +31,8 @@ Result<Value> FundamentalFunctionNode::execute(State &state, std::vector<Node *>
     }
     return base::executeFundamentalFunction(functionIndex, state, args);
 }
+
+Node *FundamentalFunctionNode::copy()
+{
+    return new FundamentalFunctionNode(std::string(this->getFunctionSignature()));
+}

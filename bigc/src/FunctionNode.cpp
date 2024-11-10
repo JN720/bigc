@@ -24,6 +24,8 @@ Result<Value> FunctionNode::execute(State &state, std::vector<Node *> &args)
     // the final one can also be a spread node
     // create the frame for the arguments we pass in
     StateFrame *frame = state.pushFrame(true);
+    Node *thisfn = this->copy();
+    frame->setVariable("thisfn", Value(thisfn));
     // take each arg, do type assertions, and add to the frame
     int curVal = 0;
     int curArg = 0;
@@ -39,7 +41,10 @@ Result<Value> FunctionNode::execute(State &state, std::vector<Node *> &args)
         {
             TypeNode *typed = (TypeNode *)child;
             if (typed->getArgType() != val.getType())
-                return Result<Value>("type assertion failed");
+            {
+                state.popFrame();
+                return Result<Value>("type assertion failed: " + typed->getArgType() + " expected but got " + val.getType());
+            }
             frame->setVariable(typed->getVariable(), val);
             curVal++;
             curArg++;
@@ -72,12 +77,16 @@ Result<Value> FunctionNode::execute(State &state, std::vector<Node *> &args)
     if (control.control())
     {
         // return from a function
+        state.popFrame();
         if (control.getSignal() == RETURN)
             return Result<Value>(children.back()->getValue(state));
         return Result<Value>("unexpected control signal");
     }
     if (control.error())
+    {
+        state.popFrame();
         return Result<Value>(control.stack("during function execution:\n"));
+    }
     Value result = children.back()->getValue(state);
     state.popFrame();
     return Result<Value>(result);
@@ -117,7 +126,7 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
             if (typed->getArgType() != val.getType())
             {
                 state->popFrame();
-                return Result<Value>("type assertion failed");
+                return Result<Value>("type assertion failed: expected " + typed->getArgType() + " but got " + val.getType() + " instead");
             }
             frame->setVariable(typed->getVariable(), val);
             curVal++;
@@ -141,7 +150,10 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
             curVal++;
         }*/
         else
+        {
+            state->popFrame();
             return Result<Value>("invalid node in function arguments");
+        }
     }
     // resolve the sequence node
     Control control = children.back()->resolve(*state);
@@ -149,12 +161,9 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
     if (control.control())
     {
         // return from a function
-        if (control.getSignal() == RETURN)
-        {
-            state->popFrame();
-            return Result<Value>(children.back()->getValue(*state));
-        }
         state->popFrame();
+        if (control.getSignal() == RETURN)
+            return Result<Value>(children.back()->getValue(*state));
         return Result<Value>("unexpected control signal");
     }
     if (control.error())
@@ -201,4 +210,14 @@ std::string FunctionNode::getFunctionSignature()
     }
     std::cout << "signature is " << signature << "\n\n";
     return signature;
+}
+
+Node *FunctionNode::copy()
+{
+    FunctionNode *fn = new FunctionNode();
+    for (auto child : children)
+    {
+        fn->addChild(child->copy());
+    }
+    return fn;
 }

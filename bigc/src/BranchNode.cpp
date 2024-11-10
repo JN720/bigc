@@ -79,3 +79,13 @@ Control BranchNode::resolve(State &state)
 
     return Control("failed to handle branch");
 }
+
+Node *BranchNode::copy()
+{
+    BranchNode *branch = new BranchNode();
+    for (auto child : children)
+    {
+        branch->addChild(child->copy());
+    }
+    return branch;
+}

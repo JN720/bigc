@@ -28,3 +28,11 @@ Control SignalNode::resolve(State &state)
         return control.stack("while evaluating signal:\n");
     return signal;
 }
+
+Node *SignalNode::copy()
+{
+    SignalNode *sig = new SignalNode(signal);
+    if (children.size())
+        sig->addChild(children[0]->copy());
+    return sig;
+}

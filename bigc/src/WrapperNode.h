@@ -7,4 +7,5 @@ public:
     WrapperNode();
     Value getValue(const State &state);
     Control resolve(State &state);
+    Node *copy() override;
 };

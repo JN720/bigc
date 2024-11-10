@@ -29,6 +29,8 @@ class OperationNode : public Node
 public:
     Control resolve(State &state) override;
     OperationNode(Token &token);
+    OperationNode(Operation op);
+    Node *copy() override;
 
 protected:
     Operation op;

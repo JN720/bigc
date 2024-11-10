@@ -118,16 +118,17 @@ You can use `break` to exit a loop prematurely and `continue` to skip the curren
 ```
 count = 0
 while count < 10 {
+    count += 1;
+    if 0 == count % 2 {
+        continue;
+    }
     println(count)
-    if (count % 2) == 0 {
-        continue
+    if count > 6 {
+        break;
     }
-    if count > 5 {
-        break
-    }
-    count += 1
 }
-#
+
+# 1 3 5 7
 ```
 
 You can also break or continue with a value (similar to return), causing that value to be used for the expression behavior.
@@ -152,8 +153,47 @@ iterate num nums {
 
 ## TODO: Functions
 
+Functions are values and are declared with the `funion` keyword. They use the following syntax and return the last statement.
+
+```
+sum = funion a, b {
+    a + b
+}
+
+sum(5, 10) | println # 15
+```
+
+Functions can require types in their arguments which are asserted when the function is called.
+
+```
+square = funion x@int {
+    println("squaring")
+    x * x
+}
+
+square(5) | println #25
+square("hello") #errors
+```
+
+The `return` keyword can be used to return a value early.
+
+```
+fibonacci = funion index@int {
+    if index <= 1 {
+        return 1
+    }
+    fibonacci(index - 1) + fibonacci(index - 2)
+}
+
+fibonacci(10) | println #55
+```
+
 ## TODO: Classes
 
 ## TODO: Interfaces
 
 # TODO: Libraries
+
+```
+
+```

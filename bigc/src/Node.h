@@ -49,6 +49,7 @@ public:
     NodeType getType() const;
     std::vector<Node *> getChildren() const;
     bool hasChildren() const;
+    virtual Node *copy();
 
 protected:
     std::vector<Node *> children;

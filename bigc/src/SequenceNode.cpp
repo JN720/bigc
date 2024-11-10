@@ -24,3 +24,13 @@ Control SequenceNode::resolve(State &state)
         value = children.back()->getValue(state);
     return Control(OK);
 }
+
+Node *SequenceNode::copy()
+{
+    SequenceNode *seq = new SequenceNode();
+    for (auto child : children)
+    {
+        seq->addChild(child->copy());
+    }
+    return seq;
+}

@@ -11,6 +11,7 @@ public:
     SignalNode(Signal s);
     Value getValue(const State &state) override;
     Control resolve(State &state) override;
+    Node *copy() override;
 
 private:
     Signal signal;

@@ -14,7 +14,10 @@ namespace base
 {
     std::string fmtValue(Wildcard val)
     {
-        if (bool *x = std::get_if<bool>(&val))
+        Node **asNode = std::get_if<Node *>(&val);
+        if (asNode && *asNode == nullptr)
+            return "nil";
+        else if (bool *x = std::get_if<bool>(&val))
             return ((*x) ? "true" : "false");
         else if (int *x = std::get_if<int>(&val))
             return std::to_string(*x);
@@ -166,6 +169,7 @@ namespace base
 
     Result<Value> type(State &state, std::vector<Node *> &args)
     {
+        std::cout << "args: " << args.size() << "\n";
         if (args.size() != 1)
             return Result<Value>("invalid arity");
         return Result<Value>(Value(new std::string(args[0]->getValue(state).getType())));

@@ -7,4 +7,5 @@ class SequenceNode : public Node
 public:
     SequenceNode();
     Control resolve(State &state) override;
+    Node *copy() override;
 };

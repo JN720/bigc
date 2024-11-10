@@ -16,7 +16,7 @@ Value::Value(Token &token)
             value = new std::string(token.value.substr(1));
             break;
         case 'n':
-            value = std::atoi(token.value.substr(1).c_str());
+            value = (int)(std::atoi(token.value.substr(1).c_str()));
             break;
         case 'f':
             value = std::atof(token.value.substr(1).c_str());
@@ -544,6 +544,11 @@ Result<Value> Value::subtract(Value other)
         else if (double *y = std::get_if<double>(&value))
         {
             val = (*y - *x);
+            return Result<Value>(Value(val));
+        }
+        else if (std::string **y = std::get_if<std::string *>(&value))
+        {
+            val = new std::string(*x + **y);
             return Result<Value>(Value(val));
         }
         else
@@ -1249,6 +1254,7 @@ Result<Value> Value::isLessThan(Value other)
 {
     Wildcard otherVal = other.getValue();
     Wildcard val;
+
     // int
     if (int *x = std::get_if<int>(&otherVal))
     {
@@ -1265,6 +1271,12 @@ Result<Value> Value::isLessThan(Value other)
         else if (char *y = std::get_if<char>(&value))
         {
             val = (*y < *x);
+            return Result<Value>(Value(val));
+        }
+        else if (bool *y = std::get_if<bool>(&value))
+        {
+            // Compare boolean with int
+            val = (!*y && *x > 0); // false < any positive int
             return Result<Value>(Value(val));
         }
         else
@@ -1287,6 +1299,12 @@ Result<Value> Value::isLessThan(Value other)
             val = (*y < *x);
             return Result<Value>(Value(val));
         }
+        else if (bool *y = std::get_if<bool>(&value))
+        {
+            // Compare boolean with long
+            val = (!*y && *x > 0); // false < any positive long
+            return Result<Value>(Value(val));
+        }
         else
             return Result<Value>("cannot do comparison of long with " + getType());
     }
@@ -1307,41 +1325,59 @@ Result<Value> Value::isLessThan(Value other)
             val = (*y < *x);
             return Result<Value>(Value(val));
         }
+        else if (bool *y = std::get_if<bool>(&value))
+        {
+            // Compare boolean with char
+            val = (!*y && *x > 0); // false < any positive char
+            return Result<Value>(Value(val));
+        }
         else
             return Result<Value>("cannot do comparison of char with " + getType());
     }
-    else if (float *x = std::get_if<float>(&otherVal))
+    else if (bool *x = std::get_if<bool>(&otherVal))
     {
-        if (float *y = std::get_if<float>(&value))
+        if (bool *y = std::get_if<bool>(&value))
         {
-            val = (*y < *x);
+            // Compare two booleans
+            val = (*y < *x); // false < true
+            return Result<Value>(Value(val));
+        }
+        else if (int *y = std::get_if<int>(&value))
+        {
+            // Compare boolean with int
+            val = (!*y && *x); // false < any positive int
+            return Result<Value>(Value(val));
+        }
+        else if (long *y = std::get_if<long>(&value))
+        {
+            // Compare boolean with long
+            val = (!*y && *x); // false < any positive long
+            return Result<Value>(Value(val));
+        }
+        else if (char *y = std::get_if<char>(&value))
+        {
+            // Compare boolean with char
+            val = (!*y && *x); // false < any positive char
+            return Result<Value>(Value(val));
+        }
+        else if (float *y = std::get_if<float>(&value))
+        {
+            // Compare boolean with float
+            val = (!*y && *x); // false < 0.0
             return Result<Value>(Value(val));
         }
         else if (double *y = std::get_if<double>(&value))
         {
-            val = (*y < *x);
+            // Compare boolean with double
+            val = (!*y && *x); // false < 0.0
             return Result<Value>(Value(val));
         }
         else
-            return Result<Value>("cannot do comparison of float with " + getType());
-    }
-    else if (double *x = std::get_if<double>(&otherVal))
-    {
-        if (float *y = std::get_if<float>(&value))
-        {
-            val = (*y < *x);
-            return Result<Value>(Value(val));
-        }
-        else if (double *y = std::get_if<double>(&value))
-        {
-            val = (*y < *x);
-            return Result<Value>(Value(val));
-        }
-        else
-            return Result<Value>("cannot do comparison of double with " + getType());
+            return Result<Value>("cannot do comparison of bool with " + getType());
     }
     else
         return Result<Value>("cannot do comparison of " + other.getType() + " with " + getType());
+
     return Result<Value>("failed to do comparison");
 }
 
@@ -1416,5 +1452,56 @@ Result<Value> Value::isGreaterThanEqual(Value other)
 
 Result<Value> Value::negate()
 {
+    Wildcard val;
+
+    if (bool *x = std::get_if<bool>(&value))
+    {
+        // Negate boolean
+        val = !(*x);
+        return Result<Value>(Value(val));
+    }
+    else if (int *x = std::get_if<int>(&value))
+    {
+        // Negate integer
+        val = -(*x);
+        return Result<Value>(Value(val));
+    }
+    else if (long *x = std::get_if<long>(&value))
+    {
+        // Negate long
+        val = -(*x);
+        return Result<Value>(Value(val));
+    }
+    else if (char *x = std::get_if<char>(&value))
+    {
+        // Negate character (ASCII value)
+        val = -(*x);
+        return Result<Value>(Value(val));
+    }
+    else if (float *x = std::get_if<float>(&value))
+    {
+        // Negate float
+        val = -(*x);
+        return Result<Value>(Value(val));
+    }
+    else if (double *x = std::get_if<double>(&value))
+    {
+        // Negate double
+        val = -(*x);
+        return Result<Value>(Value(val));
+    }
+    else if (std::string **x = std::get_if<std::string *>(&value))
+    {
+        // Reverse the string
+        std::string *newStr = new std::string(**x);
+        std::reverse(newStr->begin(), newStr->end());
+        val = newStr;
+        return Result<Value>(Value(val));
+    }
+    else
+    {
+        return Result<Value>("cannot negate " + getType());
+    }
+
     return Result<Value>("failed to negate");
 }

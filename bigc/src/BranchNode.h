@@ -7,4 +7,5 @@ class BranchNode : public Node
 public:
     BranchNode();
     Control resolve(State &state) override;
+    Node *copy() override;
 };

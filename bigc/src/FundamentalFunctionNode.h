@@ -11,4 +11,5 @@ private:
 public:
     FundamentalFunctionNode(const std::string &name);
     Result<Value> execute(State &state, std::vector<Node *> &args) override;
+    Node *copy() override;
 };

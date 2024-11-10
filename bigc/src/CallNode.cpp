@@ -6,6 +6,12 @@
 #include "builtin.h"
 #include "MethodNode.h"
 #include "InterfaceNode.h"
+
+CallNode::CallNode()
+{
+    type = N_CALL;
+}
+
 CallNode::CallNode(Node *callable) : Node()
 {
     children.push_back(callable);
@@ -16,7 +22,6 @@ Control CallNode::resolve(State &state)
 {
     if (children.size() < 1)
         return Control("insufficient children for call");
-
     // resolve the callable
     Control control = children.front()->resolve(state);
     if (control.control())
@@ -25,10 +30,22 @@ Control CallNode::resolve(State &state)
         return control;
     }
     if (control.error())
-        return control.stack("Attempted to call a non-function value");
+        return control.stack("failed to resolve callable");
 
     Wildcard callable = children.front()->getValue(state).getValue();
     std::vector<Node *> args = std::vector<Node *>(children.begin() + 1, children.end());
+    // resolve the arguments
+    for (Node *arg : args)
+    {
+        Control control = arg->resolve(state);
+        if (control.control())
+        {
+            value = arg->getValue(state);
+            return control;
+        }
+        if (control.error())
+            return control.stack("resolving arguments:\n");
+    }
 
     Node **node = std::get_if<Node *>(&callable);
     if (!node)
@@ -89,8 +106,16 @@ Control CallNode::resolve(State &state)
         value = result.getValue();
         return Control(OK);
     }
-    // if this is an object check for a call method
-
     else
         return Control("value is not a function, class, or callable object");
+}
+
+Node *CallNode::copy()
+{
+    CallNode *call = new CallNode();
+    for (auto child : children)
+    {
+        call->addChild(child->copy());
+    }
+    return call;
 }

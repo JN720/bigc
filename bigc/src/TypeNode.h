@@ -8,6 +8,7 @@ public:
     Control resolve(State &state) override;
     std::string getVariable();
     std::string getArgType();
+    Node *copy() override;
 
 private:
     std::string argType = "dyn";
