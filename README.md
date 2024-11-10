@@ -176,13 +176,14 @@ square("hello") #errors
 ```
 
 The `return` keyword can be used to return a value early.
+Additionally, the `thisfn` keyword can be used to do recursion since functions are unnamed.
 
 ```
 fibonacci = funion index@int {
-    if index <= 1 {
+    if index <= 2 {
         return 1
     }
-    fibonacci(index - 1) + fibonacci(index - 2)
+    thisfn(index - 1) + thisfn(index - 2)
 }
 
 fibonacci(10) | println #55

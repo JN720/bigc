@@ -24,8 +24,7 @@ Result<Value> FunctionNode::execute(State &state, std::vector<Node *> &args)
     // the final one can also be a spread node
     // create the frame for the arguments we pass in
     StateFrame *frame = state.pushFrame(true);
-    Node *thisfn = this->copy();
-    frame->setVariable("thisfn", Value(thisfn));
+    frame->setVariable("thisfn", Value(this));
     // take each arg, do type assertions, and add to the frame
     int curVal = 0;
     int curArg = 0;
