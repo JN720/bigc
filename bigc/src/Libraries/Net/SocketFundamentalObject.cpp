@@ -50,10 +50,29 @@ Result<Value> SocketFundamentalObject::receive()
     return Result<Value>(Value(new std::string(buffer)));
 }
 
+Result<Value> SocketFundamentalObject::listen(int backlog)
+{
+    if (::listen(socketFD, backlog) < 0)
+    {
+        return Result<Value>("Listen failed");
+    }
+    return Result<Value>(Value(true));
+}
+
 void SocketFundamentalObject::close()
 {
     if (isOpen())
     {
         ::close(socketFD);
     }
+}
+
+Result<Value> SocketFundamentalObject::accept()
+{
+    int clientFD = ::accept(socketFD, nullptr, nullptr);
+    if (clientFD < 0)
+    {
+        return Result<Value>("Accept failed");
+    }
+    return Result<Value>(Value(clientFD)); // Return the client file descriptor
 }

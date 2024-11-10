@@ -18,6 +18,7 @@ public:
     Result<Value> connect(const std::string &address, int port);
     Result<Value> send(const std::string &data);
     Result<Value> receive();
+    Result<Value> listen(int backlog);
     void close();
 
 private:

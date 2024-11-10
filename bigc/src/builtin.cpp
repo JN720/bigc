@@ -9,6 +9,7 @@
 #include "./Libraries/OS/OSLibrary.h"
 #include "./Libraries/Thread/ThreadLibrary.h"
 #include "./Libraries/Time/TimeLibrary.h"
+#include "./Libraries/Net/NetLibrary.h"
 #include <fstream>
 namespace base
 {
@@ -219,6 +220,8 @@ namespace base
             return Result<Value>(Value((Node *)new LibraryNode(libthread::init())));
         else if (*library == "time")
             return Result<Value>(Value((Node *)new LibraryNode(libtime::init())));
+        else if (*library == "net")
+            return Result<Value>(Value((Node *)new LibraryNode(libnet::init())));
         return Result<Value>("library not found");
     }
     // imported files

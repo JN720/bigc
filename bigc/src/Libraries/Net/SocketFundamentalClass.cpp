@@ -22,20 +22,50 @@ SocketFundamentalClass::SocketFundamentalClass()
                                                             return socketObj->connect(**ipAddress, *port); }),
               false, PUBLIC);
 
-    addMethod("send", new SocketFundamentalMethodNode([](SocketFundamentalObject *socketObj, State &state, std::vector<Node *> &args) -> Result<Value>
-                                                      { return Result<Value>("not implemented"); }),
+    addMethod("sendStr", new SocketFundamentalMethodNode([](SocketFundamentalObject *socketObj, State &state, std::vector<Node *> &args) -> Result<Value>
+                                                         {
+                                                            if (args.size() != 1)
+                                                                return Result<Value>("socket sendStr requires 1 argument");
+                                                            Wildcard val = args[0]->getValue(state).getValue();
+                                                            std::string **str = std::get_if<std::string *>(&val);
+                                                            if (!str)
+                                                                return Result<Value>("data must be a string");
+                                                            if ((*str)->empty())
+                                                                return Result<Value>("data cannot be empty");
+                                                            return socketObj->send(**str); }),
               false, PUBLIC);
 
     addMethod("receive", new SocketFundamentalMethodNode([](SocketFundamentalObject *socketObj, State &state, std::vector<Node *> &args) -> Result<Value>
                                                          {
-                                                             // Implement receive logic
-return Result<Value>("not implemented"); }),
+                                                            if (args.size())
+                                                                return Result<Value>("socket receive does not take any arguments");
+                                                            return socketObj->receive(); }),
               false, PUBLIC);
 
     addMethod("close", new SocketFundamentalMethodNode([](SocketFundamentalObject *socketObj, State &state, std::vector<Node *> &args) -> Result<Value>
                                                        {
-                                                           // Implement close logic
-return Result<Value>("not implemented"); }),
+                                                            if (args.size())
+                                                                return Result<Value>("socket close does not take any arguments");
+                                                            socketObj->close(); 
+                                                            return Result<Value>(Value(true)); }),
+              false, PUBLIC);
+
+    addMethod("listen", new SocketFundamentalMethodNode([](SocketFundamentalObject *socketObj, State &state, std::vector<Node *> &args) -> Result<Value>
+                                                        {
+                                                            if (args.size() != 1)
+                                                                return Result<Value>("socket listen requires 1 argument: backlog");
+                                                            Wildcard val = args[0]->getValue(state).getValue();
+                                                            int *backlog = std::get_if<int>(&val);
+                                                            if (!backlog)
+                                                                return Result<Value>("backlog must be an integer");
+                                                            return socketObj->listen(*backlog); }),
+              false, PUBLIC);
+
+    addMethod("accept", new SocketFundamentalMethodNode([](SocketFundamentalObject *socketObj, State &state, std::vector<Node *> &args) -> Result<Value>
+                                                        {
+                                                            if (args.size())
+                                                                return Result<Value>("socket accept does not take any arguments");
+                                                            return socketObj->accept(); }),
               false, PUBLIC);
 }
 

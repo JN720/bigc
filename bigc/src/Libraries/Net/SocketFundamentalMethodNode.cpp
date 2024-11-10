@@ -16,9 +16,9 @@ SocketFundamentalMethodNode::SocketFundamentalMethodNode(SocketMethodFunction fu
 
 Result<Value> SocketFundamentalMethodNode::execute(State &state, std::vector<Node *> &args)
 {
-    Control control = FunctionNode::resolveArguments(state, args);
-    if (!control.ok())
-        return Result<Value>(control);
+    // Control control = FunctionNode::resolveArguments(state, args);
+    // if (!control.ok())
+    //     return Result<Value>(control);
     SocketFundamentalObject *socketObj = dynamic_cast<SocketFundamentalObject *>(object);
     return this->method(socketObj, state, args);
 }
