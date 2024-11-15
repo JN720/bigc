@@ -1,6 +1,7 @@
 #pragma once
 #include "Hashable.h"
 #include "Result.h"
+#include "Allocated.h"
 #include <vector>
 
 template <class T>
@@ -11,7 +12,7 @@ struct IteratorResult
 };
 
 template <class T>
-class Iterable
+class Iterable : public Allocated
 {
 public:
     virtual Control add(T val);

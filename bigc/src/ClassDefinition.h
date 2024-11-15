@@ -5,6 +5,7 @@
 #include "Result.h"
 #include "Value.h"
 #include "Interface.h"
+#include "MethodNode.h"
 #include "Object.h"
 
 /*
@@ -106,6 +107,7 @@ public:
     void setStaticAttribute(std::string name, Value value);
     bool hasProperty(std::string name);
     ClassDefinition *getMethodClass(std::string name);
+    void destroy(State *state) override;
 
 private:
     // implemented interfaces

@@ -12,3 +12,7 @@ ClassDefinitionInterface *ClassDefinitionInterface::getParent()
 {
     return nullptr;
 }
+
+void ClassDefinitionInterface::destroy(State *state)
+{
+}

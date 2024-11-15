@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Object.h"
+#include "Node.h"
 
 class FundamentalObject : public Object
 {

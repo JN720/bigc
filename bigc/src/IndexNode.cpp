@@ -81,6 +81,17 @@ Control IndexNode::setValue(State &state, Value value)
     if (Iterable<Value> **x = std::get_if<Iterable<Value> *>(&val))
     {
         Value index = children[1]->getValue(state);
+        Result<Value> result = (*x)->get(&index);
+        // remove ref if there is an old value in the iterable
+        if (result.ok())
+        {
+            Allocated *ref = state.getAllocated(result.getValue());
+            if (ref)
+                state.removeRef(ref);
+        }
+        // add ref for inserting into iterable
+        if (Allocated *ref = state.getAllocated(value))
+            state.addRef(ref);
         return (*x)->set(&index, value);
     }
     else if (Node **x = std::get_if<Node *>(&val))

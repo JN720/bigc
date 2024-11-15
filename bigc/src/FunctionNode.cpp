@@ -116,11 +116,9 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
     while (curArg < children.size() - 1 && curVal < args.size())
     {
         Node *arg = args[curVal];
-        std::cout << children.size() << '\n';
         Node *child = children[curArg];
         // there should be one more child than args because the last is the end
         // we have already resolved it so get the value
-        std::cout << state << '\n';
         Value val = args[curVal]->getValue(*state);
         if (dynamic_cast<TypeNode *>(child))
         {
@@ -211,7 +209,6 @@ std::string FunctionNode::getFunctionSignature()
         }
         signature += ')';
     }
-    std::cout << "signature is " << signature << "\n\n";
     return signature;
 }
 

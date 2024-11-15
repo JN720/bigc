@@ -1,12 +1,10 @@
 #pragma once
 #include <unordered_map>
 #include "Value.h"
-#include "State.h"
-#include "Node.h"
 #include <vector>
 #include "ClassDefinitionInterface.h"
 
-class Object
+class Object : public Allocated
 {
 public:
     Object();
@@ -17,6 +15,7 @@ public:
     void addProperty(const std::string &property, const Value &value);
     virtual Result<Value> getProperty(const std::string &property);
     Object *getSuper();
+    virtual void destroy(State *state) override;
 
 protected:
     std::unordered_map<std::string, Value> *attributes;

@@ -37,7 +37,7 @@ const std::string NODETYPES[] = {"leafvalue", "identifier", "call", "operation",
                                  "class", "visibility", "interface", "library", "register", "group", "iterate",
                                  "type", "try"};
 
-class Node
+class Node : public Allocated
 {
 public:
     Node();
@@ -50,6 +50,7 @@ public:
     std::vector<Node *> getChildren() const;
     bool hasChildren() const;
     virtual Node *copy();
+    virtual void destroy(State *state) override;
 
 protected:
     std::vector<Node *> children;

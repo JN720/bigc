@@ -1,6 +1,4 @@
 #include "ClassDefinition.h"
-#include "MethodNode.h"
-#include "Object.h"
 
 ClassDefinition::ClassDefinition()
 {
@@ -243,4 +241,8 @@ ClassDefinition *ClassDefinition::getMethodClass(std::string name)
         currentParent = currentParent->getParent();
     }
     return nullptr;
+}
+
+void ClassDefinition::destroy(State *state)
+{
 }

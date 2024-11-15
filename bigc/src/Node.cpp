@@ -76,3 +76,10 @@ Node *Node::copy()
         return new Node(Value((*node)->copy()));
     return new Node(value);
 }
+
+void Node::destroy(State *state)
+{
+    if (Allocated *ref = state->getAllocated(value))
+        state->removeRef(ref);
+    delete this;
+}

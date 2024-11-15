@@ -5,7 +5,7 @@ class WrapperNode : public Node
 {
 public:
     WrapperNode();
-    Value getValue(const State &state);
-    Control resolve(State &state);
+    Value getValue(const State &state) override;
+    Control resolve(State &state) override;
     Node *copy() override;
 };

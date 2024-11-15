@@ -50,3 +50,7 @@ Object *Object::getSuper()
 {
     return new Object(objClass->getParent(), attributes);
 }
+
+void Object::destroy(State *state)
+{
+}

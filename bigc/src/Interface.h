@@ -1,8 +1,9 @@
 #pragma once
 #include <unordered_map>
 #include <string>
+#include "Allocated.h"
 
-class Interface
+class Interface : public Allocated
 {
 public:
     Interface();

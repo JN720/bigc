@@ -10,7 +10,7 @@ Result<Value> ReadFileFunction::execute(State &state, std::vector<Node *> &args)
     if (control.control())
         return Result<Value>(control);
     if (control.error())
-        return Result<Value>("resolving arguments:\n" + control.error());
+        return Result<Value>("resolving arguments:\n" + control.getError());
 
     Wildcard val = args[0]->getValue(state).getValue();
     std::string **filename = std::get_if<std::string *>(&val);
@@ -34,7 +34,7 @@ Result<Value> WriteFileFunction::execute(State &state, std::vector<Node *> &args
     if (control.control())
         return Result<Value>(control);
     if (control.error())
-        return Result<Value>("resolving arguments:\n" + control.error());
+        return Result<Value>("resolving arguments:\n" + control.getError());
 
     Wildcard filenameVal = args[0]->getValue(state).getValue();
     std::string **filename = std::get_if<std::string *>(&filenameVal);
@@ -63,7 +63,7 @@ Result<Value> AppendFileFunction::execute(State &state, std::vector<Node *> &arg
     if (control.control())
         return Result<Value>(control);
     if (control.error())
-        return Result<Value>("resolving arguments:\n" + control.error());
+        return Result<Value>("resolving arguments:\n" + control.getError());
 
     Wildcard filenameVal = args[0]->getValue(state).getValue();
     std::string **filename = std::get_if<std::string *>(&filenameVal);
@@ -91,7 +91,7 @@ Result<Value> FileExistsFunction::execute(State &state, std::vector<Node *> &arg
     if (control.control())
         return Result<Value>(control);
     if (control.error())
-        return Result<Value>("resolving arguments:\n" + control.error());
+        return Result<Value>("resolving arguments:\n" + control.getError());
 
     Wildcard val = args[0]->getValue(state).getValue();
     std::string **filename = std::get_if<std::string *>(&val);
@@ -110,7 +110,7 @@ Result<Value> DeleteFileFunction::execute(State &state, std::vector<Node *> &arg
     if (control.control())
         return Result<Value>(control);
     if (control.error())
-        return Result<Value>("resolving arguments:\n" + control.error());
+        return Result<Value>("resolving arguments:\n" + control.getError());
 
     Wildcard val = args[0]->getValue(state).getValue();
     std::string **filename = std::get_if<std::string *>(&val);

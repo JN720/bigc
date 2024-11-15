@@ -11,7 +11,7 @@ Result<Value> libthread::awaitFunction(State &state, std::vector<Node *> &args)
     if (control.control())
         return Result<Value>(control);
     if (control.error())
-        return Result<Value>("resolving arguments:\n" + control.error());
+        return Result<Value>("resolving arguments:\n" + control.getError());
     Wildcard val = args[0]->getValue(state).getValue();
     if (Object **obj = std::get_if<Object *>(&val))
     {

@@ -2,6 +2,11 @@
 #include <forward_list>
 #include "StateFrame.h"
 #include "Registry.h"
+#include "Allocated.h"
+#include "Object.h"
+#include "Value.h"
+#include <set>
+
 class State
 {
 public:
@@ -18,10 +23,14 @@ public:
     bool isBuiltIn(std::string name);
     void setGroup(std::string group);
     Registry *getRegistry();
+    void addRef(Allocated *allocated);
+    void removeRef(Allocated *allocated);
+    Allocated *getAllocated(Value value);
 
 private:
     std::forward_list<StateFrame *> states;
     // immutable registry of global variables and functions
     Registry *registry;
     std::string currentGroup;
+    std::unordered_multiset<Allocated *, AllocatedHash, AllocatedEqual> refs;
 };

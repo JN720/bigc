@@ -31,6 +31,19 @@ Registry *State::getRegistry()
     return registry;
 }
 
+void State::addRef(Allocated *allocated)
+{
+    refs.insert(allocated);
+}
+
+void State::removeRef(Allocated *allocated)
+{
+    refs.extract(allocated);
+    // free the memory
+    if (!refs.count(allocated))
+        allocated->destroy(this);
+}
+
 bool State::isBuiltIn(std::string name)
 {
     for (int i = 0; i < sizeof(FUNDAMENTAL_FUNCTIONS) / sizeof(FUNDAMENTAL_FUNCTIONS[0]); i++)
@@ -46,9 +59,16 @@ void State::setVariable(std::string name, Value value)
     // search for existing variable
     for (StateFrame *state : states)
     {
-        if (state->getVariable(name).ok())
+        Result<Value> result = state->getVariable(name);
+        if (result.ok())
         {
+            // delete old ref
+            if (Allocated *x = getAllocated(result.getValue()))
+                removeRef(x);
             state->setVariable(name, value);
+            // add new ref
+            if (Allocated *x = getAllocated(value))
+                addRef(x);
             return;
         }
         if (state->isClosure())
@@ -61,6 +81,8 @@ void State::setVariable(std::string name, Value value)
         return;
     // if none exists, add it to the current scope
     states.front()->setVariable(name, value);
+    if (Allocated *x = getAllocated(value))
+        addRef(x);
 }
 
 Result<Value> State::getVariable(std::string name) const
@@ -129,4 +151,17 @@ void State::listVars()
         frame->listVars();
         ++i;
     }
+}
+
+// returns nullptr if not an allocated type
+Allocated *State::getAllocated(Value value)
+{
+    Wildcard val = value.getValue();
+    if (Node **x = std::get_if<Node *>(&val))
+        return (Allocated *)(*x);
+    if (Object **x = std::get_if<Object *>(&val))
+        return (Allocated *)(*x);
+    if (Iterable<Value> **x = std::get_if<Iterable<Value> *>(&val))
+        return (Allocated *)(*x);
+    return nullptr;
 }
