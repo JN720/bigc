@@ -1,6 +1,6 @@
 #include "builtin.h"
 #include "ast.h"
-#include "FunctionNode.h"
+#include "MethodNode.h"
 #include "InterfaceNode.h"
 #include "LibraryNode.h"
 #include "ClassDefinition.h"
@@ -91,7 +91,8 @@ namespace base
                     if (!function)
                         return Result<Value>("invalid function");
                     // execute with the object
-                    Result<Value> output = function->executeInstanced(*obj, &state, args);
+                    MethodNode *method = new MethodNode(function, *obj);
+                    Result<Value> output = method->execute(state, args);
                     if (!output.ok())
                         return Result<Value>(output.getError());
                     val = output.getValue().getValue();

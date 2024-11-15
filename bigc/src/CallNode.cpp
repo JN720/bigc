@@ -1,6 +1,6 @@
 #include "CallNode.h"
 #include "IdentifierNode.h"
-#include "FundamentalFunctionNode.h"
+#include "MethodNode.h"
 #include "ClassNode.h"
 #include "Object.h"
 #include "builtin.h"
@@ -80,7 +80,9 @@ Control CallNode::resolve(State &state)
         if (!function)
             return Control("Callable method is not a function");
         // execute the method
-        Result<Value> result = function->executeInstanced(obj, &state, args);
+        if (!dynamic_cast<MethodNode *>(function))
+            function = new MethodNode(function, obj);
+        Result<Value> result = function->execute(state, args);
         if (!result.ok())
             return Control(result.getError()).stack("calling method:\n");
         value = result.getValue();

@@ -1,5 +1,5 @@
 #include "ClassDefinition.h"
-#include "FunctionNode.h"
+#include "MethodNode.h"
 #include "Object.h"
 
 ClassDefinition::ClassDefinition()
@@ -141,6 +141,7 @@ bool ClassDefinition::implements(Interface *interface)
     return interfaces.find(interface) != interfaces.end();
 }
 
+// this returns a function node
 Result<Node *> ClassDefinition::getClassMethod(std::string name)
 {
     if (methods.find(name) != methods.end())
@@ -165,7 +166,9 @@ Result<Value> ClassDefinition::construct(State *state, std::vector<Node *> &args
         {
             obj->addProperty(attribute.first, attribute.second.defaultValue);
         }
-        Result<Value> result = methodNode->executeInstanced(obj, state, args);
+        if (!dynamic_cast<MethodNode *>(methodNode))
+            methodNode = new MethodNode(methodNode, obj);
+        Result<Value> result = methodNode->execute(*state, args);
         if (!result.ok())
             return Result<Value>(result.getError());
         return Result<Value>(Value(obj));

@@ -21,7 +21,6 @@ Control AccessNode::resolve(State &state)
     if (!control.ok())
         return control.stack("accessing property:\n");
     Wildcard val = children.front()->getValue(state).getValue();
-
     AccessType accessType = (dynamic_cast<VariableNode *>(children.front()) &&
                                  static_cast<VariableNode *>(children.front())->getVariable() == "this" ||
                              static_cast<VariableNode *>(children.front())->getVariable() == "static")
@@ -32,18 +31,16 @@ Control AccessNode::resolve(State &state)
         accessType = SUPER;
     if (dynamic_cast<VariableNode *>(children.front())->getVariable() == "superstatic")
         accessType = SUPER;
-
-    if (Node **node = std::get_if<Node *>(&val))
+    Node **node = std::get_if<Node *>(&val);
+    if (node && *node)
     {
         if (ClassNode *cls = dynamic_cast<ClassNode *>(*node))
         {
-            if (cls == nullptr)
-                return Control("tried to access property of null");
             ClassDefinition *classDefinition = cls->getClassDefinition();
             if (classDefinition == nullptr)
                 return Control("tried to access property of null");
 
-            if (!classDefinition->canAccess(property, accessType))
+            if (!(classDefinition->canAccess(property, accessType)))
                 return Control("Cannot access " + property + ": access denied");
 
             Result<Value> classData = classDefinition->getStaticAttribute(property);
@@ -85,8 +82,13 @@ Control AccessNode::resolve(State &state)
     }
     else if (Object **obj = std::get_if<Object *>(&val))
     {
+
+        if (!*obj)
+            return Control("tried to access property of null");
         ClassDefinition *classDefinition = static_cast<ClassDefinition *>((*obj)->getClass());
-        if (!classDefinition->canAccess(property, accessType))
+        if (!classDefinition)
+            return Control("object does not have a class definition");
+        if (!(classDefinition->canAccess(property, accessType)))
             return Control("Cannot access " + property + ": access denied");
 
         Result<Value> result = (*obj)->getProperty(property);
@@ -97,10 +99,16 @@ Control AccessNode::resolve(State &state)
         }
         else
         {
+            // this should be function node-like
             Result<Node *> method = classDefinition->getClassMethod(property);
             if (method.ok())
             {
-                value = Value(new MethodNode(method.getValue(), *obj));
+                Node *function = method.getValue();
+                if (!dynamic_cast<MethodNode *>(function))
+                    function = new MethodNode(function, *obj);
+                else
+                    ((MethodNode *)function)->setObject(*obj);
+                value = Value(function);
                 return Control(OK);
             }
             return Control(method.getError()).stack("accessing object property:\n");

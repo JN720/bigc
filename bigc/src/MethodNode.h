@@ -8,11 +8,13 @@
 class MethodNode : public FunctionNode
 {
 public:
-    MethodNode();
     MethodNode(Node *method, Object *object);
     Result<Value> execute(State &state, std::vector<Node *> &args) override;
     Control resolve(State &state) override;
+    void setObject(Object *obj);
 
 protected:
+    MethodNode();
     Object *object;
+    Node *method;
 };

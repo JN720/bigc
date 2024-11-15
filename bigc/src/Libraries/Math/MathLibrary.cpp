@@ -4,6 +4,7 @@
 #include "TrigFunctions.h"
 #include "../GeneralFunction.h"
 #include <cmath>
+#include <cstdlib>
 
 Registry *libmath::init()
 {
@@ -65,6 +66,13 @@ Registry *libmath::init()
         if (int *x = std::get_if<int>(&arg)) return Result<Value>(Value(*x));
         if (float *x = std::get_if<float>(&arg)) return Result<Value>(Value(std::floor(*x)));
         return Result<Value>("expected number argument"); })));
+
+    // Add the rand function
+    registry->registerVariable("rand", Value(new lib::GeneralFunction([](State &state, std::vector<Node *> &args) -> Result<Value>
+                                                                      {
+                                                                          if (args.size() != 0)
+                                                                              return Result<Value>("invalid arity");
+                                                                          return Result<Value>(Value(static_cast<double>(std::rand()))); })));
 
     return registry;
 }

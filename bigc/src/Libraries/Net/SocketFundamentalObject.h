@@ -11,15 +11,17 @@
 class SocketFundamentalObject : public FundamentalObject
 {
 public:
-    SocketFundamentalObject();
+    SocketFundamentalObject(ClassDefinitionInterface *objClass);
     ~SocketFundamentalObject();
 
     bool isOpen() const;
-    Result<Value> connect(const std::string &address, int port);
+    Result<Value> connect(std::string address, int port);
     Result<Value> send(const std::string &data);
     Result<Value> receive();
     Result<Value> listen(int backlog);
+    Result<Value> accept();
     void close();
+    Result<Value> bind(const std::string &address, int port);
 
 private:
     int socketFD;

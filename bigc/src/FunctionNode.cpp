@@ -100,7 +100,8 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
     StateFrame *frame = state->pushFrame(true);
     // add this, static, and super
     frame->setVariable("this", Value(obj));
-    frame->setVariable("static", Value((Node *)new ClassNode(obj->getClass())));
+    if (ClassDefinitionInterface *objClass = obj->getClass())
+        frame->setVariable("static", Value((Node *)new ClassNode(objClass)));
     Object *superObject = obj->getSuper();
     if (superObject)
         frame->setVariable("super", Value(superObject));
@@ -115,9 +116,11 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
     while (curArg < children.size() - 1 && curVal < args.size())
     {
         Node *arg = args[curVal];
+        std::cout << children.size() << '\n';
         Node *child = children[curArg];
         // there should be one more child than args because the last is the end
         // we have already resolved it so get the value
+        std::cout << state << '\n';
         Value val = args[curVal]->getValue(*state);
         if (dynamic_cast<TypeNode *>(child))
         {
@@ -154,6 +157,7 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
             return Result<Value>("invalid node in function arguments");
         }
     }
+
     // resolve the sequence node
     Control control = children.back()->resolve(*state);
 

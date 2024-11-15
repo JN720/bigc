@@ -14,11 +14,13 @@ SocketFundamentalMethodNode::SocketFundamentalMethodNode(SocketMethodFunction fu
     method = func;
 }
 
-Result<Value> SocketFundamentalMethodNode::execute(State &state, std::vector<Node *> &args)
+Result<Value> SocketFundamentalMethodNode::executeInstanced(Object *obj, State *state, std::vector<Node *> &args)
 {
     // Control control = FunctionNode::resolveArguments(state, args);
     // if (!control.ok())
     //     return Result<Value>(control);
-    SocketFundamentalObject *socketObj = dynamic_cast<SocketFundamentalObject *>(object);
-    return this->method(socketObj, state, args);
+    SocketFundamentalObject *socketObj = dynamic_cast<SocketFundamentalObject *>(obj);
+    if (!socketObj)
+        return Result<Value>("object is not a socket");
+    return this->method(socketObj, *state, args);
 }

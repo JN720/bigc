@@ -1,18 +1,14 @@
 #include "MethodNode.h"
 
-MethodNode::MethodNode()
-{
-}
-
 MethodNode::MethodNode(Node *method, Object *object)
 {
     this->object = object;
-    children = method->getChildren();
+    this->method = method;
 }
 
 Result<Value> MethodNode::execute(State &state, std::vector<Node *> &args)
 {
-    return executeInstanced(object, &state, args);
+    return static_cast<FunctionNode *>(method)->executeInstanced(object, &state, args);
 }
 
 Control MethodNode::resolve(State &state)
@@ -21,4 +17,13 @@ Control MethodNode::resolve(State &state)
         return Control("function must have sequence");
     value = Value(this);
     return Control(OK);
+}
+
+void MethodNode::setObject(Object *obj)
+{
+    object = obj;
+}
+
+MethodNode::MethodNode()
+{
 }

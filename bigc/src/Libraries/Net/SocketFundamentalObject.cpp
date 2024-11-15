@@ -1,8 +1,9 @@
 #include "SocketFundamentalObject.h"
 
-SocketFundamentalObject::SocketFundamentalObject()
+SocketFundamentalObject::SocketFundamentalObject(ClassDefinitionInterface *objClass)
 {
     socketFD = socket(AF_INET, SOCK_STREAM, 0);
+    this->objClass = objClass;
 }
 
 SocketFundamentalObject::~SocketFundamentalObject()
@@ -15,8 +16,13 @@ bool SocketFundamentalObject::isOpen() const
     return socketFD >= 0;
 }
 
-Result<Value> SocketFundamentalObject::connect(const std::string &address, int port)
+Result<Value> SocketFundamentalObject::connect(std::string address, int port)
 {
+    if (socketFD < 0)
+        return Result<Value>("Socket is not initialized");
+    if (port <= 0 || port > 65535)
+        return Result<Value>("Port must be in the range 1-65535");
+
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_port = htons(port);
     inet_pton(AF_INET, address.c_str(), &serverAddr.sin_addr);
@@ -75,4 +81,17 @@ Result<Value> SocketFundamentalObject::accept()
         return Result<Value>("Accept failed");
     }
     return Result<Value>(Value(clientFD)); // Return the client file descriptor
+}
+
+Result<Value> SocketFundamentalObject::bind(const std::string &address, int port)
+{
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(port);
+    inet_pton(AF_INET, address.c_str(), &serverAddr.sin_addr);
+
+    if (::bind(socketFD, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
+    {
+        return Result<Value>("Bind failed");
+    }
+    return Result<Value>(Value(true));
 }

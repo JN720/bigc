@@ -4,19 +4,18 @@
 
 SocketFundamentalClass::SocketFundamentalClass()
 {
-    // Add methods for socket operations
     addMethod("connect", new SocketFundamentalMethodNode([](SocketFundamentalObject *socketObj, State &state, std::vector<Node *> &args) -> Result<Value>
                                                          {
                                                             if (args.size() != 2)
                                                                 return Result<Value>("socket connection requires 2 arguments: address and port");
                                                             Wildcard val = args[0]->getValue(state).getValue();
                                                             std::string **ipAddress = std::get_if<std::string *>(&val);
-                                                            if (!ipAddress)
+                                                            if (!ipAddress || !*ipAddress)
                                                                 return Result<Value>("ip address must be a string");
                                                             if ((*ipAddress)->empty())
                                                                 return Result<Value>("ip address cannot be empty");
-                                                            val = args[1]->getValue(state).getValue();
-                                                            int *port = std::get_if<int>(&val);
+                                                            Wildcard portVal = args[1]->getValue(state).getValue();
+                                                            int *port = std::get_if<int>(&portVal);
                                                             if (!port)
                                                                 return Result<Value>("port must be an integer");
                                                             return socketObj->connect(**ipAddress, *port); }),
@@ -67,11 +66,26 @@ SocketFundamentalClass::SocketFundamentalClass()
                                                                 return Result<Value>("socket accept does not take any arguments");
                                                             return socketObj->accept(); }),
               false, PUBLIC);
+
+    addMethod("bind", new SocketFundamentalMethodNode([](SocketFundamentalObject *socketObj, State &state, std::vector<Node *> &args) -> Result<Value>
+                                                      {
+                                                           if (args.size() != 2)
+                                                               return Result<Value>("socket bind requires 2 arguments: address and port");
+                                                           Wildcard val1 = args[0]->getValue(state).getValue();
+                                                           std::string **ipAddress = std::get_if<std::string *>(&val1);
+                                                           if (!ipAddress)
+                                                               return Result<Value>("address must be a string");
+                                                           Wildcard val2 = args[1]->getValue(state).getValue();
+                                                           int *port = std::get_if<int>(&val2);
+                                                           if (!port)
+                                                               return Result<Value>("port must be an integer");
+                                                           return socketObj->bind(**ipAddress, *port); }),
+              false, PUBLIC);
 }
 
 Result<Value> SocketFundamentalClass::construct(State *state, std::vector<Node *> &args)
 {
-    SocketFundamentalObject *socketObj = new SocketFundamentalObject();
+    SocketFundamentalObject *socketObj = new SocketFundamentalObject(this);
     if (!socketObj->isOpen())
         return Result<Value>("Socket creation failed");
     return Result<Value>(Value(socketObj));

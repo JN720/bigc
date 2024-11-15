@@ -13,7 +13,6 @@ Registry *LibraryNode::getRegistry()
 
 Control LibraryNode::resolve(State &state)
 {
-
     value = Value(this);
     return Control(OK);
 }
