@@ -17,7 +17,9 @@ public:
     bool isOpen() const;
     Result<Value> connect(std::string address, int port);
     Result<Value> send(const std::string &data);
+    Result<Value> sendClient(int clientFD, const std::string &data);
     Result<Value> receive();
+    Result<Value> receiveClient(int clientFD);
     Result<Value> listen(int backlog);
     Result<Value> accept();
     void close();

@@ -44,6 +44,16 @@ Result<Value> SocketFundamentalObject::send(const std::string &data)
     return Result<Value>(Value(bytesSent));
 }
 
+Result<Value> SocketFundamentalObject::sendClient(int clientFD, const std::string &data)
+{
+    ssize_t bytesSent = ::send(clientFD, data.c_str(), data.size(), 0);
+    if (bytesSent < 0)
+    {
+        return Result<Value>("Send failed to client");
+    }
+    return Result<Value>(Value(bytesSent));
+}
+
 Result<Value> SocketFundamentalObject::receive()
 {
     char buffer[1024];
@@ -52,7 +62,19 @@ Result<Value> SocketFundamentalObject::receive()
     {
         return Result<Value>("Receive failed");
     }
-    buffer[bytesReceived] = '\0'; // Null-terminate the received data
+    buffer[bytesReceived] = '\0';
+    return Result<Value>(Value(new std::string(buffer)));
+}
+
+Result<Value> SocketFundamentalObject::receiveClient(int clientFD)
+{
+    char buffer[1024];
+    ssize_t bytesReceived = ::recv(clientFD, buffer, sizeof(buffer) - 1, 0);
+    if (bytesReceived < 0)
+    {
+        return Result<Value>("Receive failed from client");
+    }
+    buffer[bytesReceived] = '\0';
     return Result<Value>(Value(new std::string(buffer)));
 }
 
@@ -80,7 +102,7 @@ Result<Value> SocketFundamentalObject::accept()
     {
         return Result<Value>("Accept failed");
     }
-    return Result<Value>(Value(clientFD)); // Return the client file descriptor
+    return Result<Value>(Value(clientFD));
 }
 
 Result<Value> SocketFundamentalObject::bind(const std::string &address, int port)
