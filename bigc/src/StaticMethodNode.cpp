@@ -88,6 +88,6 @@ Control StaticMethodNode::resolve(State &state)
 
 void StaticMethodNode::destroy(State *state)
 {
-    state->removeRef(cls);
+    ((Node *)cls)->destroy(state);
     Node::destroy(state);
 }
