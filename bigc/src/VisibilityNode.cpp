@@ -103,7 +103,7 @@ bool VisibilityNode::getIsStatic()
     return isStatic;
 }
 
-Control VisibilityNode::applyToDefinition(ClassDefinition *definition, const State &state)
+Control VisibilityNode::applyToDefinition(ClassDefinition *definition, State &state)
 {
     // method overrides should only work for public and protected methods
     // TODO: they also require the same type signature
@@ -133,6 +133,8 @@ Control VisibilityNode::applyToDefinition(ClassDefinition *definition, const Sta
             else
                 return Control("expected function for method override");
         }
+        // we are copying the method
+        state.addRef(children[0]);
         definition->addMethod(variable, children[0], isStatic, access);
     }
     // the overriding rules for attributes are the same
@@ -153,6 +155,10 @@ Control VisibilityNode::applyToDefinition(ClassDefinition *definition, const Sta
             if (attribute.value.getType() != getAttributeType())
                 return Control("attribute " + variable + " has wrong type signature");
         }
+
+        // we are copying the value
+        if (Allocated *ref = state.getAllocated(children[0]->getValue(state)))
+            state.addRef(ref);
         definition->addAttribute(variable, access, isStatic, children.size() ? children[0]->getValue(state) : Value(new NullObject()));
     }
     return Control(OK);

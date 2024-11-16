@@ -41,7 +41,10 @@ void State::removeRef(Allocated *allocated)
     refs.extract(allocated);
     // free the memory
     if (!refs.count(allocated))
+    {
         allocated->destroy(this);
+        delete allocated;
+    }
 }
 
 bool State::isBuiltIn(std::string name)

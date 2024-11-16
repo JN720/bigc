@@ -17,7 +17,7 @@ public:
     Control resolve(State &state) override;
     void makeStatic();
     bool getIsStatic();
-    Control applyToDefinition(ClassDefinition *definition, const State &state);
+    Control applyToDefinition(ClassDefinition *definition, State &state);
     void makeMethod();
     void setType(std::string type);
     std::string getAttributeType();

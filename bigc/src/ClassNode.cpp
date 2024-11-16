@@ -57,13 +57,19 @@ Control ClassNode::resolve(State &state)
             // parent class
             if (ClassNode *parentDef = dynamic_cast<ClassNode *>(*x))
             {
-                definition->applyParent(parentDef->getClassDefinition());
+                ClassDefinition *parentClassDef = parentDef->getClassDefinition();
+                // add ref to parent class
+                state.addRef(parentClassDef);
+                definition->applyParent(parentClassDef);
             }
             // interface
             else if (dynamic_cast<InterfaceNode *>(*x))
             {
                 InterfaceNode *interfaceDef = (InterfaceNode *)(*x);
-                definition->applyInterface(interfaceDef->getInterface());
+                Interface *interface = interfaceDef->getInterface();
+                // we are copying the interface
+                state.addRef(interface);
+                definition->applyInterface(interface);
             }
             else
                 return Control("expected a class or interface");

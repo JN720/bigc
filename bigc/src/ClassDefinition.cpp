@@ -24,6 +24,7 @@ const std::unordered_set<Interface *> &ClassDefinition::getInterfaces()
 
 void ClassDefinition::addMethod(std::string name, Node *method, bool isStatic, AccessSpecifier access)
 {
+
     if (isStatic)
         staticMethods[name] = Method(method, access);
     else
