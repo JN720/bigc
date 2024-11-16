@@ -56,6 +56,16 @@ void Object::destroy(State *state)
     objClass->destroy(state);
 }
 
+Object *Object::copy()
+{
+    Object *obj = new Object(objClass);
+    for (auto &pair : *attributes)
+    {
+        obj->addProperty(pair.first, pair.second);
+    }
+    return obj;
+}
+
 Object::~Object()
 {
     delete attributes;

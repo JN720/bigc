@@ -33,17 +33,22 @@ Registry *State::getRegistry()
 
 void State::addRef(Allocated *allocated)
 {
+    // std::cout << "adding ref to " << allocated << '\n';
     refs.insert(allocated);
+    // std::cout << "count: " << refs.count(allocated) << '\n';
 }
 
 void State::removeRef(Allocated *allocated)
 {
+    // std::cout << "removing ref to " << allocated << '\n';
     refs.extract(allocated);
+    // std::cout << "count: " << refs.count(allocated) << '\n';
     // free the memory
     if (!refs.count(allocated))
     {
-        allocated->destroy(this);
+        // std::cout << "deleting " << allocated << '\n';
         delete allocated;
+        // std::cout << "delete finished\n";
     }
 }
 
@@ -141,6 +146,11 @@ StateFrame *State::pushFrame(bool closure)
 
 void State::popFrame()
 {
+    for (auto &pair : states.front()->getVariables())
+    {
+        if (Allocated *x = getAllocated(pair.second))
+            removeRef(x);
+    }
     delete states.front();
     states.pop_front();
 }

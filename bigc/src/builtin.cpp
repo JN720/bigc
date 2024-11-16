@@ -91,7 +91,7 @@ namespace base
                     if (!function)
                         return Result<Value>("invalid function");
                     // execute with the object
-                    MethodNode *method = new MethodNode(function, *obj);
+                    MethodNode *method = new MethodNode(function, *obj, state);
                     Result<Value> output = method->execute(state, args);
                     if (!output.ok())
                         return Result<Value>(output.getError());

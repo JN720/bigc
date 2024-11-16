@@ -81,7 +81,7 @@ Control CallNode::resolve(State &state)
             return Control("Callable method is not a function");
         // execute the method
         if (!dynamic_cast<MethodNode *>(function))
-            function = new MethodNode(function, obj);
+            function = new MethodNode(function, obj, state);
         Result<Value> result = function->execute(state, args);
         if (!result.ok())
             return Control(result.getError()).stack("calling method:\n");

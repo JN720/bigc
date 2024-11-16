@@ -164,10 +164,12 @@ Result<Value> ClassDefinition::construct(State *state, std::vector<Node *> &args
         Object *obj = new Object(this);
         for (auto attribute : attributes)
         {
-            obj->addProperty(attribute.first, attribute.second.defaultValue);
+            if (Allocated *ref = state->getAllocated(attribute.second.newDefault()))
+                state->addRef(ref);
+            obj->addProperty(attribute.first, attribute.second.newDefault());
         }
         if (!dynamic_cast<MethodNode *>(methodNode))
-            methodNode = new MethodNode(methodNode, obj);
+            methodNode = new MethodNode(methodNode, obj, *state);
         Result<Value> result = methodNode->execute(*state, args);
         if (!result.ok())
             return Result<Value>(result.getError());

@@ -25,6 +25,8 @@ Control PipeNode::resolve(State &state)
     // pass in the pipe value as the first argument
     if (VariableNode *var = dynamic_cast<VariableNode *>(children[1]))
     {
+        // add ref for call node
+        state.addRef(var);
         CallNode *call = new CallNode(var);
         call->addChild(new IdentifierNode());
         control = call->resolve(state);

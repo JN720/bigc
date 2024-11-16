@@ -79,6 +79,17 @@ struct Attribute
     {
         return (access == PRIVATE || access == PARENT) ? Attribute(defaultValue, PARENT, defaultValue) : *this;
     }
+
+    Value newDefault()
+    {
+        Wildcard val = value.getValue();
+        if (Object **obj = std::get_if<Object *>(&val))
+            return Value((*obj)->copy());
+        if (Node **node = std::get_if<Node *>(&val))
+            return Value((*node)->copy());
+        // TODO: handle iterables
+        return defaultValue;
+    }
 };
 
 class ClassDefinition : public ClassDefinitionInterface

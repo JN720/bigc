@@ -9,7 +9,7 @@
 class StaticMethodNode : public FunctionNode
 {
 public:
-    StaticMethodNode(Node *method, ClassNode *cls);
+    StaticMethodNode(Node *method, ClassNode *cls, State &state);
     Result<Value> execute(State &state, std::vector<Node *> &args) override;
     Control resolve(State &state) override;
     virtual void destroy(State *state) override;

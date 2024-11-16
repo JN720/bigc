@@ -55,7 +55,7 @@ Control AccessNode::resolve(State &state)
                 Result<Node *> method = cls->getClassDefinition()->getStaticMethod(property);
                 if (method.ok())
                 {
-                    value = Value(new StaticMethodNode(method.getValue(), cls));
+                    value = Value(new StaticMethodNode(method.getValue(), cls, state));
                     return Control(OK);
                 }
                 return Control(method.getError()).stack("accessing class property:\n");
@@ -105,7 +105,7 @@ Control AccessNode::resolve(State &state)
             {
                 Node *function = method.getValue();
                 if (!dynamic_cast<MethodNode *>(function))
-                    function = new MethodNode(function, *obj);
+                    function = new MethodNode(function, *obj, state);
                 else
                     ((MethodNode *)function)->setObject(*obj);
                 value = Value(function);

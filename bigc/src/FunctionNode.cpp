@@ -14,6 +14,7 @@ Control FunctionNode::resolve(State &state)
 {
     if (children.size() < 1)
         return Control("function must have sequence");
+    state.addRef(this);
     value = Value(this);
     return Control(OK);
 }
@@ -24,7 +25,7 @@ Result<Value> FunctionNode::execute(State &state, std::vector<Node *> &args)
     // the final one can also be a spread node
     // create the frame for the arguments we pass in
     StateFrame *frame = state.pushFrame(true);
-    frame->setVariable("thisfn", Value(this));
+    state.setVariable("thisfn", Value(this));
     // take each arg, do type assertions, and add to the frame
     int curVal = 0;
     int curArg = 0;
@@ -44,14 +45,14 @@ Result<Value> FunctionNode::execute(State &state, std::vector<Node *> &args)
                 state.popFrame();
                 return Result<Value>("type assertion failed: " + typed->getArgType() + " expected but got " + val.getType());
             }
-            frame->setVariable(typed->getVariable(), val);
+            state.setVariable(typed->getVariable(), val);
             curVal++;
             curArg++;
         }
         else if (dynamic_cast<VariableNode *>(child))
         {
             // get the name of the function arg and set its value to val
-            frame->setVariable(((VariableNode *)child)->getVariable(), val);
+            state.setVariable(((VariableNode *)child)->getVariable(), val);
             curVal++;
             curArg++;
         }
@@ -87,6 +88,8 @@ Result<Value> FunctionNode::execute(State &state, std::vector<Node *> &args)
         return Result<Value>(control.stack("during function execution:\n"));
     }
     Value result = children.back()->getValue(state);
+    if (Allocated *ref = state.getAllocated(result))
+        state.addRef(ref);
     state.popFrame();
     return Result<Value>(result);
 }
@@ -99,15 +102,15 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
     // create the frame for the arguments we pass in
     StateFrame *frame = state->pushFrame(true);
     // add this, static, and super
-    frame->setVariable("this", Value(obj));
+    state->setVariable("this", Value(obj));
     if (ClassDefinitionInterface *objClass = obj->getClass())
-        frame->setVariable("static", Value((Node *)new ClassNode(objClass)));
+        state->setVariable("static", Value((Node *)new ClassNode(objClass)));
     Object *superObject = obj->getSuper();
     if (superObject)
-        frame->setVariable("super", Value(superObject));
+        state->setVariable("super", Value(superObject));
     ClassDefinition *superClass = static_cast<ClassDefinition *>(obj->getClass()->getParent());
     if (superClass)
-        frame->setVariable("superstatic", Value((Node *)new ClassNode(superClass)));
+        state->setVariable("superstatic", Value((Node *)new ClassNode(superClass)));
 
     // take each arg, do type assertions, and add to the frame
     int curVal = 0;
@@ -128,14 +131,14 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
                 state->popFrame();
                 return Result<Value>("type assertion failed: expected " + typed->getArgType() + " but got " + val.getType() + " instead");
             }
-            frame->setVariable(typed->getVariable(), val);
+            state->setVariable(typed->getVariable(), val);
             curVal++;
             curArg++;
         }
         else if (dynamic_cast<VariableNode *>(child))
         {
             // get the name of the function arg and set its value to val
-            frame->setVariable(((VariableNode *)child)->getVariable(), val);
+            state->setVariable(((VariableNode *)child)->getVariable(), val);
             curVal++;
             curArg++;
         }
@@ -173,6 +176,8 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
         return Result<Value>(control.stack("during function execution:\n"));
     }
     Value result = children.back()->getValue(*state);
+    if (Allocated *ref = state->getAllocated(result))
+        state->addRef(ref);
     state->popFrame();
     return Result<Value>(result);
 }

@@ -13,6 +13,7 @@ public:
     Result<Value> getVariable(std::string name) const;
     void listVars();
     bool isClosure() const;
+    std::unordered_map<std::string, Value> getVariables();
 
 private:
     // currently assigned variables

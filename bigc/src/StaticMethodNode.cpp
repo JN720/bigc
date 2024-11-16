@@ -3,10 +3,15 @@
 #include "TypeNode.h"
 #include "VariableNode.h"
 
-StaticMethodNode::StaticMethodNode(Node *method, ClassNode *cls)
+StaticMethodNode::StaticMethodNode(Node *method, ClassNode *cls, State &state)
 {
     this->cls = cls;
     children = method->getChildren();
+    for (auto child : children)
+    {
+        state.addRef(child);
+    }
+    state.addRef((Node *)cls);
 }
 
 // we need to pass the class definition to the method so it can access static attributes
@@ -14,7 +19,7 @@ Result<Value> StaticMethodNode::execute(State &state, std::vector<Node *> &args)
 {
     // function call scopes are closed
     StateFrame *frame = state.pushFrame(true);
-    frame->setVariable("static", Value((Node *)cls));
+    state.setVariable("static", Value((Node *)cls));
 
     int curVal = 0;
     int curArg = 0;
@@ -29,7 +34,7 @@ Result<Value> StaticMethodNode::execute(State &state, std::vector<Node *> &args)
         if (dynamic_cast<VariableNode *>(child))
         {
             // get the name of the function arg and set its value to val
-            frame->setVariable(((VariableNode *)child)->getVariable(), val);
+            state.setVariable(((VariableNode *)child)->getVariable(), val);
             curVal++;
             curArg++;
         }
@@ -41,7 +46,7 @@ Result<Value> StaticMethodNode::execute(State &state, std::vector<Node *> &args)
                 state.popFrame();
                 return Result<Value>("type assertion failed: expected " + typed->getArgType() + " but got " + val.getType() + " instead");
             }
-            frame->setVariable(typed->getVariable(), val);
+            state.setVariable(typed->getVariable(), val);
             curVal++;
             curArg++;
         }
@@ -74,6 +79,8 @@ Result<Value> StaticMethodNode::execute(State &state, std::vector<Node *> &args)
         return Result<Value>(control.stack("during function execution:\n"));
     }
     Value result = children.back()->getValue(state);
+    if (Allocated *ref = state.getAllocated(result))
+        state.addRef(ref);
     state.popFrame();
     return Result<Value>(result);
 }

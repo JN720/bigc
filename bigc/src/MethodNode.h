@@ -8,7 +8,7 @@
 class MethodNode : public FunctionNode
 {
 public:
-    MethodNode(Node *method, Object *object);
+    MethodNode(Node *method, Object *object, State &state);
     Result<Value> execute(State &state, std::vector<Node *> &args) override;
     Control resolve(State &state) override;
     void setObject(Object *obj);

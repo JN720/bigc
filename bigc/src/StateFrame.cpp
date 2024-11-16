@@ -33,3 +33,8 @@ bool StateFrame::isClosure() const
 {
     return closure;
 }
+
+std::unordered_map<std::string, Value> StateFrame::getVariables()
+{
+    return variables;
+}

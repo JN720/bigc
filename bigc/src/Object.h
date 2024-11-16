@@ -16,6 +16,7 @@ public:
     virtual Result<Value> getProperty(const std::string &property);
     Object *getSuper();
     virtual void destroy(State *state) override;
+    Object *copy();
     ~Object();
 
 protected:

@@ -1,9 +1,11 @@
 #include "MethodNode.h"
 
-MethodNode::MethodNode(Node *method, Object *object)
+MethodNode::MethodNode(Node *method, Object *object, State &state)
 {
     this->object = object;
     this->method = method;
+    state.addRef(object);
+    state.addRef(method);
 }
 
 Result<Value> MethodNode::execute(State &state, std::vector<Node *> &args)
