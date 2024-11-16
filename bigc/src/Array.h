@@ -1,6 +1,7 @@
 #pragma once
 #include "Value.h"
 #include "Iterable.h"
+#include "State.h"
 #include <vector>
 
 template <class T>
@@ -12,6 +13,7 @@ public:
     Result<T> get(Hashable *index) override;
     Result<int> len() override;
     Result<IteratorResult<T>> next(int state) override;
+    void destroy(State *state) override;
 
 protected:
     std::vector<T> values;
@@ -59,4 +61,18 @@ Result<IteratorResult<T>> Array<T>::next(int state)
         return Result<IteratorResult<T>>(Control(BREAK));
     }
     return Result<IteratorResult<T>>(IteratorResult<T>{values[state], state + 1});
+}
+
+template <class T>
+void Array<T>::destroy(State *state)
+{
+    for (T &value : values)
+    {
+        if (Value *val = dynamic_cast<Value *>(&value))
+        {
+            if (Allocated *ref = state->getAllocated(*val))
+                state->removeRef(ref);
+        }
+    }
+    state->removeRef(this);
 }

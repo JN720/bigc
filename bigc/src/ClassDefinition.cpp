@@ -6,6 +6,7 @@ ClassDefinition::ClassDefinition()
 
 ClassDefinition *ClassDefinition::getParent()
 {
+
     return parentClass;
 }
 
@@ -245,4 +246,33 @@ ClassDefinition *ClassDefinition::getMethodClass(std::string name)
 
 void ClassDefinition::destroy(State *state)
 {
+    // delete methods
+    for (auto &method : methods)
+    {
+        state->removeRef(method.second.method);
+    }
+
+    // delete static methods
+    for (auto &method : staticMethods)
+    {
+        state->removeRef(method.second.method);
+    }
+    // delete static attributes
+    for (auto &attribute : staticAttributes)
+    {
+        if (Allocated *ref = state->getAllocated(attribute.second.defaultValue))
+            state->removeRef(ref);
+    }
+    // delete static attributes
+    for (auto &attribute : attributes)
+    {
+        if (Allocated *ref = state->getAllocated(attribute.second.defaultValue))
+            state->removeRef(ref);
+    }
+    state->removeRef(parentClass);
+    for (auto &interface : interfaces)
+    {
+        state->removeRef(interface);
+    }
+    state->removeRef(this);
 }

@@ -50,8 +50,6 @@ public:
     Result<Value> isGreaterThanEqual(Value other);
     Result<Value> negate();
 
-    Allocated *getAllocated();
-
 protected:
     Wildcard value;
 };

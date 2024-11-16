@@ -53,4 +53,10 @@ Object *Object::getSuper()
 
 void Object::destroy(State *state)
 {
+    objClass->destroy(state);
+}
+
+Object::~Object()
+{
+    delete attributes;
 }

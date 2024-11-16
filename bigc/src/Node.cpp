@@ -81,5 +81,9 @@ void Node::destroy(State *state)
 {
     if (Allocated *ref = state->getAllocated(value))
         state->removeRef(ref);
-    delete this;
+    for (auto child : children)
+    {
+        state->removeRef(child);
+    }
+    state->removeRef(this);
 }

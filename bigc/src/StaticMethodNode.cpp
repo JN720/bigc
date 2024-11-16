@@ -85,3 +85,9 @@ Control StaticMethodNode::resolve(State &state)
     value = Value(this);
     return Control(OK);
 }
+
+void StaticMethodNode::destroy(State *state)
+{
+    state->removeRef(cls);
+    Node::destroy(state);
+}

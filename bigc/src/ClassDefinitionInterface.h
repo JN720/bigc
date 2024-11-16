@@ -16,7 +16,7 @@ const std::string ACCESS_TYPES[] = {
     "this",
     "super"};
 
-class ClassDefinitionInterface : Allocated
+class ClassDefinitionInterface : public Allocated
 {
 public:
     virtual bool canAccess(std::string property, AccessType instanced);

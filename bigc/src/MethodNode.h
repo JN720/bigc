@@ -12,6 +12,7 @@ public:
     Result<Value> execute(State &state, std::vector<Node *> &args) override;
     Control resolve(State &state) override;
     void setObject(Object *obj);
+    virtual void destroy(State *state) override;
 
 protected:
     MethodNode();

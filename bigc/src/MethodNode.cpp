@@ -24,6 +24,13 @@ void MethodNode::setObject(Object *obj)
     object = obj;
 }
 
+void MethodNode::destroy(State *state)
+{
+    state->removeRef(object);
+    state->removeRef(method);
+    Node::destroy(state);
+}
+
 MethodNode::MethodNode()
 {
 }

@@ -11,6 +11,7 @@ public:
     ClassNode(ClassDefinitionInterface *definition);
     ClassDefinition *getClassDefinition();
     Control resolve(State &state) override;
+    void destroy(State *state) override;
 
 protected:
     ClassDefinition *definition;

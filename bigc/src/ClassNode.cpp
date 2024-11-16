@@ -96,3 +96,9 @@ Control ClassNode::resolve(State &state)
     value = Value(this);
     return Control(OK);
 }
+
+void ClassNode::destroy(State *state)
+{
+    this->definition->destroy(state);
+    Node::destroy(state);
+}

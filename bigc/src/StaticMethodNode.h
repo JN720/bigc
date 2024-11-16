@@ -12,6 +12,7 @@ public:
     StaticMethodNode(Node *method, ClassNode *cls);
     Result<Value> execute(State &state, std::vector<Node *> &args) override;
     Control resolve(State &state) override;
+    virtual void destroy(State *state) override;
 
 private:
     ClassNode *cls;
