@@ -72,7 +72,7 @@ Control BranchNode::resolve(State &state)
         // if there is no else statement it is false
         else
         {
-            value = Value(new NullObject());
+            value = Value(NullObject::getNull());
             return Control(OK);
         }
     }

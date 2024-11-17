@@ -191,6 +191,30 @@ fibonacci(10) | println #55
 
 ## TODO: Classes
 
+Classes are values and are unnamed. They are declared with the `class` keyword.
+Classes have attributes and methods like many other object-oriented languages.
+Both methods and attributes are either `public` or `protected`, determining what can be accessed,
+Method are declared with the `method` keyword.
+Inside of a method, the `this` keyword is used to refer to the object's attributes.
+
+```
+Animal = class {
+    protected name@str = ""
+    public method constructor name@str department@str {
+        this.name = name + " from " + department
+    }
+    public method speak {
+        println("*animal noises*\nI am " + this.name)
+    }
+}
+bob = Animal("Bob", "Management")
+bob.speak() # greets you with Bob's name
+
+```
+
+While methods and attributes apply to an instance of an object,
+there are also shared attributes declared with `shared` and shared methods declared with `utility`.
+
 ## TODO: Interfaces
 
 # TODO: Libraries

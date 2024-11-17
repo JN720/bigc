@@ -6,7 +6,7 @@
 #include "Value.h"
 #include "Interface.h"
 #include "MethodNode.h"
-#include "Object.h"
+#include "NullObject.h"
 
 /*
 Example Class:
@@ -65,7 +65,7 @@ struct Attribute
 {
     Value value;
     AccessSpecifier access;
-    Value defaultValue;
+    Value defaultValue = Value(NullObject::getNull());
     Attribute() {}
     Attribute(Value value, AccessSpecifier access, Value defaultValue)
     {

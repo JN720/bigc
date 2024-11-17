@@ -10,6 +10,7 @@ VisibilityNode::VisibilityNode()
     access = PUBLIC;
     isStatic = false;
     isMethod = false;
+    attributeType = "dyn";
 }
 
 VisibilityNode::VisibilityNode(AccessSpecifier specifier)
@@ -18,6 +19,7 @@ VisibilityNode::VisibilityNode(AccessSpecifier specifier)
     access = specifier;
     isStatic = false;
     isMethod = false;
+    attributeType = "dyn";
 }
 
 VisibilityNode::VisibilityNode(std::string specifier)
@@ -31,6 +33,7 @@ VisibilityNode::VisibilityNode(std::string specifier)
         access = PROTECTED;
     isStatic = false;
     isMethod = false;
+    attributeType = "dyn";
 }
 
 AccessSpecifier VisibilityNode::getVisibility()
@@ -159,7 +162,17 @@ Control VisibilityNode::applyToDefinition(ClassDefinition *definition, State &st
         // we are copying the value
         if (Allocated *ref = state.getAllocated(children[0]->getValue(state)))
             state.addRef(ref);
-        definition->addAttribute(variable, access, isStatic, children.size() ? children[0]->getValue(state) : Value(new NullObject()));
+        if (children.size())
+        {
+            Value defaultVal = children[0]->getValue(state);
+            // if the attribute is dynamic or types match
+            if (attributeType == "dyn" || defaultVal.getType() == attributeType)
+                definition->addAttribute(variable, access, isStatic, defaultVal);
+            else
+                return Control("attribute " + variable + "'s default value has wrong type signature");
+        }
+        else
+            definition->addAttribute(variable, access, isStatic, Value(NullObject::getDefaultFromType(attributeType)));
     }
     return Control(OK);
 }
