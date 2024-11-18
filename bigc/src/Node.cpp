@@ -39,14 +39,18 @@ Control Node::resolve(State &state)
             }
             if (control.error())
                 return control.stack("resolving array elements:\n");
+            Wildcard val = child->getValue(state).getValue();
             // handle spread iterables
-            if (Spread<Value> *spread = dynamic_cast<Spread<Value> *>(child))
+            if (Iterable<Value> **x = std::get_if<Iterable<Value> *>(&val))
             {
-                for (Value val : *spread)
+                if (Spread<Value> *spread = dynamic_cast<Spread<Value> *>(*x))
                 {
-                    arr->add(val);
+                    for (Value spreadVal : *spread)
+                    {
+                        arr->add(spreadVal);
+                    }
+                    continue;
                 }
-                continue;
             }
             arr->add(child->getValue(state));
         }

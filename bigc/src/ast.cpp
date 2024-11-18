@@ -598,10 +598,9 @@ namespace ast
                     return "unexpected &";
                 break;
             case SPREAD:
-                if (context == DELIMITED)
+                if (context == DELIMITED || context == ARR)
                 {
                     SpreadNode *spread = new SpreadNode();
-                    spread->addChild(cur);
                     cur = spread;
                     error = createAST(state, tokens, ++index, cur, OPERATING, piped);
                     if (!error.empty())
