@@ -4,4 +4,5 @@ class SpreadNode : public Node
 {
 public:
     SpreadNode();
+    Control resolve(State &state) override;
 };

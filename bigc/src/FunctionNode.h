@@ -14,4 +14,7 @@ public:
 
     // only use in method node
     virtual Result<Value> executeInstanced(Object *obj, State *state, std::vector<Node *> &args);
+
+protected:
+    Result<std::vector<Value>> valuifyArgs(std ::vector<Node *> &args, State &state);
 };

@@ -4,6 +4,7 @@
 #include "SequenceNode.h"
 #include "Object.h"
 #include "ClassNode.h"
+#include "ArgumentIterator.h"
 
 FunctionNode::FunctionNode()
 {
@@ -26,52 +27,14 @@ Result<Value> FunctionNode::execute(State &state, std::vector<Node *> &args)
     // create the frame for the arguments we pass in
     StateFrame *frame = state.pushFrame(true);
     state.setVariable("thisfn", Value(this));
-    // take each arg, do type assertions, and add to the frame
-    int curVal = 0;
-    int curArg = 0;
     // place arguments until we hit the sequence
-    while (curArg < children.size() - 1 && curVal < args.size())
+    Result<std::vector<Value>> result = valuifyArgs(args, state);
+    if (!result.ok())
     {
-        Node *arg = args[curVal];
-        Node *child = children[curArg];
-        // there should be one more child than args because the last is the end
-        // we have already resolved it so get the value
-        Value val = args[curVal]->getValue(state);
-        if (dynamic_cast<TypeNode *>(child))
-        {
-            TypeNode *typed = (TypeNode *)child;
-            if (typed->getArgType() != val.getType())
-            {
-                state.popFrame();
-                return Result<Value>("type assertion failed: " + typed->getArgType() + " expected but got " + val.getType());
-            }
-            state.setVariable(typed->getVariable(), val);
-            curVal++;
-            curArg++;
-        }
-        else if (dynamic_cast<VariableNode *>(child))
-        {
-            // get the name of the function arg and set its value to val
-            state.setVariable(((VariableNode *)child)->getVariable(), val);
-            curVal++;
-            curArg++;
-        }
-        /*
-        else if (dynamic_cast<SpreadNode *>(child))
-        {
-            SpreadNode *spread = (SpreadNode *)arg;
-            if (dynamic_cast<IdentifierNode *>(child)) {
-                spread->get
-            }
-            // go to the next value but stay on the same arg
-            curVal++;
-        }*/
-        else
-        {
-            state.popFrame();
-            return Result<Value>("invalid node in function arguments");
-        }
+        state.popFrame();
+        return Result<Value>("aligning arguments:\n" + result.getError());
     }
+    std::vector<Value> argValues = result.getValue();
     // resolve the sequence node
     Control control = children.back()->resolve(state);
     if (control.control())
@@ -87,11 +50,11 @@ Result<Value> FunctionNode::execute(State &state, std::vector<Node *> &args)
         state.popFrame();
         return Result<Value>(control.stack("during function execution:\n"));
     }
-    Value result = children.back()->getValue(state);
-    if (Allocated *ref = state.getAllocated(result))
+    Value val = children.back()->getValue(state);
+    if (Allocated *ref = state.getAllocated(val))
         state.addRef(ref);
     state.popFrame();
-    return Result<Value>(result);
+    return Result<Value>(val);
 }
 
 // this is a copy of execute but includes a this in the function call scope
@@ -111,53 +74,13 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
     ClassDefinition *superClass = static_cast<ClassDefinition *>(obj->getClass()->getParent());
     if (superClass)
         state->setVariable("superstatic", Value((Node *)new ClassNode(superClass)));
-
-    // take each arg, do type assertions, and add to the frame
-    int curVal = 0;
-    int curArg = 0;
-    // place arguments until we hit the sequence
-    while (curArg < children.size() - 1 && curVal < args.size())
+    Result<std::vector<Value>> result = valuifyArgs(args, *state);
+    if (!result.ok())
     {
-        Node *arg = args[curVal];
-        Node *child = children[curArg];
-        // there should be one more child than args because the last is the end
-        // we have already resolved it so get the value
-        Value val = args[curVal]->getValue(*state);
-        if (dynamic_cast<TypeNode *>(child))
-        {
-            TypeNode *typed = (TypeNode *)child;
-            if (typed->getArgType() != val.getType())
-            {
-                state->popFrame();
-                return Result<Value>("type assertion failed: expected " + typed->getArgType() + " but got " + val.getType() + " instead");
-            }
-            state->setVariable(typed->getVariable(), val);
-            curVal++;
-            curArg++;
-        }
-        else if (dynamic_cast<VariableNode *>(child))
-        {
-            // get the name of the function arg and set its value to val
-            state->setVariable(((VariableNode *)child)->getVariable(), val);
-            curVal++;
-            curArg++;
-        }
-        /*
-        else if (dynamic_cast<SpreadNode *>(child))
-        {
-            SpreadNode *spread = (SpreadNode *)arg;
-            if (dynamic_cast<IdentifierNode *>(child)) {
-                spread->get
-            }
-            // go to the next value but stay on the same arg
-            curVal++;
-        }*/
-        else
-        {
-            state->popFrame();
-            return Result<Value>("invalid node in function arguments");
-        }
+        state->popFrame();
+        return Result<Value>("aligning arguments:\n" + result.getError());
     }
+    std::vector<Value> argValues = result.getValue();
 
     // resolve the sequence node
     Control control = children.back()->resolve(*state);
@@ -175,11 +98,71 @@ Result<Value> FunctionNode::executeInstanced(Object *obj, State *state, std::vec
         state->popFrame();
         return Result<Value>(control.stack("during function execution:\n"));
     }
-    Value result = children.back()->getValue(*state);
-    if (Allocated *ref = state->getAllocated(result))
+    Value val = children.back()->getValue(*state);
+    if (Allocated *ref = state->getAllocated(val))
         state->addRef(ref);
     state->popFrame();
-    return Result<Value>(result);
+    return Result<Value>(val);
+}
+
+Result<std::vector<Value>> FunctionNode::valuifyArgs(std::vector<Node *> &args, State &state)
+{
+    std::vector<Value> argValues;
+    ArgumentIterator argIterator(args);
+    // the last child is the sequence
+    int curChild = 0;
+    while (curChild < children.size() - 1)
+    {
+        Result<Value> argResult = argIterator.next(&state);
+        Node *child = children[curChild];
+        // no more arguments passed
+        if (argResult.getSignal() == BREAK)
+        {
+            // we expect to be fulfilling the final function argument
+            // this is the only success case
+            if (curChild != children.size() - 2)
+                return Result<std::vector<Value>>("missing arguments");
+            return Result<std::vector<Value>>(argValues);
+        }
+        if (!argResult.ok())
+            return Result<std::vector<Value>>("aligning arguments:\n" + argResult.getError());
+        Value val = argResult.getValue();
+        // check type matching
+        if (dynamic_cast<TypeNode *>(child))
+        {
+            TypeNode *typed = (TypeNode *)child;
+            if (typed->getArgType() != val.getType())
+            {
+                return Result<std::vector<Value>>("type assertion failed: expected " + typed->getArgType() + " but got " + val.getType() + " instead");
+            }
+            state.setVariable(typed->getVariable(), val);
+            curChild++;
+        }
+        // for dynamic types
+        else if (dynamic_cast<VariableNode *>(child))
+        {
+            // get the name of the function arg and set its value to val
+            state.setVariable(((VariableNode *)child)->getVariable(), val);
+            curChild++;
+        }
+        /*
+        else if (dynamic_cast<SpreadNode *>(child))
+        {
+            SpreadNode *spread = (SpreadNode *)arg;
+            if (dynamic_cast<IdentifierNode *>(child)) {
+                spread->get
+            }
+            // go to the next value but stay on the same arg
+            curVal++;
+        }*/
+        else
+        {
+            return Result<std::vector<Value>>("invalid node in function arguments");
+        }
+    }
+    if (argIterator.next(&state).getSignal() == BREAK)
+        return Result<std::vector<Value>>(argValues);
+    return Result<std::vector<Value>>("too many arguments given");
 }
 
 Control FunctionNode::resolveArguments(State &state, std::vector<Node *> &args)

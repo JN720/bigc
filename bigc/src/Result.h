@@ -120,7 +120,10 @@ inline Result<T>::Result(Control control)
 template <class T>
 inline Result<T> Result<T>::stack(std::string err)
 {
-    value = err + value;
+    if (std::string *x = std::get_if<std::string>(&value))
+        value = err + *x;
+    else
+        throw "error does not exist";
     return *this;
 }
 

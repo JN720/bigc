@@ -51,6 +51,7 @@ Result<int> Array<T>::len()
 template <class T>
 Array<T>::Array()
 {
+    std::vector<T> values;
 }
 
 template <class T>

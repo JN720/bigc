@@ -20,49 +20,14 @@ Result<Value> StaticMethodNode::execute(State &state, std::vector<Node *> &args)
     // function call scopes are closed
     StateFrame *frame = state.pushFrame(true);
     state.setVariable("static", Value((Node *)cls));
-
-    int curVal = 0;
-    int curArg = 0;
-    // place arguments until we hit the sequence
-    while (curArg < children.size() - 1 && curVal < args.size())
+    Result<std::vector<Value>> result = valuifyArgs(args, state);
+    if (!result.ok())
     {
-        Node *arg = args[curVal];
-        Node *child = children[curArg];
-        // there should be one more child than args because the last is the end
-        // we have already resolved it so get the value
-        Value val = args[curVal]->getValue(state);
-        if (dynamic_cast<VariableNode *>(child))
-        {
-            // get the name of the function arg and set its value to val
-            state.setVariable(((VariableNode *)child)->getVariable(), val);
-            curVal++;
-            curArg++;
-        }
-        else if (dynamic_cast<TypeNode *>(child))
-        {
-            TypeNode *typed = (TypeNode *)arg;
-            if (typed->getArgType() != val.getType())
-            {
-                state.popFrame();
-                return Result<Value>("type assertion failed: expected " + typed->getArgType() + " but got " + val.getType() + " instead");
-            }
-            state.setVariable(typed->getVariable(), val);
-            curVal++;
-            curArg++;
-        }
-        /*
-        else if (dynamic_cast<SpreadNode *>(child))
-        {
-            SpreadNode *spread = (SpreadNode *)arg;
-            if (dynamic_cast<IdentifierNode *>(child)) {
-                spread->get
-            }
-            // go to the next value but stay on the same arg
-            curVal++;
-        }*/
-        else
-            return Result<Value>("invalid node in function arguments");
+        state.popFrame();
+        return Result<Value>("aligning arguments:\n" + result.getError());
     }
+    std::vector<Value> argValues = result.getValue();
+
     // resolve the sequence node
     Control control = children.back()->resolve(state);
     if (control.control())
@@ -78,11 +43,11 @@ Result<Value> StaticMethodNode::execute(State &state, std::vector<Node *> &args)
         state.popFrame();
         return Result<Value>(control.stack("during function execution:\n"));
     }
-    Value result = children.back()->getValue(state);
-    if (Allocated *ref = state.getAllocated(result))
+    Value val = children.back()->getValue(state);
+    if (Allocated *ref = state.getAllocated(val))
         state.addRef(ref);
     state.popFrame();
-    return Result<Value>(result);
+    return Result<Value>(val);
 }
 
 Control StaticMethodNode::resolve(State &state)

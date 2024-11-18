@@ -1,4 +1,5 @@
 #include "Node.h"
+#include "Spread.h"
 
 Node::Node(Value value)
 {
@@ -38,6 +39,15 @@ Control Node::resolve(State &state)
             }
             if (control.error())
                 return control.stack("resolving array elements:\n");
+            // handle spread iterables
+            if (Spread<Value> *spread = dynamic_cast<Spread<Value> *>(child))
+            {
+                for (Value val : *spread)
+                {
+                    arr->add(val);
+                }
+                continue;
+            }
             arr->add(child->getValue(state));
         }
         value = Value(arr);

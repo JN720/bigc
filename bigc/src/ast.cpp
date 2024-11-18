@@ -603,7 +603,7 @@ namespace ast
                     SpreadNode *spread = new SpreadNode();
                     spread->addChild(cur);
                     cur = spread;
-                    error = createAST(state, tokens, ++index, cur, EXPR, piped);
+                    error = createAST(state, tokens, ++index, cur, OPERATING, piped);
                     if (!error.empty())
                         return error;
                 }
