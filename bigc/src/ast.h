@@ -53,5 +53,6 @@ namespace ast
     void skipSoftends(std::vector<Token> &tokens, int &index);
     std::string createAST(State &state, std::vector<Token> &tokens, int &index, Node *parent, Context context, bool piped);
     void printTree(const Node &node, int depth);
+    void printNull(int depth);
     Result<State> evaluate(std::string filename);
 }

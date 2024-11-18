@@ -301,7 +301,7 @@ namespace ast
                     skipSoftends(tokens, index);
                     if (tokens.size() > index + 1 && tokens[index + 1].type == TEXT)
                     {
-                        TypeNode *type = new TypeNode(tokens[index + 1].value);
+                        TypeNode *type = new TypeNode(tokens[++index].value);
                         type->addChild(cur);
                         parent->addChild(type);
                         cur = nullptr;
@@ -385,7 +385,8 @@ namespace ast
                 }
                 else if (context == DELIMITED || context == ARR || context == FUNDEFARGS || context == CLASSARGS || context == INTERFARGS)
                 {
-                    parent->addChild(cur);
+                    if (cur)
+                        parent->addChild(cur);
                     cur = nullptr;
                 }
                 else
@@ -600,11 +601,50 @@ namespace ast
             case SPREAD:
                 if (context == DELIMITED || context == ARR)
                 {
+                    if (cur)
+                        return "unexpected ~";
                     SpreadNode *spread = new SpreadNode();
                     cur = spread;
                     error = createAST(state, tokens, ++index, cur, OPERATING, piped);
                     if (!error.empty())
                         return error;
+                }
+                else if (context == FUNDEFARGS)
+                {
+                    if (cur)
+                        return "unexpected ~";
+                    cur = new SpreadNode();
+                    // we expect an identifier
+                    skipSoftends(tokens, index);
+                    if (tokens.size() > index + 1 && tokens[index + 1].type == TEXT)
+                    {
+                        IdentifierNode *identifier = new IdentifierNode(tokens[++index]);
+                        // check for @
+                        if (tokens.size() > index + 1 && tokens[index + 1].type == OPERATOR && tokens[index + 1].value == "@")
+                        {
+                            ++index;
+                            // check for actual type
+                            if (tokens.size() > index + 1 && tokens[index + 1].type == TEXT)
+                            {
+                                TypeNode *typeNode = new TypeNode(tokens[++index].value);
+                                typeNode->addChild(identifier);
+                                cur->addChild(typeNode);
+                                // parent->addChild(cur);
+                                // cur = nullptr;
+                            }
+                            else
+                                return "expected type for spread argument";
+                        }
+                        else
+                        {
+                            // untyped spread node
+                            cur->addChild(identifier);
+                            parent->addChild(cur);
+                            cur = nullptr;
+                        }
+                    }
+                    else
+                        return "expected identifier for spread";
                 }
                 else
                     return "unexpected ~";
@@ -672,8 +712,20 @@ namespace ast
         // Recursively print each child with increased depth
         for (const Node *child : node.getChildren())
         {
-            printTree(*child, depth + 1);
+            if (!child)
+                printNull(depth + 1);
+            else
+                printTree(*child, depth + 1);
         }
+    }
+    void printNull(int depth)
+    {
+        // Print the current node's value with indentation
+        for (int i = 0; i < depth; ++i)
+        {
+            std::cout << "  "; // Indent based on the depth
+        }
+        std::cout << "NULLPTR" << '\n';
     }
 
     Result<State> evaluate(std::string filename)

@@ -109,6 +109,8 @@ Result<std::vector<Value>> FunctionNode::valuifyArgs(std::vector<Node *> &args, 
 {
     std::vector<Value> argValues;
     ArgumentIterator argIterator(args);
+    Array<Value> *spreadIterable = nullptr;
+    std::string spreadArg = "";
     // the last child is the sequence
     int curChild = 0;
     while (curChild < children.size() - 1)
@@ -122,6 +124,11 @@ Result<std::vector<Value>> FunctionNode::valuifyArgs(std::vector<Node *> &args, 
             // this is the only success case
             if (curChild != children.size() - 2)
                 return Result<std::vector<Value>>("missing arguments");
+            if (spreadIterable)
+            {
+                argValues.push_back(Value(spreadIterable));
+                state.setVariable(spreadArg, Value(spreadIterable));
+            }
             return Result<std::vector<Value>>(argValues);
         }
         if (!argResult.ok())
@@ -135,30 +142,44 @@ Result<std::vector<Value>> FunctionNode::valuifyArgs(std::vector<Node *> &args, 
             {
                 return Result<std::vector<Value>>("type assertion failed: expected " + typed->getArgType() + " but got " + val.getType() + " instead");
             }
+            argValues.push_back(val);
             state.setVariable(typed->getVariable(), val);
             curChild++;
         }
         // for dynamic types
-        else if (dynamic_cast<VariableNode *>(child))
+        else if (VariableNode *var = dynamic_cast<VariableNode *>(child))
         {
             // get the name of the function arg and set its value to val
-            state.setVariable(((VariableNode *)child)->getVariable(), val);
+            state.setVariable(var->getVariable(), val);
+            argValues.push_back(val);
             curChild++;
         }
-        /*
         else if (dynamic_cast<SpreadNode *>(child))
         {
-            SpreadNode *spread = (SpreadNode *)arg;
-            if (dynamic_cast<IdentifierNode *>(child)) {
-                spread->get
+            if (!spreadIterable)
+                spreadIterable = new Array<Value>();
+            // only the last argument should be able to be a spread node
+            if (curChild != children.size() - 2)
+                return Result<std::vector<Value>>("only the last argument can be spread");
+            if (child->getChildren().size() != 1)
+                return Result<std::vector<Value>>("invalid spread node in function arguments");
+            if (TypeNode *typed = dynamic_cast<TypeNode *>(child->getChildren()[0]))
+            {
+                if (typed->getArgType() != val.getType())
+                    return Result<std::vector<Value>>("type assertion failed: expected " + typed->getArgType() + " but got " + val.getType() + " instead");
+                spreadArg = typed->getVariable();
             }
-            // go to the next value but stay on the same arg
-            curVal++;
-        }*/
-        else
-        {
-            return Result<std::vector<Value>>("invalid node in function arguments");
+            else if (VariableNode *var = dynamic_cast<VariableNode *>(child->getChildren()[0]))
+                spreadArg = var->getVariable();
+            else
+                return Result<std::vector<Value>>("invalid child of spread node in function arguments");
+
+            Control control = spreadIterable->add(val);
+            if (!control.ok())
+                return Result<std::vector<Value>>("adding to spread array:\n" + control.getError());
         }
+        else
+            return Result<std::vector<Value>>("invalid node in function arguments");
     }
     if (argIterator.next(&state).getSignal() == BREAK)
         return Result<std::vector<Value>>(argValues);

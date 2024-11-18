@@ -3,7 +3,7 @@
 TypeNode::TypeNode(std::string type)
 {
     argType = type;
-    type = N_TYPE;
+    this->type = N_TYPE;
 }
 
 Control TypeNode::resolve(State &state)

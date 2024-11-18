@@ -278,7 +278,7 @@ Control OperationNode::resolve(State &state)
             return control.stack("during assignment:\n");
         result = children[0]->getValue(state).add(children[1]->getValue(state));
         if (!result.ok())
-            return Control(result.getError() + "\nduring assignment:\n");
+            return Control("during assignment:\n" + result.getError());
         if (VariableNode *var = dynamic_cast<VariableNode *>(children[0]))
         {
             var->setValue(state, result.getValue());
@@ -298,7 +298,7 @@ Control OperationNode::resolve(State &state)
             return control.stack("during assignment:\n");
         result = children[0]->getValue(state).subtract(children[1]->getValue(state));
         if (!result.ok())
-            return Control(result.getError() + "\nduring assignment:\n");
+            return Control("during assignment:\n" + result.getError());
         if (VariableNode *var = dynamic_cast<VariableNode *>(children[0]))
         {
             var->setValue(state, result.getValue());
@@ -318,7 +318,7 @@ Control OperationNode::resolve(State &state)
             return control.stack("during assignment:\n");
         result = children[0]->getValue(state).multiply(children[1]->getValue(state));
         if (!result.ok())
-            return Control(result.getError() + "\nduring assignment:\n");
+            return Control("during assignment:\n" + result.getError());
         if (VariableNode *var = dynamic_cast<VariableNode *>(children[0]))
         {
             var->setValue(state, result.getValue());
@@ -358,7 +358,7 @@ Control OperationNode::resolve(State &state)
             return control.stack("during assignment:\n");
         result = children[0]->getValue(state).modulo(children[1]->getValue(state));
         if (!result.ok())
-            return Control(result.getError() + "\nduring assignment:\n");
+            return Control("during assignment:\n" + result.getError());
         if (VariableNode *var = dynamic_cast<VariableNode *>(children[0]))
         {
             var->setValue(state, result.getValue());
