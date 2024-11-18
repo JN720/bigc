@@ -1,5 +1,6 @@
 #include "FileFundamentalObject.h"
 
+#if defined(BUILD_CPU) || defined(BUILD_GPU)
 FileFundamentalObject::FileFundamentalObject(const std::string &filename, const std::string &mode)
 {
     std::ios_base::openmode openMode = std::ios_base::in;
@@ -40,3 +41,4 @@ Control FileFundamentalObject::setProperty(const std::string &property, const Va
 {
     return Control(std::string("Cannot set properties on FileFundamentalObject"));
 }
+#endif

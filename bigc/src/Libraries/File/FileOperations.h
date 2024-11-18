@@ -2,6 +2,7 @@
 #include "../../FunctionNode.h"
 #include <fstream>
 
+#if defined(BUILD_CPU) || defined(BUILD_GPU)
 class ReadFileFunction : public FunctionNode
 {
 public:
@@ -31,3 +32,4 @@ class DeleteFileFunction : public FunctionNode
 public:
     Result<Value> execute(State &state, std::vector<Node *> &args) override;
 };
+#endif

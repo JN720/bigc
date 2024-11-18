@@ -2,6 +2,7 @@
 #include "FileFundamentalMethodNode.h"
 #include <iterator>
 
+#if defined(BUILD_CPU) || defined(BUILD_GPU)
 FileFundamentalClass::FileFundamentalClass()
 {
     addMethod("read", new FileFundamentalMethodNode([](FileFundamentalObject *file, State &state, std::vector<Node *> &args) -> Result<Value>
@@ -46,3 +47,4 @@ Result<Value> FileFundamentalClass::construct(State *state, std::vector<Node *> 
 
     return Result<Value>(Value((Object *)fileObj));
 }
+#endif

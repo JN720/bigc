@@ -4,6 +4,7 @@
 #include "../../FundamentalMethodNode.h"
 #include "FileFundamentalClass.h"
 
+#if defined(BUILD_CPU) || defined(BUILD_GPU)
 class FileFundamentalMethodNode : public FundamentalMethodNode
 {
 public:
@@ -14,3 +15,4 @@ public:
 private:
     FileMethodFunction method;
 };
+#endif

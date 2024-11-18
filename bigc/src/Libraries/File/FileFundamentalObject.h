@@ -2,6 +2,7 @@
 #include "../../FundamentalObject.h"
 #include <fstream>
 
+#if defined(BUILD_CPU) || defined(BUILD_GPU)
 class FileFundamentalObject : public FundamentalObject
 {
 public:
@@ -18,3 +19,4 @@ public:
 private:
     std::fstream fileStream;
 };
+#endif

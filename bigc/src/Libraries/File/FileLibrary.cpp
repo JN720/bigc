@@ -2,6 +2,7 @@
 #include "FileFundamentalClass.h"
 #include "FileOperations.h"
 
+#if defined(BUILD_CPU) || defined(BUILD_GPU)
 Registry *libfile::init()
 {
     Registry *registry = new Registry();
@@ -18,3 +19,4 @@ Registry *libfile::init()
 
     return registry;
 }
+#endif

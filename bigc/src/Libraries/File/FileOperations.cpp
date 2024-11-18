@@ -1,6 +1,7 @@
 #include "FileOperations.h"
 #include <filesystem>
 
+#if defined(BUILD_CPU) || defined(BUILD_GPU)
 Result<Value> ReadFileFunction::execute(State &state, std::vector<Node *> &args)
 {
     if (args.size() != 1)
@@ -119,3 +120,4 @@ Result<Value> DeleteFileFunction::execute(State &state, std::vector<Node *> &arg
 
     return Result<Value>(Value(std::filesystem::remove(**filename)));
 }
+#endif

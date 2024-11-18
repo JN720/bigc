@@ -213,16 +213,18 @@ namespace base
             return Result<Value>("invalid library");
         if (*library == "math")
             return Result<Value>(Value((Node *)new LibraryNode(libmath::init())));
+#if defined(BUILD_CPU) || defined(BUILD_GPU)
         else if (*library == "file")
             return Result<Value>(Value((Node *)new LibraryNode(libfile::init())));
         else if (*library == "os")
             return Result<Value>(Value((Node *)new LibraryNode(libos::init())));
+        else if (*library == "net")
+            return Result<Value>(Value((Node *)new LibraryNode(libnet::init())));
+#endif
         else if (*library == "thread")
             return Result<Value>(Value((Node *)new LibraryNode(libthread::init())));
         else if (*library == "time")
             return Result<Value>(Value((Node *)new LibraryNode(libtime::init())));
-        else if (*library == "net")
-            return Result<Value>(Value((Node *)new LibraryNode(libnet::init())));
         return Result<Value>("library not found");
     }
     // imported files
