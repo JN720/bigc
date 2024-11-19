@@ -3,6 +3,7 @@
 #include "SocketOperations.h"
 #include "../../ClassNode.h"
 
+#if defined(BUILD_CPU) || defined(BUILD_GPU)
 namespace libnet
 {
 
@@ -22,3 +23,5 @@ namespace libnet
         return registry;
     }
 }
+
+#endif

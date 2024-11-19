@@ -7,6 +7,7 @@
 #include <vector>
 #include <filesystem>
 
+#if defined(BUILD_CPU) || defined(BUILD_GPU)
 namespace libos
 {
     Registry *init();
@@ -20,3 +21,5 @@ namespace libos
     Result<Value> renameFile(const std::string &oldName, const std::string &newName);
     Result<Value> getEnvironmentVariable(const std::string &varName);
 }
+
+#endif

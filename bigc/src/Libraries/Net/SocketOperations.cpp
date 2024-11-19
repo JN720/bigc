@@ -1,5 +1,6 @@
 #include "SocketOperations.h"
 
+#if defined(BUILD_CPU) || defined(BUILD_GPU)
 // ConnectFunction::ConnectFunction()
 // {
 //     // Implement connect function logic
@@ -23,3 +24,4 @@
 //     // Implement close socket function logic
 //     return Result<Value>("not implemented");
 // }
+#endif // BUILD_CPU || BUILD_GPU

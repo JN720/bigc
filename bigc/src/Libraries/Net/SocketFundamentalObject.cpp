@@ -1,5 +1,6 @@
 #include "SocketFundamentalObject.h"
 
+#if defined(BUILD_CPU) || defined(BUILD_GPU)
 SocketFundamentalObject::SocketFundamentalObject(ClassDefinitionInterface *objClass)
 {
     socketFD = socket(AF_INET, SOCK_STREAM, 0);
@@ -117,3 +118,4 @@ Result<Value> SocketFundamentalObject::bind(const std::string &address, int port
     }
     return Result<Value>(Value(true));
 }
+#endif // BUILD_CPU || BUILD_GPU

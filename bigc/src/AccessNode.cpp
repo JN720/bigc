@@ -5,7 +5,6 @@
 #include "StaticMethodNode.h"
 #include "builtin.h"
 #include "LibraryNode.h"
-#include <typeinfo>
 
 AccessNode::AccessNode(const std::string &property)
 {

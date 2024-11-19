@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <cstdlib>
 
+#if defined(BUILD_CPU) || defined(BUILD_GPU)
 namespace libos
 {
     Registry *init()
@@ -176,3 +177,5 @@ namespace libos
             return Result<Value>("Environment variable not found.");
     }
 }
+
+#endif

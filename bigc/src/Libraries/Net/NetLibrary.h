@@ -1,11 +1,10 @@
-#ifndef NETWORK_LIBRARY_H
-#define NETWORK_LIBRARY_H
-
+#pragma once
 #include "../../Registry.h"
 
+#if defined(BUILD_CPU) || defined(BUILD_GPU)
 namespace libnet
 {
     Registry *init();
 }
 
-#endif // NETWORK_LIBRARY_H
+#endif

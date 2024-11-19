@@ -1,6 +1,4 @@
-#ifndef SOCKET_FUNDAMENTAL_OBJECT_H
-#define SOCKET_FUNDAMENTAL_OBJECT_H
-
+#pragma once
 #include <string>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -8,6 +6,7 @@
 #include <unistd.h>
 #include "../../FundamentalObject.h"
 
+#if defined(BUILD_CPU) || defined(BUILD_GPU)
 class SocketFundamentalObject : public FundamentalObject
 {
 public:
@@ -29,5 +28,4 @@ private:
     int socketFD;
     struct sockaddr_in serverAddr;
 };
-
-#endif // SOCKET_FUNDAMENTAL_OBJECT_H
+#endif // BUILD_CPU || BUILD_GPU

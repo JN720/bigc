@@ -1,6 +1,7 @@
 #include "SocketFundamentalMethodNode.h"
 #include "../../FunctionNode.h"
 
+#if defined(BUILD_CPU) || defined(BUILD_GPU)
 SocketFundamentalMethodNode::SocketFundamentalMethodNode()
 {
     method = [](SocketFundamentalObject *socketObj, State &state, std::vector<Node *> &args) -> Result<Value>
@@ -24,3 +25,5 @@ Result<Value> SocketFundamentalMethodNode::executeInstanced(Object *obj, State *
         return Result<Value>("object is not a socket");
     return this->method(socketObj, *state, args);
 }
+
+#endif

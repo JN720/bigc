@@ -1,8 +1,7 @@
-#ifndef SOCKET_OPERATIONS_H
-#define SOCKET_OPERATIONS_H
-
+#pragma once
 #include "../GeneralFunction.h"
 
+#if defined(BUILD_CPU) || defined(BUILD_GPU)
 // class ConnectFunction : public lib::GeneralFunction {
 // public:
 //     ConnectFunction();
@@ -22,5 +21,4 @@
 // public:
 //     CloseSocketFunction();
 // };
-
-#endif // SOCKET_OPERATIONS_H
+#endif // BUILD_CPU || BUILD_GPU

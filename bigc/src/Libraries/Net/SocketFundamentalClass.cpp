@@ -2,6 +2,7 @@
 #include "SocketFundamentalObject.h"
 #include "SocketFundamentalMethodNode.h"
 
+#if defined(BUILD_CPU) || defined(BUILD_GPU)
 SocketFundamentalClass::SocketFundamentalClass()
 {
     addMethod("connect", new SocketFundamentalMethodNode([](SocketFundamentalObject *socketObj, State &state, std::vector<Node *> &args) -> Result<Value>
@@ -121,3 +122,4 @@ Result<Value> SocketFundamentalClass::construct(State *state, std::vector<Node *
         return Result<Value>("Socket creation failed");
     return Result<Value>(Value(socketObj));
 }
+#endif // BUILD_CPU || BUILD_GPU

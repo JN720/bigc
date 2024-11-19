@@ -4,6 +4,8 @@
 #include "../../FundamentalMethodNode.h"
 #include "SocketFundamentalClass.h"
 
+#if defined(BUILD_CPU) || defined(BUILD_GPU)
+
 class SocketFundamentalMethodNode : public FunctionNode
 {
 public:
@@ -15,3 +17,5 @@ public:
 private:
     SocketMethodFunction method;
 };
+
+#endif
