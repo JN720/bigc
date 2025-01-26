@@ -41,9 +41,9 @@ namespace base
         return "nil";
     }
 
-    void printValue(Wildcard val)
+    void printValue(Wildcard val, State &state)
     {
-        std::cout << fmtValue(val) << '\n';
+        state.log(fmtValue(val) + '\n');
     }
 
     Result<Value> print(State &state, std::vector<Node *> &args)
@@ -102,14 +102,14 @@ namespace base
             if (arg != args.back())
                 printout += ' ';
         }
-        std::cout << printout;
+        state.log(printout);
         return Result<Value>(Value(new std::string(printout)));
     }
 
     Result<Value> println(State &state, std::vector<Node *> &args)
     {
         Result<Value> result = print(state, args);
-        std::cout << '\n';
+        state.log("\n");
         return result;
     }
 
@@ -171,7 +171,6 @@ namespace base
 
     Result<Value> type(State &state, std::vector<Node *> &args)
     {
-        std::cout << "args: " << args.size() << "\n";
         if (args.size() != 1)
             return Result<Value>("invalid arity");
         return Result<Value>(Value(new std::string(args[0]->getValue(state).getType())));
@@ -179,8 +178,7 @@ namespace base
 
     Result<Value> input(State &state, std::vector<Node *> &args)
     {
-        std::string input;
-        std::cin >> input;
+        std::string input = state.input();
         return Result<Value>(Value(new std::string(input)));
     }
     // imported groups

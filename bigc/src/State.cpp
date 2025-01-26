@@ -14,6 +14,7 @@ State::State()
     states.push_front(new StateFrame(true));
 
     registry = new Registry();
+    logger = Logger();
 }
 
 void State::registerVariable(std::string name, Value value)
@@ -177,4 +178,16 @@ Allocated *State::getAllocated(Value value)
     if (Iterable<Value> **x = std::get_if<Iterable<Value> *>(&val))
         return (Allocated *)(*x);
     return nullptr;
+}
+
+void State::log(const std::string &message)
+{
+    logger.log(message);
+}
+
+std::string State::input()
+{
+    std::string result;
+    std::cin >> result;
+    return result;
 }

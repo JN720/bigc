@@ -1,11 +1,12 @@
 #pragma once
 #include <forward_list>
+#include <set>
 #include "StateFrame.h"
 #include "Registry.h"
 #include "Allocated.h"
 #include "Object.h"
 #include "Value.h"
-#include <set>
+#include "Logger.h"
 
 class State
 {
@@ -26,6 +27,8 @@ public:
     void addRef(Allocated *allocated);
     void removeRef(Allocated *allocated);
     Allocated *getAllocated(Value value);
+    void log(const std::string &message);
+    std::string input();
 
 private:
     std::forward_list<StateFrame *> states;
@@ -33,4 +36,5 @@ private:
     Registry *registry;
     std::string currentGroup;
     std::unordered_multiset<Allocated *, AllocatedHash, AllocatedEqual> refs;
+    Logger logger;
 };
